@@ -62,6 +62,7 @@
       <Link>StringBuilderExtensions.cs</Link>
     </Compile>
     <Compile Include="Extensions\DbCommandLogData.cs" />
+    <Compile Include="Extensions\DbFunctionsExtensions.cs" />
     <Compile Include="Extensions\DbParameterLogData.cs" />
     <Compile Include="Extensions\RelationalCommandExtensions.cs" />
     <Compile Include="Extensions\RelationalExpressionExtensions.cs" />

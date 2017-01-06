@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+using Microsoft.EntityFrameworkCore.Query.DbFunctions.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
@@ -181,5 +182,11 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public override IExecutionStrategyFactory ExecutionStrategyFactory => GetService<SqlServerExecutionStrategyFactory>();
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public override IDbFunctionInitializer DbFunctionInitializer => GetService<SqlServerDbFunctionInitalizer>();
     }
 }

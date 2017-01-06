@@ -24,6 +24,8 @@ using Remotion.Linq.Clauses.Expressions;
 using Remotion.Linq.Clauses.ExpressionVisitors;
 using Remotion.Linq.Clauses.ResultOperators;
 using Remotion.Linq.Clauses.StreamedData;
+using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.EntityFrameworkCore.Query
 {
@@ -452,31 +454,31 @@ namespace Microsoft.EntityFrameworkCore.Query
                 = QueryCompilationContext.QueryAnnotations
                     .OfType<IncludeResultOperator>()
                     .Select(includeResultOperator =>
+                    {
+                        var entityType = QueryCompilationContext.Model.FindEntityType(
+                            includeResultOperator.PathFromQuerySource.Type);
+
+                        var parts = includeResultOperator.NavigationPropertyPaths.ToArray();
+                        var navigationPath = new INavigation[parts.Length];
+                        for (var i = 0; i < parts.Length; i++)
                         {
-                            var entityType = QueryCompilationContext.Model.FindEntityType(
-                                includeResultOperator.PathFromQuerySource.Type);
+                            navigationPath[i] = entityType.FindNavigation(parts[i]);
 
-                            var parts = includeResultOperator.NavigationPropertyPaths.ToArray();
-                            var navigationPath = new INavigation[parts.Length];
-                            for (var i = 0; i < parts.Length; i++)
+                            if (navigationPath[i] == null)
                             {
-                                navigationPath[i] = entityType.FindNavigation(parts[i]);
-
-                                if (navigationPath[i] == null)
-                                {
-                                    throw new InvalidOperationException(
-                                        CoreStrings.IncludeBadNavigation(parts[i], entityType.DisplayName()));
-                                }
-
-                                entityType = navigationPath[i].GetTargetType();
+                                throw new InvalidOperationException(
+                                    CoreStrings.IncludeBadNavigation(parts[i], entityType.DisplayName()));
                             }
 
-                            return new
-                            {
-                                specification = new IncludeSpecification(includeResultOperator.QuerySource, navigationPath),
-                                order = string.Concat(navigationPath.Select(n => n.IsCollection() ? "1" : "0"))
-                            };
-                        })
+                            entityType = navigationPath[i].GetTargetType();
+                        }
+
+                        return new
+                        {
+                            specification = new IncludeSpecification(includeResultOperator.QuerySource, navigationPath),
+                            order = string.Concat(navigationPath.Select(n => n.IsCollection() ? "1" : "0"))
+                        };
+                    })
                     .OrderByDescending(e => e.order)
                     .ThenBy(e => e.specification.NavigationPath.First().IsDependentToPrincipal())
                     .Select(e => e.specification)
@@ -698,11 +700,11 @@ namespace Microsoft.EntityFrameworkCore.Query
             QueryCompilationContext.Logger.LogDebug(
                 CoreEventId.QueryPlan,
                 () =>
-                    {
-                        var queryPlan = _expressionPrinter.Print(queryExecutorExpression);
+                {
+                    var queryPlan = _expressionPrinter.Print(queryExecutorExpression);
 
-                        return queryPlan;
-                    });
+                    return queryPlan;
+                });
 
             return queryExecutor;
         }
@@ -977,7 +979,9 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(whereClause, nameof(whereClause));
             Check.NotNull(queryModel, nameof(queryModel));
 
-            var predicate = ReplaceClauseReferences(whereClause.Predicate);
+            var predicate = ReplaceClauseReferences(whereClause.Predicate is DbFunctionExpression
+                                                        ? new DbFunctionUnwindingExpressionVisitor().Visit(whereClause.Predicate)
+                                                        : whereClause.Predicate);
 
             _expression
                 = Expression.Call(
@@ -1003,7 +1007,9 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(queryModel, nameof(queryModel));
             Check.NotNull(orderByClause, nameof(orderByClause));
 
-            var expression = ReplaceClauseReferences(ordering.Expression);
+            var expression = ReplaceClauseReferences(ordering.Expression is DbFunctionExpression
+                                    ? new DbFunctionUnwindingExpressionVisitor().Visit(ordering.Expression)
+                                    : ordering.Expression);
 
             _expression
                 = Expression.Call(
@@ -1035,11 +1041,16 @@ namespace Microsoft.EntityFrameworkCore.Query
                 return;
             }
 
+            var projectionExpression = _projectionExpressionVisitorFactory
+                                            .Create(this, queryModel.MainFromClause)
+                                            .Visit(selectClause.Selector);
+
+            if (projectionExpression is DbFunctionExpression)
+                projectionExpression = new DbFunctionUnwindingExpressionVisitor().Visit(projectionExpression);
+
             var selector
                 = ReplaceClauseReferences(
-                    _projectionExpressionVisitorFactory
-                        .Create(this, queryModel.MainFromClause)
-                        .Visit(selectClause.Selector),
+                    projectionExpression,
                     inProjection: true);
 
             if ((selector.Type != sequenceType
@@ -1360,11 +1371,11 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             BindMemberExpression(memberExpression, null,
                 (property, querySource) =>
-                    {
-                        memberBinder(property, querySource);
+                {
+                    memberBinder(property, querySource);
 
-                        return default(object);
-                    });
+                    return default(object);
+                });
         }
 
         /// <summary>
@@ -1387,13 +1398,13 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             return BindPropertyExpressionCore(memberExpression, querySource,
                 (ps, qs) =>
-                    {
-                        var property = ps.Count == 1 ? ps[0] as IProperty : null;
+                {
+                    var property = ps.Count == 1 ? ps[0] as IProperty : null;
 
-                        return property != null
-                            ? memberBinder(property, qs)
-                            : default(TResult);
-                    });
+                    return property != null
+                        ? memberBinder(property, qs)
+                        : default(TResult);
+                });
         }
 
         /// <summary>
@@ -1416,13 +1427,13 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             return BindPropertyExpressionCore(methodCallExpression, querySource,
                 (ps, qs) =>
-                    {
-                        var property = ps.Count == 1 ? ps[0] as IProperty : null;
+                {
+                    var property = ps.Count == 1 ? ps[0] as IProperty : null;
 
-                        return property != null
-                            ? methodCallBinder(property, qs)
-                            : default(TResult);
-                    });
+                    return property != null
+                        ? methodCallBinder(property, qs)
+                        : default(TResult);
+                });
         }
 
         private TResult BindPropertyExpressionCore<TResult>(
@@ -1544,11 +1555,11 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             BindMethodCallExpression(methodCallExpression, null,
                 (property, querySource) =>
-                    {
-                        methodCallBinder(property, querySource);
+                {
+                    methodCallBinder(property, querySource);
 
-                        return default(object);
-                    });
+                    return default(object);
+                });
         }
 
         #endregion

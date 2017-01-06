@@ -19,6 +19,7 @@
     "xmlDoc": true
   },
   "dependencies": {
+    "Microsoft.EntityFrameworkCore.Relational": "1.2.0-*",
     "Microsoft.EntityFrameworkCore.InMemory": "1.2.0-*",
     "Microsoft.Extensions.RuntimeEnvironment.Sources": {
       "version": "1.2.0-*",

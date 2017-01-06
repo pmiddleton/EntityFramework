@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Specification.Tests;
 using Microsoft.EntityFrameworkCore.Specification.Tests.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.Specification.Tests.TestUtilities.Xunit;
 using Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests.Utilities;
+using Microsoft.EntityFrameworkCore.Relational.Specification.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,7 +17,7 @@ using System.Threading;
 
 namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests
 {
-    public class QuerySqlServerTest : QueryTestBase<NorthwindQuerySqlServerFixture>
+    public class QuerySqlServerTest : QueryRelationalTestBase<NorthwindQuerySqlServerFixture>
     {
         public QuerySqlServerTest(NorthwindQuerySqlServerFixture fixture, ITestOutputHelper testOutputHelper)
             : base(fixture)
@@ -2460,7 +2461,7 @@ WHERE DATEPART(day, [o].[OrderDate]) = 4",
             Assert.Equal(
                 @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
 FROM [Orders] AS [o]
-WHERE DATEPART(year, DATEADD(year, -1, [o].[OrderDate])) = 1997",
+WHERE DATEPART(year, DATEADD(Year, -1, [o].[OrderDate])) = 1997",
                 Sql);
         }
 
@@ -4783,11 +4784,9 @@ SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[Cont
 FROM [Customers] AS [c]
 WHERE [c].[CustomerID] <> UPPER([c].[CustomerID])
 
-@__ToUpper_0: ALF (Size = 4000)
-
 SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
-WHERE [c].[CustomerID] > REPLACE(N'ALFKI', @__ToUpper_0, [c].[CustomerID])
+WHERE [c].[CustomerID] > REPLACE(N'ALFKI', UPPER(N'ALF'), [c].[CustomerID])
 
 SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
@@ -4797,11 +4796,9 @@ SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[Cont
 FROM [Customers] AS [c]
 WHERE [c].[CustomerID] > UPPER([c].[CustomerID])
 
-@__ToUpper_0: ALF (Size = 4000)
-
 SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
-WHERE [c].[CustomerID] < REPLACE(N'ALFKI', @__ToUpper_0, [c].[CustomerID])",
+WHERE [c].[CustomerID] < REPLACE(N'ALFKI', UPPER(N'ALF'), [c].[CustomerID])",
                 Sql);
         }
 
@@ -4858,11 +4855,9 @@ WHERE ABS([od].[UnitPrice]) > 10.0",
             base.Where_math_abs_uncorrelated();
 
             Assert.Equal(
-                @"@__Abs_0: 10
-
-SELECT [od].[OrderID], [od].[ProductID], [od].[Discount], [od].[Quantity], [od].[UnitPrice]
+                @"SELECT [od].[OrderID], [od].[ProductID], [od].[Discount], [od].[Quantity], [od].[UnitPrice]
 FROM [Order Details] AS [od]
-WHERE @__Abs_0 < [od].[ProductID]",
+WHERE ABS(-10) < [od].[ProductID]",
                 Sql);
         }
 
@@ -4935,6 +4930,17 @@ WHERE POWER([od].[Discount], 2E0) > 0.0500000007450581E0",
                 @"SELECT [od].[OrderID], [od].[ProductID], [od].[Discount], [od].[Quantity], [od].[UnitPrice]
 FROM [Order Details] AS [od]
 WHERE ROUND([od].[UnitPrice], 0) > 10.0",
+                Sql);
+        }
+
+        public override void Where_math_round_decimals()
+        {
+            base.Where_math_round_decimals();
+
+            Assert.Equal(
+                @"SELECT [od].[OrderID], [od].[ProductID], [od].[Discount], [od].[Quantity], [od].[UnitPrice]
+FROM [Order Details] AS [od]
+WHERE ROUND([od].[UnitPrice], 1) > 15.0",
                 Sql);
         }
 
@@ -6371,7 +6377,7 @@ WHERE [o].[OrderDate] IS NOT NULL",
             base.Select_expression_date_add_year();
 
             Assert.Equal(
-                @"SELECT DATEADD(year, 1, [o].[OrderDate])
+                @"SELECT DATEADD(Year, 1, [o].[OrderDate])
 FROM [Orders] AS [o]
 WHERE [o].[OrderDate] IS NOT NULL",
                 Sql);
@@ -6380,6 +6386,8 @@ WHERE [o].[OrderDate] IS NOT NULL",
         public override void Select_expression_references_are_updated_correctly_with_subquery()
         {
             base.Select_expression_references_are_updated_correctly_with_subquery();
+
+            var nextYear = DateTime.UtcNow.AddYears(1).Year;
 
             Assert.Equal(
                 @"@__nextYear_0: 2017
@@ -6470,7 +6478,6 @@ WHERE (([c].[City] = N'Seattle') AND [c].[City] IS NOT NULL) AND ([t1].[OrderID]
                 Sql);
         }
 
-        [SqlServerCondition(SqlServerCondition.SupportsOffset)]
         public override void OrderBy_skip_take_level_1()
         {
             base.OrderBy_skip_take_level_1();
@@ -6613,6 +6620,367 @@ LEFT JOIN [Employees] AS [e2] ON [e1].[EmployeeID] = [e2].[ReportsTo]
 ORDER BY [e1].[EmployeeID]",
                 Sql);
         }
+
+        #region Date & Time Overloads
+
+        public override void DateTime_AddYears()
+        {
+            base.DateTime_AddYears();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(year, DATEADD(Year, 3, [o].[OrderDate])) = 1999",
+               Sql);
+        }
+
+        public override void DateTime_AddMonths()
+        {
+            base.DateTime_AddMonths();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(month, DATEADD(Month, 2, [o].[OrderDate])) = 5",
+               Sql);
+        }
+
+        public override void DateTime_AddDays()
+        {
+            base.DateTime_AddDays();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(day, DATEADD(Day, 2E0, [o].[OrderDate])) = 5",
+               Sql);
+        }
+
+        public override void DateTime_AddHours()
+        {
+            base.DateTime_AddHours();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(hour, DATEADD(Hour, 11E0, [o].[OrderDate])) = 11",
+               Sql);
+        }
+
+        public override void DateTime_AddMinutes()
+        {
+            base.DateTime_AddMinutes();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(minute, DATEADD(Minute, 7E0, [o].[OrderDate])) = 7",
+               Sql);
+        }
+
+        public override void DateTime_AddSeconds()
+        {
+            base.DateTime_AddSeconds();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(second, DATEADD(Second, 6E0, [o].[OrderDate])) = 6",
+               Sql);
+        }
+
+        public override void DateTime_AddMilliSeconds()
+        {
+            base.DateTime_AddMilliSeconds();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(millisecond, DATEADD(Millisecond, 843E0, [o].[OrderDate])) = 843",
+               Sql);
+        }
+
+        public override void DateTime_Add_Chained()
+        {
+            base.DateTime_Add_Chained();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(second, DATEADD(Second, 6E0, DATEADD(Minute, 1E0, DATEADD(Hour, 1E0, DATEADD(Day, 1E0, DATEADD(Year, 1, [o].[OrderDate])))))) = 6",
+               Sql);
+        }
+
+        #endregion
+
+        #region DBFunctions
+
+        /*public void DbFunction_StandardDiv()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from od in context.OrderDetails
+                               select EF.Functions.StandardDeviation(od.UnitPrice)).First();
+
+                Assert.Equal(29.82741788750095d, results);
+            }
+
+            Assert.Equal(
+                @"SELECT TOP(1) Stdev([od].[UnitPrice])
+FROM [Order Details] AS [od]",
+                Sql);
+        }*/
+
+        public override void DbFunction_Left()
+        {
+            base.DbFunction_Left();
+
+            Assert.Equal(
+                @"SELECT [c].[CustomerID]
+FROM [Customers] AS [c]
+WHERE Left([c].[City], 3) = N'Sea'",
+                Sql);
+        }
+
+        public override void DbFunction_Right()
+        {
+            base.DbFunction_Right();
+
+            Assert.Equal(
+                @"SELECT [c].[CustomerID]
+FROM [Customers] AS [c]
+WHERE Right([c].[City], 2) = N'le'",
+                Sql);
+        }
+
+        public override void DbFunction_Reverse()
+        {
+            base.DbFunction_Reverse();
+
+            Assert.Equal(
+                @"SELECT [c].[CustomerID]
+FROM [Customers] AS [c]
+WHERE Reverse([c].[City]) = N'elttaeS'",
+                Sql);
+        }
+
+        public override void DbFunction_Truncate()
+        {
+            base.DbFunction_Truncate();
+
+            Assert.Equal(
+               @"SELECT [od].[OrderID], [od].[ProductID], [od].[Discount], [od].[Quantity], [od].[UnitPrice]
+FROM [Order Details] AS [od]
+WHERE ROUND([od].[UnitPrice], 0, 1) > 10.0",
+               Sql);
+        }
+
+        public override void DbFunction_AddYears_Date()
+        {
+            base.DbFunction_AddYears_Date();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(year, DATEADD(Year, 3, [o].[OrderDate])) = 1999",
+               Sql);
+        }
+
+        public override void DbFunction_AddMonths_Date()
+        {
+            base.DbFunction_AddMonths_Date();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(month, DATEADD(Month, 2, [o].[OrderDate])) = 5",
+               Sql);
+        }
+
+        public override void DbFunction_AddDays_Date()
+        {
+            base.DbFunction_AddDays_Date();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(day, DATEADD(Day, 2, [o].[OrderDate])) = 5",
+               Sql);
+        }
+
+        public override void DbFunction_AddHours_Date()
+        {
+            base.DbFunction_AddHours_Date();
+
+            Assert.Equal(
+              @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(hour, DATEADD(Hour, 11, [o].[OrderDate])) = 11",
+              Sql);
+        }
+
+        public override void DbFunction_AddMinutes_Date()
+        {
+            base.DbFunction_AddMinutes_Date();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(minute, DATEADD(Minute, 7, [o].[OrderDate])) = 7",
+               Sql);
+        }
+
+        public override void DbFunction_AddSeconds_Date()
+        {
+            base.DbFunction_AddSeconds_Date();
+
+            Assert.Equal(
+               @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(second, DATEADD(Second, 6, [o].[OrderDate])) = 6",
+               Sql);
+        }
+
+        public override void DbFunction_AddMilliSeconds_Date()
+        {
+            base.DbFunction_AddMilliSeconds_Date();
+
+            Assert.Equal(
+              @"SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEPART(millisecond, DATEADD(Millisecond, 843, [o].[OrderDate])) = 843",
+              Sql);
+        }
+
+        public override void DbFunction_DiffYears_Date()
+        {
+            base.DbFunction_DiffYears_Date();
+
+            Assert.Equal(@"@__Parse_0: 01/01/2016 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Year, [o].[OrderDate], @__Parse_0) = 20",
+              Sql);
+        }
+
+        public override void DbFunction_DiffMonths_Date()
+        {
+            base.DbFunction_DiffMonths_Date();
+
+            Assert.Equal(@"@__Parse_0: 09/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Month, [o].[OrderDate], @__Parse_0) = -4",
+              Sql);
+        }
+
+        public override void DbFunction_DiffDays_Date()
+        {
+            base.DbFunction_DiffDays_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Day, [o].[OrderDate], @__Parse_0) = -7",
+              Sql);
+        }
+
+        public override void DbFunction_DiffHours_Date()
+        {
+            base.DbFunction_DiffHours_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Hour, [o].[OrderDate], @__Parse_0) > 0",
+              Sql);
+        }
+
+        public override void DbFunction_DiffMinutes_Date()
+        {
+            base.DbFunction_DiffMinutes_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Minute, [o].[OrderDate], @__Parse_0) > 0",
+              Sql);
+        }
+
+        public override void DbFunction_DiffSeconds_Date()
+        {
+            base.DbFunction_DiffSeconds_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE DATEDIFF(Second, [o].[OrderDate], @__Parse_0) > 0",
+              Sql);
+        }
+
+        public override void DbFunction_DiffMilliSeconds_Date()
+        {
+            base.DbFunction_DiffMilliSeconds_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 00:00:00
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE (DATEDIFF(Millisecond, [o].[OrderDate], @__Parse_0) < 0) AND ([o].[OrderID] = 10336)",
+              Sql);
+        }
+
+        public override void DbFunction_TruncateTime_Date()
+        {
+            base.DbFunction_TruncateTime_Date();
+
+            Assert.Equal(@"@__Parse_0: 10/22/1996 01:23:45
+
+SELECT [o].[OrderID], [o].[CustomerID], [o].[EmployeeID], [o].[OrderDate]
+FROM [Orders] AS [o]
+WHERE CONVERT(date, [o].[OrderDate]) = CONVERT(date, @__Parse_0)",
+             Sql);
+        }
+
+        [ConditionalFact]
+        public void DbFunction_PatIndex()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Customers.Where(c => EF.Functions.PatIndex("%ca%", c.CompanyName) > 0)).ToList();
+
+                Assert.Equal(13, results.Count);
+            }
+
+            Assert.Equal(@"SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
+FROM [Customers] AS [c]
+WHERE PatIndex(N'%ca%', [c].[CompanyName]) > 0",
+            Sql);
+        }
+
+        [ConditionalFact]
+        public void DbFunction_Like()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Customers.Where(c => EF.Functions.Like("%ca%", c.CompanyName))).ToList();
+
+                Assert.Equal(13, results.Count);
+            }
+
+            Assert.Equal(@"SELECT [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
+FROM [Customers] AS [c]
+WHERE [c].[CompanyName] LIKE N'%ca%'",
+            Sql);
+        }
+
+        #endregion
 
         private const string FileLineEnding = @"
 ";

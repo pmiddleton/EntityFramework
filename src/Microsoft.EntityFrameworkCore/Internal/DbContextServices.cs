@@ -62,7 +62,8 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 return _providerServices.Value.ModelSource.GetModel(
                     _currentContext.Context,
                     _providerServices.Value.ConventionSetBuilder,
-                    _providerServices.Value.ModelValidator);
+                    _providerServices.Value.ModelValidator,
+                    _providerServices.Value.DbFunctionInitializer);
             }
             finally
             {

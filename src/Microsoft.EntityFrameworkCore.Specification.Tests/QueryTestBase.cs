@@ -47,11 +47,11 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         {
             using (var context = CreateContext())
             {
-                var count = QueryableArgQuery(context, new [] { "ALFKI" }.AsQueryable()).Count();
+                var count = QueryableArgQuery(context, new[] { "ALFKI" }.AsQueryable()).Count();
 
                 Assert.Equal(1, count);
 
-                count = QueryableArgQuery(context, new [] { "FOO" }.AsQueryable()).Count();
+                count = QueryableArgQuery(context, new[] { "FOO" }.AsQueryable()).Count();
 
                 Assert.Equal(0, count);
             }
@@ -278,9 +278,9 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 cs => cs.Skip(5),
                 entryCount: 86,
                 asserter: (_, __) =>
-                    {
-                        /* non-deterministic */
-                    });
+                {
+                    /* non-deterministic */
+                });
         }
 
         [ConditionalFact]
@@ -708,7 +708,7 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         public virtual void Where_indexer_closure()
         {
             // ReSharper disable once ConvertToConstant.Local
-            var city = new [] { "London" };
+            var city = new[] { "London" };
 
             AssertQuery<Customer>(
                 cs => cs.Where(c => c.City == city[0]),
@@ -1639,22 +1639,22 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         public virtual void Where_subquery_expression()
         {
             AssertQuery<Order, Order>((o1, o2) =>
-                {
-                    var firstOrder = o1.First();
-                    Expression<Func<Order, bool>> expr = z => z.OrderID == firstOrder.OrderID;
-                    return o1.Where(x => o2.Where(expr).Any());
-                });
+            {
+                var firstOrder = o1.First();
+                Expression<Func<Order, bool>> expr = z => z.OrderID == firstOrder.OrderID;
+                return o1.Where(x => o2.Where(expr).Any());
+            });
         }
 
         [ConditionalFact]
         public virtual void Where_subquery_expression_same_parametername()
         {
             AssertQuery<Order, Order>((o1, o2) =>
-                {
-                    var firstOrder = o1.First();
-                    Expression<Func<Order, bool>> expr = x => x.OrderID == firstOrder.OrderID;
-                    return o1.Where(x => o2.Where(expr).Where(o => o.CustomerID == x.CustomerID).Any());
-                });
+            {
+                var firstOrder = o1.First();
+                Expression<Func<Order, bool>> expr = x => x.OrderID == firstOrder.OrderID;
+                return o1.Where(x => o2.Where(expr).Where(o => o.CustomerID == x.CustomerID).Any());
+            });
         }
 
         [ConditionalFact]
@@ -2190,17 +2190,17 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                         .OrderBy(o => o),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<int>)q1));
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<int>)q1));
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<int>)q1));
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<int>)q1));
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -2213,19 +2213,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                         .Where(o => o.CustomerID == c.CustomerID),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -2236,19 +2236,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     select os.Where(o => o.CustomerID == c.CustomerID),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -2259,19 +2259,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     select os.OrderBy(o => c.CustomerID),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1))
-                                .OrderBy(o => o.OrderID);
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1))
+                            .OrderBy(o => o.OrderID);
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         // TODO: Re-linq parser
@@ -2301,14 +2301,14 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     },
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        dynamic l2oResult = l2oResults.Single();
-                        dynamic efResult = efResults.Single();
+                {
+                    dynamic l2oResult = l2oResults.Single();
+                    dynamic efResult = efResults.Single();
 
-                        Assert.Equal(l2oResult.CustomerId, efResult.CustomerId);
-                        Assert.Equal((IEnumerable<int>)l2oResult.OrderIds, (IEnumerable<int>)efResult.OrderIds);
-                        Assert.Equal(l2oResult.Customer, efResult.Customer);
-                    });
+                    Assert.Equal(l2oResult.CustomerId, efResult.CustomerId);
+                    Assert.Equal((IEnumerable<int>)l2oResult.OrderIds, (IEnumerable<int>)efResult.OrderIds);
+                    Assert.Equal(l2oResult.Customer, efResult.Customer);
+                });
         }
 
         [ConditionalFact]
@@ -2323,19 +2323,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                                     select e3)),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<object>)q1)
-                                    .SelectMany(q2 => (IEnumerable<object>)q2));
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<object>)q1)
+                                .SelectMany(q2 => (IEnumerable<object>)q2));
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<object>)q1)
-                                    .SelectMany(q2 => (IEnumerable<object>)q2));
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<object>)q1)
+                                .SelectMany(q2 => (IEnumerable<object>)q2));
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -2563,19 +2563,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                                     select o1.OrderID)),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<object>)q1)
-                                    .SelectMany(q2 => (IEnumerable<int>)q2));
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<object>)q1)
+                                .SelectMany(q2 => (IEnumerable<int>)q2));
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<object>)q1)
-                                    .SelectMany(q2 => (IEnumerable<int>)q2));
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<object>)q1)
+                                .SelectMany(q2 => (IEnumerable<int>)q2));
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -3038,15 +3038,15 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     join o in os.OrderBy(o => o.OrderID) on c.CustomerID equals o.CustomerID into orders
                     select new { customer = c, orders = orders.ToList() },
                 asserter: (l2oItems, efItems) =>
+                {
+                    foreach (var pair in
+                        from dynamic l2oItem in l2oItems
+                        join dynamic efItem in efItems on l2oItem.customer equals efItem.customer
+                        select new { l2oItem, efItem })
                     {
-                        foreach (var pair in
-                            from dynamic l2oItem in l2oItems
-                            join dynamic efItem in efItems on l2oItem.customer equals efItem.customer
-                            select new { l2oItem, efItem })
-                        {
-                            Assert.Equal(pair.l2oItem.orders, pair.efItem.orders);
-                        }
-                    });
+                        Assert.Equal(pair.l2oItem.orders, pair.efItem.orders);
+                    }
+                });
         }
 
         [ConditionalFact]
@@ -3446,16 +3446,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     cs.Select(c => new { c.City, c.CustomerID })
                         .GroupBy(a => a.City),
                 asserter: (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, dynamic>>().ToList();
+
+                    foreach (IGrouping<string, dynamic> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, dynamic>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, dynamic> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(o => o.CustomerID), efGrouping.OrderBy(o => o.CustomerID));
-                        }
-                    });
+                        Assert.Equal(l2oGrouping.OrderBy(o => o.CustomerID), efGrouping.OrderBy(o => o.CustomerID));
+                    }
+                });
         }
 
         [ConditionalFact]
@@ -3467,16 +3467,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                         .Select(c => new { c.City, c.CustomerID })
                         .GroupBy(a => a.City),
                 asserter: (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, dynamic>>().ToList();
+
+                    foreach (IGrouping<string, dynamic> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, dynamic>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, dynamic> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(o => o.CustomerID), efGrouping.OrderBy(o => o.CustomerID));
-                        }
-                    });
+                        Assert.Equal(l2oGrouping.OrderBy(o => o.CustomerID), efGrouping.OrderBy(o => o.CustomerID));
+                    }
+                });
         }
 
         [ConditionalFact(Skip = "Test does not pass.")] // TODO: See issue#7160
@@ -3518,16 +3518,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                      })
                         .Where(x => x.Key.OrderID == 10248),
                 asserter: (l2oResults, efResults) =>
-                    {
-                        var l2oGroup = l2oResults.Cast<IGrouping<dynamic, dynamic>>().Single();
-                        var efGroup = efResults.Cast<IGrouping<dynamic, dynamic>>().Single();
+                {
+                    var l2oGroup = l2oResults.Cast<IGrouping<dynamic, dynamic>>().Single();
+                    var efGroup = efResults.Cast<IGrouping<dynamic, dynamic>>().Single();
 
-                        Assert.Equal(l2oGroup.Key, efGroup.Key);
+                    Assert.Equal(l2oGroup.Key, efGroup.Key);
 
-                        Assert.Equal(
-                            l2oGroup.OrderBy(element => element.ProductID),
-                            efGroup.OrderBy(element => element.ProductID));
-                    });
+                    Assert.Equal(
+                        l2oGroup.OrderBy(element => element.ProductID),
+                        efGroup.OrderBy(element => element.ProductID));
+                });
         }
 
         [ConditionalFact]
@@ -3545,16 +3545,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 os => os.GroupBy(o => o.CustomerID),
                 entryCount: 830,
                 asserter: (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+
+                    foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
-                        }
-                    });
+                        Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
+                    }
+                });
         }
 
         [ConditionalFact]
@@ -3564,16 +3564,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 os => os.GroupBy(o => o.CustomerID).Select(g => g),
                 entryCount: 830,
                 asserter: (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+
+                    foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
-                        }
-                    });
+                        Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
+                    }
+                });
         }
 
         [ConditionalFact]
@@ -3582,13 +3582,13 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
             AssertQuery<Order>(
                 os => os.Where(o => o.CustomerID == "ALFKI").GroupBy(o => o.CustomerID).Cast<object>().First(),
                 asserter: (l2oResult, efResult) =>
-                    {
-                        var l2oGrouping = (IGrouping<string, Order>)l2oResult;
-                        var efGrouping = (IGrouping<string, Order>)efResult;
+                {
+                    var l2oGrouping = (IGrouping<string, Order>)l2oResult;
+                    var efGrouping = (IGrouping<string, Order>)efResult;
 
-                        Assert.Equal(l2oGrouping.Key, efGrouping.Key);
-                        Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
-                    },
+                    Assert.Equal(l2oGrouping.Key, efGrouping.Key);
+                    Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
+                },
                 entryCount: 6);
         }
 
@@ -3686,17 +3686,17 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                         .Select(g => g.OrderBy(o => o)),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<int>)q1));
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<int>)q1));
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<int>)q1));
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<int>)q1));
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -3708,17 +3708,17 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                         .Select(g => g.OrderBy(o => o.OrderID)),
                 asserter:
                 (l2oResults, efResults) =>
-                    {
-                        var l2oObjects
-                            = l2oResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1));
+                {
+                    var l2oObjects
+                        = l2oResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1));
 
-                        var efObjects
-                            = efResults
-                                .SelectMany(q1 => ((IEnumerable<Order>)q1));
+                    var efObjects
+                        = efResults
+                            .SelectMany(q1 => ((IEnumerable<Order>)q1));
 
-                        Assert.Equal(l2oObjects, efObjects);
-                    });
+                    Assert.Equal(l2oObjects, efObjects);
+                });
         }
 
         [ConditionalFact]
@@ -3762,16 +3762,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     os.Where(o => o.OrderDate.HasValue)
                         .GroupBy(o => o.OrderDate.Value.Month),
                 asserter: (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<int, Order>>().ToList();
+
+                    foreach (IGrouping<int, Order> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<int, Order>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<int, Order> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
-                        }
-                    },
+                        Assert.Equal(l2oGrouping.OrderBy(o => o.OrderID), efGrouping.OrderBy(o => o.OrderID));
+                    }
+                },
                 entryCount: 830);
         }
 
@@ -3816,16 +3816,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     .GroupBy(p => p.Customer),
                 asserter:
                 (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, ProjectedType>>().ToList();
+
+                    foreach (IGrouping<string, ProjectedType> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, ProjectedType>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, ProjectedType> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(p => p.Order), efGrouping.OrderBy(p => p.Order));
-                        }
-                    });
+                        Assert.Equal(l2oGrouping.OrderBy(p => p.Order), efGrouping.OrderBy(p => p.Order));
+                    }
+                });
         }
 
         [ConditionalFact]
@@ -3848,16 +3848,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 os => os.GroupBy(o => o.CustomerID).OrderBy(g => g.Key),
                 asserter:
                 (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+
+                    foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
-                        }
-                    },
+                        Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
+                    }
+                },
                 entryCount: 830);
         }
 
@@ -3868,19 +3868,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 os => os.GroupBy(o => o.CustomerID).OrderBy(g => g.Key).Select(g => new { Foo = "Foo", Group = g }),
                 asserter:
                 (l2oResults, efResults) =>
+                {
+                    Assert.Equal(l2oResults.Count, efResults.Count);
+                    for (var i = 0; i < l2oResults.Count; i++)
                     {
-                        Assert.Equal(l2oResults.Count, efResults.Count);
-                        for (var i = 0; i < l2oResults.Count; i++)
-                        {
-                            dynamic l2oResult = l2oResults[i];
-                            dynamic efResult = efResults[i];
+                        dynamic l2oResult = l2oResults[i];
+                        dynamic efResult = efResults[i];
 
-                            Assert.Equal(l2oResult.Foo, l2oResult.Foo);
-                            IGrouping<string, Order> l2oGrouping = l2oResult.Group;
-                            IGrouping<string, Order> efGrouping = efResult.Group;
-                            Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
-                        }
-                    },
+                        Assert.Equal(l2oResult.Foo, l2oResult.Foo);
+                        IGrouping<string, Order> l2oGrouping = l2oResult.Group;
+                        IGrouping<string, Order> efGrouping = efResult.Group;
+                        Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
+                    }
+                },
                 entryCount: 830);
         }
 
@@ -3891,16 +3891,16 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                 os => os.GroupBy(o => o.CustomerID).OrderBy(g => g.Key).Take(5).Skip(3).Distinct(),
                 asserter:
                 (l2oResults, efResults) =>
+                {
+                    var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+
+                    foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
                     {
-                        var efGroupings = efResults.Cast<IGrouping<string, Order>>().ToList();
+                        var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
 
-                        foreach (IGrouping<string, Order> l2oGrouping in l2oResults)
-                        {
-                            var efGrouping = efGroupings.Single(efg => efg.Key == l2oGrouping.Key);
-
-                            Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
-                        }
-                    },
+                        Assert.Equal(l2oGrouping.OrderBy(p => p.OrderID), efGrouping.OrderBy(p => p.OrderID));
+                    }
+                },
                 entryCount: 31);
         }
 
@@ -4774,11 +4774,35 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         }
 
         [ConditionalFact]
+        public virtual void Where_math_round_decimals()
+        {
+            AssertQuery<OrderDetail>(
+                ods => ods.Where(od => Math.Round(od.UnitPrice, 1) > 15m),
+                entryCount: 1336);
+        }
+
+        [ConditionalFact]
         public virtual void Where_math_truncate()
         {
             AssertQuery<OrderDetail>(
                 ods => ods.Where(od => Math.Truncate(od.UnitPrice) > 10),
                 entryCount: 1658);
+        }
+
+        [ConditionalFact]
+        public virtual void Where_math_max()
+        {
+            AssertQuery<OrderDetail>(
+                ods => ods.Where(od => Math.Max(od.UnitPrice, 5) > 10),
+                entryCount: 1677);
+        }
+
+        [ConditionalFact]
+        public virtual void Where_math_min()
+        {
+            AssertQuery<OrderDetail>(
+                ods => ods.Where(od => Math.Min(od.UnitPrice, 50) > 10),
+                entryCount: 1677);
         }
 
         [ConditionalFact]
@@ -6604,6 +6628,99 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         {
             return source?.Count() == 0 ? new[] { default(TElement) } : source;
         }
+
+
+        #region DateTime Overloads
+
+        [ConditionalFact]
+        public virtual void DateTime_AddYears()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddYears(3).Year == 1999)).ToList();
+
+                Assert.Equal(152, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddMonths()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddMonths(2).Month == 5)).ToList();
+
+                Assert.Equal(103, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddDays()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddDays(2).Day == 5)).ToList();
+
+                Assert.Equal(30, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddHours()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddHours(11).Hour == 11)).ToList();
+
+                Assert.Equal(830, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddMinutes()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddMinutes(7).Minute == 7)).ToList();
+
+                Assert.Equal(830, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddSeconds()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddSeconds(6).Second == 6)).ToList();
+
+                Assert.Equal(830, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_AddMilliSeconds()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddMilliseconds(843).Millisecond == 843)).ToList();
+
+                Assert.Equal(830, results.Count);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void DateTime_Add_Chained()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (context.Orders.Where(o => o.OrderDate.Value.AddYears(1).AddDays(1).AddHours(1).AddMinutes(1).AddSeconds(6).Second == 6)).ToList();
+
+                Assert.Equal(830, results.Count);
+            }
+        }
+
+        #endregion
 
         protected NorthwindContext CreateContext() => Fixture.CreateContext();
 

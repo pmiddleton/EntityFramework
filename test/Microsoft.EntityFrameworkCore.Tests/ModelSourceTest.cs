@@ -28,7 +28,7 @@ namespace Microsoft.EntityFrameworkCore.Tests
                 });
 
             var model = CreateDefaultModelSource(setFinderMock.Object)
-                .GetModel(new Mock<DbContext>().Object, null, new NoopModelValidator());
+                .GetModel(new Mock<DbContext>().Object, null, new NoopModelValidator(), null);
 
             Assert.Equal(
                 new[] { typeof(SetA).DisplayName(), typeof(SetB).DisplayName() },
@@ -58,12 +58,12 @@ namespace Microsoft.EntityFrameworkCore.Tests
         {
             var modelSource = CreateDefaultModelSource(new DbSetFinder());
 
-            var model1 = modelSource.GetModel(new Context1(), null, new NoopModelValidator());
-            var model2 = modelSource.GetModel(new Context2(), null, new NoopModelValidator());
+            var model1 = modelSource.GetModel(new Context1(), null, new NoopModelValidator(), null);
+            var model2 = modelSource.GetModel(new Context2(), null, new NoopModelValidator(), null);
 
             Assert.NotSame(model1, model2);
-            Assert.Same(model1, modelSource.GetModel(new Context1(), null, new NoopModelValidator()));
-            Assert.Same(model2, modelSource.GetModel(new Context2(), null, new NoopModelValidator()));
+            Assert.Same(model1, modelSource.GetModel(new Context1(), null, new NoopModelValidator(), null));
+            Assert.Same(model2, modelSource.GetModel(new Context2(), null, new NoopModelValidator(), null));
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Tests
         {
             var modelSource = CreateDefaultModelSource(new DbSetFinder());
 
-            var model = modelSource.GetModel(new Context1(), null, new NoopModelValidator());
+            var model = modelSource.GetModel(new Context1(), null, new NoopModelValidator(), null);
 
             Assert.StartsWith("1.2.0", model.GetProductVersion(), StringComparison.OrdinalIgnoreCase);
         }

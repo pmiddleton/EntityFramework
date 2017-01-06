@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Parsing;
+using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 
 // ReSharper disable SwitchStatementMissingSomeCases
 namespace Microsoft.EntityFrameworkCore.Query.Sql
@@ -474,19 +475,19 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
             switch (arguments.NodeType)
             {
                 case ExpressionType.Parameter:
-                {
-                    var parameterExpression = (ParameterExpression)arguments;
-
-                    object parameterValue;
-                    if (parameters.TryGetValue(parameterExpression.Name, out parameterValue))
                     {
-                        var argumentValues = (object[])parameterValue;
+                        var parameterExpression = (ParameterExpression)arguments;
 
-                        substitutions = new string[argumentValues.Length];
+                        object parameterValue;
+                        if (parameters.TryGetValue(parameterExpression.Name, out parameterValue))
+                        {
+                            var argumentValues = (object[])parameterValue;
 
-                        _relationalCommandBuilder.AddCompositeParameter(
-                            parameterExpression.Name,
-                            builder =>
+                            substitutions = new string[argumentValues.Length];
+
+                            _relationalCommandBuilder.AddCompositeParameter(
+                                parameterExpression.Name,
+                                builder =>
                                 {
                                     for (var i = 0; i < argumentValues.Length; i++)
                                     {
@@ -495,71 +496,71 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
                                         substitutions[i] = SqlGenerator.GenerateParameterName(parameterName);
 
                                         builder.AddParameter(
-                                            parameterName,
-                                            substitutions[i]);
+                                        parameterName,
+                                        substitutions[i]);
                                     }
                                 });
-                    }
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case ExpressionType.Constant:
-                {
-                    var constantExpression = (ConstantExpression)arguments;
-                    var argumentValues = (object[])constantExpression.Value;
-
-                    substitutions = new string[argumentValues.Length];
-
-                    for (var i = 0; i < argumentValues.Length; i++)
                     {
-                        var value = argumentValues[i];
-                        substitutions[i] = SqlGenerator.GenerateLiteral(value, GetTypeMapping(value));
-                    }
+                        var constantExpression = (ConstantExpression)arguments;
+                        var argumentValues = (object[])constantExpression.Value;
 
-                    break;
-                }
-                case ExpressionType.NewArrayInit:
-                {
-                    var newArrayExpression = (NewArrayExpression)arguments;
+                        substitutions = new string[argumentValues.Length];
 
-                    substitutions = new string[newArrayExpression.Expressions.Count];
-
-                    for (var i = 0; i < newArrayExpression.Expressions.Count; i++)
-                    {
-                        var expression = newArrayExpression.Expressions[i].RemoveConvert();
-
-                        // ReSharper disable once SwitchStatementMissingSomeCases
-                        switch (expression.NodeType)
+                        for (var i = 0; i < argumentValues.Length; i++)
                         {
-                            case ExpressionType.Constant:
+                            var value = argumentValues[i];
+                            substitutions[i] = SqlGenerator.GenerateLiteral(value, GetTypeMapping(value));
+                        }
+
+                        break;
+                    }
+                case ExpressionType.NewArrayInit:
+                    {
+                        var newArrayExpression = (NewArrayExpression)arguments;
+
+                        substitutions = new string[newArrayExpression.Expressions.Count];
+
+                        for (var i = 0; i < newArrayExpression.Expressions.Count; i++)
+                        {
+                            var expression = newArrayExpression.Expressions[i].RemoveConvert();
+
+                            // ReSharper disable once SwitchStatementMissingSomeCases
+                            switch (expression.NodeType)
                             {
-                                var value = ((ConstantExpression)expression).Value;
-                                substitutions[i]
-                                    = SqlGenerator
-                                        .GenerateLiteral(value, GetTypeMapping(value));
+                                case ExpressionType.Constant:
+                                    {
+                                        var value = ((ConstantExpression)expression).Value;
+                                        substitutions[i]
+                                            = SqlGenerator
+                                                .GenerateLiteral(value, GetTypeMapping(value));
 
-                                break;
-                            }
-                            case ExpressionType.Parameter:
-                            {
-                                var parameter = (ParameterExpression)expression;
+                                        break;
+                                    }
+                                case ExpressionType.Parameter:
+                                    {
+                                        var parameter = (ParameterExpression)expression;
 
-                                if (_parametersValues.ContainsKey(parameter.Name))
-                                {
-                                    substitutions[i] = _sqlGenerationHelper.GenerateParameterName(parameter.Name);
+                                        if (_parametersValues.ContainsKey(parameter.Name))
+                                        {
+                                            substitutions[i] = _sqlGenerationHelper.GenerateParameterName(parameter.Name);
 
-                                    _relationalCommandBuilder.AddParameter(
-                                        parameter.Name,
-                                        substitutions[i]);
-                                }
+                                            _relationalCommandBuilder.AddParameter(
+                                                parameter.Name,
+                                                substitutions[i]);
+                                        }
 
-                                break;
+                                        break;
+                                    }
                             }
                         }
-                    }
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             if (substitutions != null)
@@ -1085,62 +1086,62 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
             switch (expression.NodeType)
             {
                 case ExpressionType.Coalesce:
-                {
-                    _relationalCommandBuilder.Append("COALESCE(");
-                    Visit(expression.Left);
-                    _relationalCommandBuilder.Append(", ");
-                    Visit(expression.Right);
-                    _relationalCommandBuilder.Append(")");
+                    {
+                        _relationalCommandBuilder.Append("COALESCE(");
+                        Visit(expression.Left);
+                        _relationalCommandBuilder.Append(", ");
+                        Visit(expression.Right);
+                        _relationalCommandBuilder.Append(")");
 
-                    break;
-                }
+                        break;
+                    }
                 default:
-                {
-                    var parentTypeMapping = _typeMapping;
-
-                    if (expression.IsComparisonOperation()
-                        || (expression.NodeType == ExpressionType.Add))
                     {
-                        _typeMapping
-                            = InferTypeMappingFromColumn(expression.Left)
-                              ?? InferTypeMappingFromColumn(expression.Right)
-                              ?? parentTypeMapping;
+                        var parentTypeMapping = _typeMapping;
+
+                        if (expression.IsComparisonOperation()
+                            || (expression.NodeType == ExpressionType.Add))
+                        {
+                            _typeMapping
+                                = InferTypeMappingFromColumn(expression.Left)
+                                  ?? InferTypeMappingFromColumn(expression.Right)
+                                  ?? parentTypeMapping;
+                        }
+
+                        var needParens = expression.Left.RemoveConvert() is BinaryExpression;
+
+                        if (needParens)
+                        {
+                            _relationalCommandBuilder.Append("(");
+                        }
+
+                        Visit(expression.Left);
+
+                        if (needParens)
+                        {
+                            _relationalCommandBuilder.Append(")");
+                        }
+
+                        _relationalCommandBuilder.Append(GenerateOperator(expression));
+
+                        needParens = expression.Right.RemoveConvert() is BinaryExpression;
+
+                        if (needParens)
+                        {
+                            _relationalCommandBuilder.Append("(");
+                        }
+
+                        Visit(expression.Right);
+
+                        if (needParens)
+                        {
+                            _relationalCommandBuilder.Append(")");
+                        }
+
+                        _typeMapping = parentTypeMapping;
+
+                        break;
                     }
-
-                    var needParens = expression.Left.RemoveConvert() is BinaryExpression;
-
-                    if (needParens)
-                    {
-                        _relationalCommandBuilder.Append("(");
-                    }
-
-                    Visit(expression.Left);
-
-                    if (needParens)
-                    {
-                        _relationalCommandBuilder.Append(")");
-                    }
-
-                    _relationalCommandBuilder.Append(GenerateOperator(expression));
-
-                    needParens = expression.Right.RemoveConvert() is BinaryExpression;
-
-                    if (needParens)
-                    {
-                        _relationalCommandBuilder.Append("(");
-                    }
-
-                    Visit(expression.Right);
-
-                    if (needParens)
-                    {
-                        _relationalCommandBuilder.Append(")");
-                    }
-
-                    _typeMapping = parentTypeMapping;
-                    
-                    break;
-                }
             }
 
             return expression;
@@ -1263,7 +1264,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         /// </returns>
         public virtual Expression VisitSqlFunction(SqlFunctionExpression sqlFunctionExpression)
         {
-            GenerateFunctionCall(sqlFunctionExpression.FunctionName, sqlFunctionExpression.Arguments);
+            GenerateFunctionCall(sqlFunctionExpression.FunctionName, sqlFunctionExpression.Arguments, sqlFunctionExpression.Schema);
 
             return sqlFunctionExpression;
         }
@@ -1271,13 +1272,24 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         /// <summary>
         ///     Generates a SQL function call.
         /// </summary>
+        /// <param name="schema">The function schema</param>
         /// <param name="functionName">The function name</param>
         /// <param name="arguments">The function arguments</param>
         protected virtual void GenerateFunctionCall(
-            [NotNull] string functionName, [NotNull] IReadOnlyList<Expression> arguments)
+            [NotNull] string functionName, [NotNull] IReadOnlyList<Expression> arguments,
+            [CanBeNull] string schema = null)
         {
             Check.NotEmpty(functionName, nameof(functionName));
             Check.NotNull(arguments, nameof(arguments));
+
+            if (!string.IsNullOrWhiteSpace(schema))
+            {
+                _relationalCommandBuilder.Append(_sqlGenerationHelper.DelimitIdentifier(schema))
+                    .Append(".");
+            }
+
+            var parentTypeMapping = _typeMapping;
+            _typeMapping = null;
 
             _relationalCommandBuilder.Append(functionName);
             _relationalCommandBuilder.Append("(");
@@ -1285,6 +1297,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
             VisitJoin(arguments);
 
             _relationalCommandBuilder.Append(")");
+
+            _typeMapping = parentTypeMapping;
         }
 
         /// <summary>
@@ -1336,52 +1350,54 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
             switch (expression.NodeType)
             {
                 case ExpressionType.Not:
-                {
-                    var inExpression = expression.Operand as InExpression;
-
-                    if (inExpression != null)
                     {
-                        return VisitNotIn(inExpression);
+                        var inExpression = expression.Operand as InExpression;
+
+                        if (inExpression != null)
+                        {
+                            return VisitNotIn(inExpression);
+                        }
+
+                        var isNullExpression = expression.Operand as IsNullExpression;
+
+                        if (isNullExpression != null)
+                        {
+                            return VisitIsNotNull(isNullExpression);
+                        }
+
+                        if (expression.Operand is ExistsExpression)
+                        {
+                            _relationalCommandBuilder.Append("NOT ");
+
+                            Visit(expression.Operand);
+
+                            return expression;
+                        }
+
+                        _relationalCommandBuilder.Append("NOT (");
+
+                        Visit(expression.Operand);
+
+                        _relationalCommandBuilder.Append(")");
+
+                        return expression;
                     }
-
-                    var isNullExpression = expression.Operand as IsNullExpression;
-
-                    if (isNullExpression != null)
+                case ExpressionType.Convert:
                     {
-                        return VisitIsNotNull(isNullExpression);
-                    }
-
-                    if (expression.Operand is ExistsExpression)
-                    {
-                        _relationalCommandBuilder.Append("NOT ");
-
                         Visit(expression.Operand);
 
                         return expression;
                     }
-
-                    _relationalCommandBuilder.Append("NOT (");
-
-                    Visit(expression.Operand);
-
-                    _relationalCommandBuilder.Append(")");
-
-                    return expression;
-                }
-                case ExpressionType.Convert:
-                {
-                    Visit(expression.Operand);
-
-                    return expression;
-                }
                 case ExpressionType.Negate:
-                {
-                    _relationalCommandBuilder.Append("-");
+                    {
+                        _relationalCommandBuilder.Append("-(");
 
-                    Visit(expression.Operand);
+                        Visit(expression.Operand);
 
-                    return expression;
-                }
+                        _relationalCommandBuilder.Append(")");
+
+                        return expression;
+                    }
             }
 
             return base.VisitUnary(expression);
@@ -1462,6 +1478,27 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         }
 
         /// <summary>
+        ///     Visits an Extension expression.
+        /// </summary>
+        /// <param name="expression"> The extension parameter expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        protected override Expression VisitExtension(Expression expression)
+        {
+            if (expression is IdentifierExpression)
+            {
+                var value = (expression as IdentifierExpression).Value;
+
+                _relationalCommandBuilder.Append(value == null
+                                ? "NULL"
+                                : value);
+            }
+
+            return expression;
+        }
+
+        /// <summary>
         ///     Infers a type mapping from a column expression.
         /// </summary>
         /// <param name="expression"> The expression to infer a type mapping for. </param>
@@ -1510,31 +1547,31 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
                 case ExpressionType.Add:
                     return expression.Type == typeof(string) ? " " + ConcatOperator + " " : " + ";
                 case ExpressionType.Extension:
-                {
-                    var asStringCompareExpression = expression as StringCompareExpression;
-                    if (asStringCompareExpression != null)
                     {
-                        return GenerateBinaryOperator(asStringCompareExpression.Operator);
+                        var asStringCompareExpression = expression as StringCompareExpression;
+                        if (asStringCompareExpression != null)
+                        {
+                            return GenerateBinaryOperator(asStringCompareExpression.Operator);
+                        }
+                        goto default;
                     }
-                    goto default;
-                }
                 default:
-                {
-                    string op;
-                    if (expression is BinaryExpression)
                     {
-                        if (!TryGenerateBinaryOperator(expression.NodeType, out op))
+                        string op;
+                        if (expression is BinaryExpression)
+                        {
+                            if (!TryGenerateBinaryOperator(expression.NodeType, out op))
+                            {
+                                throw new ArgumentOutOfRangeException();
+                            }
+                            return op;
+                        }
+                        if (!_operatorMap.TryGetValue(expression.NodeType, out op))
                         {
                             throw new ArgumentOutOfRangeException();
                         }
                         return op;
                     }
-                    if (!_operatorMap.TryGetValue(expression.NodeType, out op))
-                    {
-                        throw new ArgumentOutOfRangeException();
-                    }
-                    return op;
-                }
             }
         }
 

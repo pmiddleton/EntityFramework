@@ -118,5 +118,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         ///     re-use of provider services.
         /// </summary>
         void Reset();
+
+        /// <summary>
+        ///     Gets the <see cref="IDbFunctionInitializer" /> for the database provider.
+        /// </summary>
+        IDbFunctionInitializer DbFunctionInitializer { get; }
     }
 }

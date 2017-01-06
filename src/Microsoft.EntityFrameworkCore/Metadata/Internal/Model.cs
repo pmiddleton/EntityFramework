@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using System.Reflection;
 
 namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 {
@@ -27,6 +28,9 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 
         private readonly Dictionary<string, ConfigurationSource> _ignoredTypeNames
             = new Dictionary<string, ConfigurationSource>();
+
+        private readonly Dictionary<MethodInfo, DbFunction> _dbFunctions
+            = new Dictionary<MethodInfo, DbFunction>();
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -72,6 +76,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual IEnumerable<EntityType> GetEntityTypes() => _entityTypes.Values;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual IEnumerable<DbFunction> GetDbFunctions() => _dbFunctions.Values;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -229,6 +239,47 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        public virtual DbFunction FindDbFunction([NotNull] MethodInfo methodInfo)
+        {
+            Check.NotNull(methodInfo, nameof(methodInfo));
+
+            DbFunction dbFunction;
+
+            return _dbFunctions.TryGetValue(methodInfo, out dbFunction)
+                ? dbFunction
+                : null;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual DbFunction AddDbFunction([NotNull] MethodInfo dbFunctionMethod,
+            bool runConventions = true)
+        {
+            Check.NotNull(dbFunctionMethod, nameof(dbFunctionMethod));
+
+            var dbFunction = new DbFunction(dbFunctionMethod, this);
+
+            var previousLength = _dbFunctions.Count;
+            _dbFunctions[dbFunctionMethod] = dbFunction;
+            if (previousLength == _dbFunctions.Count)
+            {
+                throw new InvalidOperationException(CoreStrings.DuplicateDbFunction(dbFunctionMethod));
+            }
+
+            if (runConventions)
+            {
+                return ConventionDispatcher.OnDbFunctionAdded(dbFunction.Builder)?.Metadata;
+            }
+
+            return dbFunction;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public virtual void Ignore([NotNull] Type type,
             ConfigurationSource configurationSource = ConfigurationSource.Explicit,
             bool runConventions = true)
@@ -316,6 +367,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 
         IEntityType IModel.FindEntityType(string name) => FindEntityType(name);
         IEnumerable<IEntityType> IModel.GetEntityTypes() => GetEntityTypes();
+        IEnumerable<IDbFunction> IModel.GetDbFunctions() => GetDbFunctions();
 
         IMutableEntityType IMutableModel.AddEntityType(string name) => AddEntityType(name);
         IMutableEntityType IMutableModel.AddEntityType(Type type) => AddEntityType(type);

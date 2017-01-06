@@ -173,21 +173,21 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
             CreateAndSeedDatabase(databaseName,
                 () => createContext(CreateServiceProvider(true), databaseName),
                 context =>
-                    {
-                        context.SeedUsingFKs(false);
+                {
+                    context.SeedUsingFKs(false);
 
-                        var stateManager = context.ChangeTracker.GetInfrastructure();
+                    var stateManager = context.ChangeTracker.GetInfrastructure();
 
-                        var beforeSnapshot = stateManager.Entries.SelectMany(e => e.EntityType.GetProperties().Select(p => e[p])).ToList();
+                    var beforeSnapshot = stateManager.Entries.SelectMany(e => e.EntityType.GetProperties().Select(p => e[p])).ToList();
 
-                        Assert.Equal(
-                            "Aborting.",
-                            Assert.Throws<Exception>(() => context.SaveChanges()).Message);
+                    Assert.Equal(
+                        "Aborting.",
+                        Assert.Throws<Exception>(() => context.SaveChanges()).Message);
 
-                        var afterSnapshot = stateManager.Entries.SelectMany(e => e.EntityType.GetProperties().Select(p => e[p])).ToList();
+                    var afterSnapshot = stateManager.Entries.SelectMany(e => e.EntityType.GetProperties().Select(p => e[p])).ToList();
 
-                        Assert.Equal(beforeSnapshot, afterSnapshot);
-                    });
+                    Assert.Equal(beforeSnapshot, afterSnapshot);
+                });
         }
 
         [Fact]
@@ -1593,26 +1593,26 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
         private SnapshotMonsterContext CreateSnapshotMonsterContext(IServiceProvider serviceProvider, string databaseName)
             => new SnapshotMonsterContext(new DbContextOptionsBuilder(CreateOptions(databaseName)).UseInternalServiceProvider(serviceProvider).Options,
                 b =>
-                    {
-                        b.HasChangeTrackingStrategy(ChangeTrackingStrategy.Snapshot);
-                        OnModelCreating<SnapshotMonsterContext.Message, SnapshotMonsterContext.ProductPhoto, SnapshotMonsterContext.ProductReview>(b);
-                    });
+                {
+                    b.HasChangeTrackingStrategy(ChangeTrackingStrategy.Snapshot);
+                    OnModelCreating<SnapshotMonsterContext.Message, SnapshotMonsterContext.ProductPhoto, SnapshotMonsterContext.ProductReview>(b);
+                });
 
         private ChangedChangingMonsterContext CreateChangedChangingMonsterContext(IServiceProvider serviceProvider, string databaseName)
             => new ChangedChangingMonsterContext(new DbContextOptionsBuilder(CreateOptions(databaseName)).UseInternalServiceProvider(serviceProvider).Options,
                 b =>
-                    {
-                        b.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotifications);
-                        OnModelCreating<ChangedChangingMonsterContext.Message, ChangedChangingMonsterContext.ProductPhoto, ChangedChangingMonsterContext.ProductReview>(b);
-                    });
+                {
+                    b.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangingAndChangedNotifications);
+                    OnModelCreating<ChangedChangingMonsterContext.Message, ChangedChangingMonsterContext.ProductPhoto, ChangedChangingMonsterContext.ProductReview>(b);
+                });
 
         private ChangedOnlyMonsterContext CreateChangedOnlyMonsterContext(IServiceProvider serviceProvider, string databaseName)
             => new ChangedOnlyMonsterContext(new DbContextOptionsBuilder(CreateOptions(databaseName)).UseInternalServiceProvider(serviceProvider).Options,
                 b =>
-                    {
-                        b.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangedNotifications);
-                        OnModelCreating<ChangedOnlyMonsterContext.Message, ChangedOnlyMonsterContext.ProductPhoto, ChangedOnlyMonsterContext.ProductReview>(b);
-                    });
+                {
+                    b.HasChangeTrackingStrategy(ChangeTrackingStrategy.ChangedNotifications);
+                    OnModelCreating<ChangedOnlyMonsterContext.Message, ChangedOnlyMonsterContext.ProductPhoto, ChangedOnlyMonsterContext.ProductReview>(b);
+                });
 
         public virtual void OnModelCreating<TMessage, TProductPhoto, TProductReview>(ModelBuilder builder)
             where TMessage : class, IMessage

@@ -506,15 +506,15 @@ namespace Microsoft.EntityFrameworkCore.Tests
             Action<DbContext, object[]> productAdder, EntityState expectedState)
             => TrackMultipleEntitiesTest(
                 (c, e) =>
-                    {
-                        categoryAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    categoryAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 (c, e) =>
-                    {
-                        productAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    productAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 expectedState);
 
         private static async Task TrackMultipleEntitiesTest(
@@ -648,15 +648,15 @@ namespace Microsoft.EntityFrameworkCore.Tests
             Action<DbContext, object[]> productAdder, EntityState expectedState)
             => TrackMultipleEntitiesDefaultValuesTest(
                 (c, e) =>
-                    {
-                        categoryAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    categoryAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 (c, e) =>
-                    {
-                        productAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    productAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 expectedState);
 
         // Issue #3890
@@ -839,15 +839,15 @@ namespace Microsoft.EntityFrameworkCore.Tests
             Action<DbContext, IEnumerable<object>> productAdder, EntityState expectedState)
             => TrackMultipleEntitiesTestEnumerable(
                 (c, e) =>
-                    {
-                        categoryAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    categoryAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 (c, e) =>
-                    {
-                        productAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    productAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 expectedState);
 
         private static async Task TrackMultipleEntitiesTestEnumerable(
@@ -981,15 +981,15 @@ namespace Microsoft.EntityFrameworkCore.Tests
             Action<DbContext, IEnumerable<object>> productAdder, EntityState expectedState)
             => TrackMultipleEntitiesDefaultValueTestEnumerable(
                 (c, e) =>
-                    {
-                        categoryAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    categoryAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 (c, e) =>
-                    {
-                        productAdder(c, e);
-                        return Task.FromResult(0);
-                    },
+                {
+                    productAdder(c, e);
+                    return Task.FromResult(0);
+                },
                 expectedState);
 
         // Issue #3890
@@ -1153,10 +1153,10 @@ namespace Microsoft.EntityFrameworkCore.Tests
             EntityState initialState,
             EntityState expectedState)
             => ChangeStateWithMethod((c, e) =>
-                {
-                    action(c, e);
-                    return Task.FromResult(0);
-                },
+            {
+                action(c, e);
+                return Task.FromResult(0);
+            },
                 initialState,
                 expectedState);
 
@@ -2363,7 +2363,7 @@ namespace Microsoft.EntityFrameworkCore.Tests
 
         private class FakeModelSource : IModelSource
         {
-            public virtual IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator = null)
+            public virtual IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator = null, IDbFunctionInitializer dbFunctionInitialzer = null)
                 => null;
         }
 
@@ -4895,10 +4895,10 @@ namespace Microsoft.EntityFrameworkCore.Tests
                 Assert.Equal(
                     CoreStrings.NonGenericOptions(nameof(NonGenericOptions2)),
                     Assert.Throws<InvalidOperationException>(() =>
-                        {
-                            serviceScope.ServiceProvider.GetService<NonGenericOptions1>();
-                            serviceScope.ServiceProvider.GetService<NonGenericOptions2>();
-                        }).Message);
+                    {
+                        serviceScope.ServiceProvider.GetService<NonGenericOptions1>();
+                        serviceScope.ServiceProvider.GetService<NonGenericOptions2>();
+                    }).Message);
             }
         }
 
@@ -5481,21 +5481,21 @@ namespace Microsoft.EntityFrameworkCore.Tests
             {
                 modelBuilder.Entity<TestClass>(
                     x =>
-                        {
-                            x.Property<string>("AssemblyName");
-                            x.HasKey("AssemblyName", nameof(TestClass.Name));
-                            x.HasOne(c => c.Assembly).WithMany(a => a.Classes)
-                                .HasForeignKey("AssemblyName");
-                        });
+                    {
+                        x.Property<string>("AssemblyName");
+                        x.HasKey("AssemblyName", nameof(TestClass.Name));
+                        x.HasOne(c => c.Assembly).WithMany(a => a.Classes)
+                            .HasForeignKey("AssemblyName");
+                    });
 
                 modelBuilder.Entity<Test>(
                     x =>
-                        {
-                            x.Property<string>("AssemblyName");
-                            x.HasKey("AssemblyName", "ClassName", nameof(Test.Name));
-                            x.HasOne(t => t.Class).WithMany(c => c.Tests)
-                                .HasForeignKey("AssemblyName", "ClassName");
-                        });
+                    {
+                        x.Property<string>("AssemblyName");
+                        x.HasKey("AssemblyName", "ClassName", nameof(Test.Name));
+                        x.HasOne(t => t.Class).WithMany(c => c.Tests)
+                            .HasForeignKey("AssemblyName", "ClassName");
+                    });
             }
         }
     }

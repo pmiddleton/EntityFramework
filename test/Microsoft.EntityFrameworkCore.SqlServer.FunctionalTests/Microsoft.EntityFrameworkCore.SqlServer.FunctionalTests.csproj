@@ -49,6 +49,7 @@
     <Compile Include="ChangeTrackingSqlServerTest.cs" />
     <Compile Include="CommandConfigurationTest.cs" />
     <Compile Include="DbContextPoolingTest.cs" />
+    <Compile Include="DbFunctionTests.cs" />
     <Compile Include="ExecutionStrategyTest.cs" />
     <Compile Include="CompiledQueryCacheKeyGeneratorTest.cs" />
     <Compile Include="ComplexNavigationsQuerySqlServerFixture.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="MigrationsSqlServerTest.cs" />
     <Compile Include="MonsterFixupSqlServerTest.cs" />
     <Compile Include="NavigationTest.cs" />
+    <Compile Include="NorthwindDbFunctionSqlServerFixture.cs" />
     <Compile Include="NorthwindQuerySqlServerFixture.cs" />
     <Compile Include="NorthwindRowNumberPagingQuerySqlServerFixture.cs" />
     <Compile Include="NorthwindSprocQuerySqlServerFixture.cs" />
@@ -129,6 +131,7 @@
     <Compile Include="SqlAzure\SqlAzureFundamentalsTest.cs" />
     <Compile Include="SqlExecutorSqlServerTest.cs" />
     <Compile Include="SqlServerConfigPatternsTest.cs" />
+    <Compile Include="SqlServerDbFunctionsNorthwindContext.cs" />
     <Compile Include="Utilities\CollectionExtensions.cs" />
     <Compile Include="Utilities\SqlExceptionFactory.cs" />
     <Compile Include="Utilities\SqlServerDatabaseCleaner.cs" />
@@ -203,6 +206,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DbFunctions.sql" />
     <Content Include="Northwind.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

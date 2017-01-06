@@ -58,7 +58,9 @@
     <Compile Include="..\Shared\StringBuilderExtensions.cs">
       <Link>StringBuilderExtensions.cs</Link>
     </Compile>
+    <Compile Include="DatePart.cs" />
     <Compile Include="Extensions\SqlServerDbContextOptionsExtensions.cs" />
+    <Compile Include="Extensions\SqlServerDbFunctionExtensions.cs" />
     <Compile Include="Extensions\SqlServerServiceCollectionExtensions.cs" />
     <Compile Include="Extensions\SqlServerEntityTypeBuilderExtensions.cs" />
     <Compile Include="Extensions\SqlServerIndexBuilderExtensions.cs" />
@@ -107,34 +109,21 @@
       <DependentUpon>SqlServerStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\InternalsVisibleTo.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerConvertInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerDateTimeInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerDbFunctionsExtensionsInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerGuidInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerMathInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\Initializers\SqlServerStringInitializer.cs" />
+    <Compile Include="Query\DbFunctions\Internal\SqlServerDbFunctionInitalizer.cs" />
     <Compile Include="Query\Expressions\Internal\RowNumberExpression.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerCompositeMemberTranslator.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerCompositeMethodCallTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerContainsOptimizedTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerDateAddTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerConvertTranslator.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerDateTimeDateComponentTranslator.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerDateTimeNowTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerEndsWithOptimizedTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathAbsTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathCeilingTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathFloorTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathPowerTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathRoundTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerMathTruncateTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerNewGuidTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStartsWithOptimizedTranslator.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringLengthTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringReplaceTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringTrimEndTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringIsNullOrWhiteSpaceTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringTrimTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringTrimStartTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringSubstringTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringToLowerTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringToUpperTranslator.cs" />
     <Compile Include="Query\ExpressionTranslators\Internal\SqlServerDateTimeDatePartComponentTranslator.cs" />
-    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerObjectToStringTranslator.cs" />
+    <Compile Include="Query\ExpressionTranslators\Internal\SqlServerStringTrimEndTranslator.cs" />
     <Compile Include="Query\Internal\SqlServerCompiledQueryCacheKeyGenerator.cs" />
     <Compile Include="Query\Internal\SqlServerQueryCompilationContext.cs" />
     <Compile Include="Query\Internal\SqlServerQueryCompilationContextFactory.cs" />

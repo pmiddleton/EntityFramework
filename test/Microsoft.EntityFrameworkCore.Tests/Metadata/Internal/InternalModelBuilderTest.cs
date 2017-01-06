@@ -252,6 +252,23 @@ namespace Microsoft.EntityFrameworkCore.Tests.Metadata.Internal
             Assert.Equal(typeof(Product), orderEntityTypeBuilder.Metadata.GetForeignKeys().Single().PrincipalEntityType.ClrType);
         }
 
+
+        [Fact]
+        public void Can_get_dbFunction_by_methodInfo()
+        {
+            var model = new Model();
+            var modelBuilder = CreateModelBuilder(model);
+
+            var dbFunctionMethod = typeof(string).GetTypeInfo().GetMethod(nameof(string.TrimStart));
+
+            var dbFuncBuilder = modelBuilder.DbFunction(dbFunctionMethod);
+
+            Assert.NotNull(dbFuncBuilder);
+            Assert.NotNull(model.FindDbFunction(dbFunctionMethod));
+            Assert.Same(dbFuncBuilder, modelBuilder.DbFunction(dbFunctionMethod));
+            Assert.Same(dbFuncBuilder, modelBuilder.DbFunction(typeof(string), nameof(string.TrimStart)));
+        }
+
         protected virtual InternalModelBuilder CreateModelBuilder(Model model = null)
             => new InternalModelBuilder(model ?? new Model());
 

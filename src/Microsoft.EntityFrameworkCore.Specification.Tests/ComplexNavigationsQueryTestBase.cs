@@ -528,11 +528,11 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
             AssertQuery<Level1>(
                   l1s =>
                       from e1 in l1s
-                      where e1.OneToOne_Optional_FK.Date.AddDays(10).AddDays(15).AddMonths(2) > new DateTime(2002, 2, 1)
+                      where e1.OneToOne_Optional_FK.Date.AddDays(10).AddDays(15).AddYears(2) > new DateTime(2002, 2, 1)
                       select e1,
                   l1s =>
                       from e1 in l1s
-                      where MaybeScalar<DateTime>(e1.OneToOne_Optional_FK, () => e1.OneToOne_Optional_FK.Date.AddDays(10).AddDays(15).AddMonths(2)) > new DateTime(2000, 2, 1)
+                      where MaybeScalar<DateTime>(e1.OneToOne_Optional_FK, () => e1.OneToOne_Optional_FK.Date.AddDays(10).AddDays(15).AddYears(2)) > new DateTime(2000, 2, 1)
                       select e1,
                   e => e.Id,
                   (e, a) => Assert.Equal(e.Id, a.Id));
@@ -1397,19 +1397,19 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                       }),
                   e => e.Id + " " + e.Name + " " + e.Inner,
                   (e, a) =>
+                  {
+                      Assert.Equal(e.Id, a.Id);
+                      Assert.Equal(e.Name, a.Name);
+                      if (e.Inner == null)
                       {
-                          Assert.Equal(e.Id, a.Id);
-                          Assert.Equal(e.Name, a.Name);
-                          if (e.Inner == null)
-                          {
-                              Assert.Null(a.Inner);
-                          }
-                          else
-                          {
-                              Assert.Equal(e.Inner.Id, a.Inner.Id);
-                              Assert.Equal(e.Inner.Name, a.Inner.Name);
-                          }
-                      });
+                          Assert.Null(a.Inner);
+                      }
+                      else
+                      {
+                          Assert.Equal(e.Inner.Id, a.Inner.Id);
+                          Assert.Equal(e.Inner.Name, a.Inner.Name);
+                      }
+                  });
         }
 
         public class MyOuterDto
@@ -3143,7 +3143,7 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
                     select new { Id = l2.Id, Nane = l1 != null ? l1.Name : null },
                 (l1s, l2s) =>
                     from l2 in l2s
-                    join l1 in l1s.OrderBy(x => Maybe(x.OneToOne_Optional_FK, () => x.OneToOne_Optional_FK.Name)).Take(2) 
+                    join l1 in l1s.OrderBy(x => Maybe(x.OneToOne_Optional_FK, () => x.OneToOne_Optional_FK.Name)).Take(2)
                         on l2.Level1_Optional_Id equals l1.Id into grouping
                     from l1 in grouping.DefaultIfEmpty()
                     select new { Id = l2.Id, Nane = l1 != null ? l1.Name : null },

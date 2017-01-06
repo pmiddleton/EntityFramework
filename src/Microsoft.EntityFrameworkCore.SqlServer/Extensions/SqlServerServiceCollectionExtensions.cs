@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
+using Microsoft.EntityFrameworkCore.Query.DbFunctions.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Query.Sql.Internal;
@@ -74,6 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddSingleton<SqlServerAnnotationProvider>()
                 .AddSingleton<SqlServerMigrationsAnnotationProvider>()
                 .AddScoped<SqlServerModelValidator>()
+                .AddSingleton<SqlServerDbFunctionInitalizer>()
                 .AddScoped<SqlServerConventionSetBuilder>()
                 .AddScoped<ISqlServerUpdateSqlGenerator, SqlServerUpdateSqlGenerator>()
                 .AddScoped<ISqlServerSequenceValueGeneratorFactory, SqlServerSequenceValueGeneratorFactory>()

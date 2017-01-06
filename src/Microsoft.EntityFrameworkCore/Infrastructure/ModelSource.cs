@@ -109,9 +109,10 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// <param name="context"> The context the model is being produced for. </param>
         /// <param name="conventionSetBuilder"> The convention set to use when creating the model. </param>
         /// <param name="validator"> The validator to verify the model can be successfully used with the context. </param>
+        /// <param name="dbFunctionInitalizer"> The dbFunctionInializer used to setup built in database functions. </param>
         /// <returns> The model to be used. </returns>
-        public virtual IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator)
-            => _models.GetOrAdd(ModelCacheKeyFactory.Create(context), k => CreateModel(context, conventionSetBuilder, validator));
+        public virtual IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator, IDbFunctionInitializer dbFunctionInitalizer)
+            => _models.GetOrAdd(ModelCacheKeyFactory.Create(context), k => CreateModel(context, conventionSetBuilder, validator, dbFunctionInitalizer));
 
         /// <summary>
         ///     Creates the model. This method is called when the model was not found in the cache.
@@ -119,11 +120,13 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// <param name="context"> The context the model is being produced for. </param>
         /// <param name="conventionSetBuilder"> The convention set to use when creating the model. </param>
         /// <param name="validator"> The validator to verify the model can be successfully used with the context. </param>
+        /// <param name="dbFunctionInitalizer"> The dbFunctionInializer used to setup built in database functions. </param>
         /// <returns> The model to be used. </returns>
         protected virtual IModel CreateModel(
             [NotNull] DbContext context,
             [CanBeNull] IConventionSetBuilder conventionSetBuilder,
-            [NotNull] IModelValidator validator)
+            [NotNull] IModelValidator validator,
+            [CanBeNull] IDbFunctionInitializer dbFunctionInitalizer)
         {
             Check.NotNull(context, nameof(context));
             Check.NotNull(validator, nameof(validator));
@@ -136,6 +139,10 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             internalModelBuilder.Metadata.SetProductVersion(ProductInfo.GetVersion());
 
             FindSets(modelBuilder, context);
+
+            FindFunctions(modelBuilder, context);
+
+            dbFunctionInitalizer?.Initialize(modelBuilder);
 
             ModelCustomizer.Customize(modelBuilder, context);
 
@@ -170,6 +177,19 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             foreach (var setInfo in SetFinder.FindSets(context))
             {
                 modelBuilder.Entity(setInfo.ClrType);
+            }
+        }
+
+        /// <summary>
+        ///     Adds the user defined database functions found in <see cref="DbContext" /> to the model.
+        /// </summary>
+        /// <param name="modelBuilder"> The <see cref="ModelBuilder"/> being used to build the model. </param>
+        /// <param name="context"> The context to find <see cref="DbSet{TEntity}"/> properties on. </param>
+        protected virtual void FindFunctions([NotNull] ModelBuilder modelBuilder, [NotNull] DbContext context)
+        {
+            foreach (var dbFunctionMethodInfo in DbFunctionFinder.FindFunctions(context))
+            {
+                modelBuilder.DbFunction(dbFunctionMethodInfo);
             }
         }
 

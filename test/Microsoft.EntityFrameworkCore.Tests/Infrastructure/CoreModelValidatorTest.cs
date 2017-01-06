@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Xunit;
+using System.Reflection;
 
 namespace Microsoft.EntityFrameworkCore.Infrastructure.Tests
 {
@@ -331,6 +332,99 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure.Tests
             model.ChangeTrackingStrategy = ChangeTrackingStrategy.Snapshot;
 
             Validate(model);
+        }
+
+
+        [Fact]
+        public virtual void Detects_missing_function_name()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.TrimStart)));
+
+            dbFunc.Name = null;
+
+            VerifyError(CoreStrings.DbFunctionNameEmpty(), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_duplicate_parameter_index()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.TrimStart)));
+
+            dbFunc.AddParameter("a").SetParameterIndex(0);
+            dbFunc.AddParameter("b").SetParameterIndex(0);
+
+            VerifyError(CoreStrings.DbFunctionDuplicateIndex("String.TrimStart"), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_missing_parameter_index()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.TrimStart)));
+
+            dbFunc.AddParameter("a").SetParameterIndex(1);
+
+            VerifyError(CoreStrings.DbFunctionNonContinuousIndex("String.TrimStart"), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_with_non_constant_identifier_parameter()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.TrimStart)));
+
+            var dbParam = dbFunc.AddParameter("a"); ;
+            dbParam.SetParameterIndex(0);
+            dbParam.IsIdentifier = true;
+
+            VerifyError(CoreStrings.DbFunctionIdentifierMustBeCompileTimeConstant("String.TrimStart", dbParam.Name), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_object_parameter_on_static_method()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.IsNullOrEmpty)));
+
+            var dbParam = dbFunc.AddParameter("a"); ;
+            dbParam.SetParameterIndex(0);
+            dbParam.IsObjectParameter = true;
+
+            VerifyError(CoreStrings.DbFunctionObjectParameterOnStaticMethod("String.IsNullOrEmpty", dbParam.Name), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_with_array_parameter_but_no_translate_callback()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.IsNullOrEmpty)));
+
+            var dbParam = dbFunc.AddParameter("a"); ;
+            dbParam.SetParameterIndex(0);
+            dbParam.ParameterType = typeof(string[]);
+
+            VerifyError(CoreStrings.DbFunctionParameterArrayNoTranslate("String.IsNullOrEmpty", dbParam.Name), model);
+        }
+
+        [Fact]
+        public virtual void Detects_function_with_parameter_with_missing_type()
+        {
+            var model = new Model();
+
+            var dbFunc = model.AddDbFunction(typeof(string).GetTypeInfo().GetDeclaredMethod(nameof(string.IsNullOrEmpty)));
+
+            var dbParam = dbFunc.AddParameter("a"); ;
+            dbParam.IsObjectParameter = true;
+
+            VerifyError(CoreStrings.DbFunctionObjectParameterOnStaticMethod("String.IsNullOrEmpty", dbParam.Name), model);
         }
 
         // INotify interfaces not really implemented; just marking the classes to test metadata construction

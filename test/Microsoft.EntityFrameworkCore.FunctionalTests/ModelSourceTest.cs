@@ -67,9 +67,9 @@ namespace Microsoft.EntityFrameworkCore.Specification.Tests
             {
             }
 
-            protected override IModel CreateModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator)
+            protected override IModel CreateModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator, IDbFunctionInitializer dbFunctionInitalizer)
             {
-                var model = base.CreateModel(context, conventionSetBuilder, validator) as Model;
+                var model = base.CreateModel(context, conventionSetBuilder, validator, dbFunctionInitalizer) as Model;
 
                 model["AllYourModelAreBelongTo"] = "Us!";
 

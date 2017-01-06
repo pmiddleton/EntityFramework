@@ -41,5 +41,20 @@ namespace Microsoft.EntityFrameworkCore
         {
             throw new InvalidOperationException(CoreStrings.PropertyMethodInvoked);
         }
+
+        private static DbFunctions _functions = new DbFunctions();
+
+        /// <summary>
+        /// A list of all of the db functions available for your selected data store provider.
+        /// </summary>
+        public static DbFunctions Functions { get { return _functions; } }
+    }
+
+    /// <summary>
+    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+    ///     directly from your code. This API may change or be removed in future releases.
+    /// </summary>
+    public class DbFunctions
+    {
     }
 }

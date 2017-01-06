@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+using Microsoft.EntityFrameworkCore.Query.DbFunctions.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Storage.Internal
 {
@@ -47,5 +48,6 @@ namespace Microsoft.EntityFrameworkCore.Storage.Internal
         public override IMemberTranslator CompositeMemberTranslator => GetService<SqliteCompositeMemberTranslator>();
         public override IMigrationsAnnotationProvider MigrationsAnnotationProvider => GetService<SqliteMigrationsAnnotationProvider>();
         public override IQuerySqlGeneratorFactory QuerySqlGeneratorFactory => GetService<SqliteQuerySqlGeneratorFactory>();
+        public override IDbFunctionInitializer DbFunctionInitializer => GetService<SqliteDbFunctionInitalizer>();
     }
 }

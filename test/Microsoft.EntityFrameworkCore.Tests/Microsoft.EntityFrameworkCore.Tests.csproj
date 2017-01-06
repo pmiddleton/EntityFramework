@@ -123,10 +123,12 @@
     <Compile Include="Metadata\Internal\ClrPropertySetterFactoryTest.cs" />
     <Compile Include="Metadata\Internal\CollectionTypeFactoryTest.cs" />
     <Compile Include="Metadata\Internal\ConfigurationSourceExtensionsTest.cs" />
+    <Compile Include="Metadata\Internal\DbFunctionTests.cs" />
     <Compile Include="Metadata\Internal\EntityMaterializerSourceTest.cs" />
     <Compile Include="Metadata\Internal\EntityTypeTest.cs" />
     <Compile Include="Metadata\Internal\ForeignKeyTest.cs" />
     <Compile Include="Metadata\Internal\IndexTest.cs" />
+    <Compile Include="Metadata\Internal\InternalDbFunctionBuilderTests.cs" />
     <Compile Include="Metadata\Internal\InternalEntityTypeBuilderTest.cs" />
     <Compile Include="Metadata\Internal\InternalIndexBuilderTest.cs" />
     <Compile Include="Metadata\Internal\InternalMetadataBuilderTest.cs" />

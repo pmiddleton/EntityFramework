@@ -20,6 +20,8 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests
         private readonly SqlServerTestStore _testStore = SqlServerNorthwindContext.GetSharedStore();
         private readonly TestSqlLoggerFactory _testSqlLoggerFactory = new TestSqlLoggerFactory();
 
+        public DbContextOptions Options => _options;
+
         public NorthwindQuerySqlServerFixture()
         {
             _options = BuildOptions();
@@ -37,11 +39,13 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests
                 .UseSqlServer(
                     _testStore.ConnectionString,
                     b =>
-                        {
-                            b.ApplyConfiguration();
-                            ConfigureOptions(b);
-                            b.ApplyConfiguration();
-                        }).Options;
+                    {
+                        b.ApplyConfiguration();
+                        ConfigureOptions(b);
+                        b.ApplyConfiguration();
+                    }).Options;
+
+        public string DatabaseName => SqlServerNorthwindContext.DatabaseName;
 
         protected virtual DbContextOptionsBuilder ConfigureOptions(DbContextOptionsBuilder dbContextOptionsBuilder)
             => dbContextOptionsBuilder;

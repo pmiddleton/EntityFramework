@@ -135,8 +135,9 @@ namespace Microsoft.EntityFrameworkCore.Design.Tests.Migrations.Design
 
             public void Reset()
             {
-                
+
             }
+            public IDbFunctionInitializer DbFunctionInitializer => null;
         }
     }
 }

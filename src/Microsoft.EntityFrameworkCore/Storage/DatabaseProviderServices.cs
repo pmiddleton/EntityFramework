@@ -166,5 +166,10 @@ namespace Microsoft.EntityFrameworkCore.Storage
         public virtual void Reset()
         {
         }
+
+        /// <summary>
+        ///     Gets the <see cref="IDbFunctionInitializer" /> for the database provider.
+        /// </summary>
+        public virtual IDbFunctionInitializer DbFunctionInitializer { get; }
     }
 }

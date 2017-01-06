@@ -27,8 +27,8 @@ namespace Microsoft.EntityFrameworkCore.InMemory.FunctionalTests
                 onModelCreating, setFinder, coreConventionSetBuilder, new ModelCustomizer(), new ModelCacheKeyFactory(), coreModelValidator);
         }
 
-        public override IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator)
-            => _testModelSource.GetModel(context, conventionSetBuilder, validator);
+        public override IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator, IDbFunctionInitializer dbFunctionInitialzier)
+            => _testModelSource.GetModel(context, conventionSetBuilder, validator, dbFunctionInitialzier);
 
         public static Func<IServiceProvider, InMemoryModelSource> GetFactory(Action<ModelBuilder> onModelCreating)
             => p => new TestInMemoryModelSource(

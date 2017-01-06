@@ -32,10 +32,10 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
             [NotNull] ISensitiveDataLogger logger,
             bool parameterize)
         {
-            var visitor 
+            var visitor
                 = new ParameterExtractingExpressionVisitor(
-                    evaluatableExpressionFilter, 
-                    queryContext, 
+                    evaluatableExpressionFilter,
+                    queryContext,
                     logger,
                     parameterize);
 
@@ -311,6 +311,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
         private Expression TryExtractParameter(Expression expression)
         {
+            if (expression.Type == typeof(DbFunctions))
+                return expression;
+
             string parameterName;
 
             var parameterValue = Evaluate(expression, out parameterName);
@@ -368,58 +371,58 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
             switch (expression.NodeType)
             {
                 case ExpressionType.MemberAccess:
-                {
-                    var memberExpression = (MemberExpression)expression;
-                    var @object = Evaluate(memberExpression.Expression, out parameterName);
-
-                    var fieldInfo = memberExpression.Member as FieldInfo;
-
-                    if (fieldInfo != null)
                     {
-                        parameterName = parameterName != null
-                            ? parameterName + "_" + fieldInfo.Name
-                            : fieldInfo.Name;
+                        var memberExpression = (MemberExpression)expression;
+                        var @object = Evaluate(memberExpression.Expression, out parameterName);
 
-                        try
+                        var fieldInfo = memberExpression.Member as FieldInfo;
+
+                        if (fieldInfo != null)
                         {
-                            return fieldInfo.GetValue(@object);
+                            parameterName = parameterName != null
+                                ? parameterName + "_" + fieldInfo.Name
+                                : fieldInfo.Name;
+
+                            try
+                            {
+                                return fieldInfo.GetValue(@object);
+                            }
+                            catch
+                            {
+                                // Try again when we compile the delegate
+                            }
                         }
-                        catch
+
+                        var propertyInfo = memberExpression.Member as PropertyInfo;
+
+                        if (propertyInfo != null)
                         {
-                            // Try again when we compile the delegate
+                            parameterName = parameterName != null
+                                ? parameterName + "_" + propertyInfo.Name
+                                : propertyInfo.Name;
+
+                            try
+                            {
+                                return propertyInfo.GetValue(@object);
+                            }
+                            catch
+                            {
+                                // Try again when we compile the delegate
+                            }
                         }
+
+                        break;
                     }
-
-                    var propertyInfo = memberExpression.Member as PropertyInfo;
-
-                    if (propertyInfo != null)
-                    {
-                        parameterName = parameterName != null
-                            ? parameterName + "_" + propertyInfo.Name
-                            : propertyInfo.Name;
-
-                        try
-                        {
-                            return propertyInfo.GetValue(@object);
-                        }
-                        catch
-                        {
-                            // Try again when we compile the delegate
-                        }
-                    }
-
-                    break;
-                }
                 case ExpressionType.Constant:
-                {
-                    return ((ConstantExpression)expression).Value;
-                }
+                    {
+                        return ((ConstantExpression)expression).Value;
+                    }
                 case ExpressionType.Call:
-                {
-                    parameterName = ((MethodCallExpression)expression).Method.Name;
+                    {
+                        parameterName = ((MethodCallExpression)expression).Method.Name;
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             try

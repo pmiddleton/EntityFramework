@@ -26,8 +26,8 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests.Utilities
             _testModelSource = new TestModelSource(onModelCreating, setFinder, coreConventionSetBuilder, new ModelCustomizer(), new ModelCacheKeyFactory(), coreModelValidator);
         }
 
-        public override IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator)
-            => _testModelSource.GetModel(context, conventionSetBuilder, validator);
+        public override IModel GetModel(DbContext context, IConventionSetBuilder conventionSetBuilder, IModelValidator validator, IDbFunctionInitializer dbFunctionInitializer)
+            => _testModelSource.GetModel(context, conventionSetBuilder, validator, dbFunctionInitializer);
 
         public static Func<IServiceProvider, SqlServerModelSource> GetFactory(Action<ModelBuilder> onModelCreating)
             => p => new TestSqlServerModelSource(
