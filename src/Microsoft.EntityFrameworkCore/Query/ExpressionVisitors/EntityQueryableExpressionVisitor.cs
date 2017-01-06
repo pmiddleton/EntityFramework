@@ -9,6 +9,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
 {
@@ -36,6 +37,23 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                && constantExpression.Type.GetGenericTypeDefinition() == typeof(EntityQueryable<>)
                 ? VisitEntityQueryable(((IQueryable)constantExpression.Value).ElementType)
                 : constantExpression;
+
+        /// <summary>
+        ///     Visits Extension <see cref="Expression" /> nodes.
+        /// </summary>
+        /// <param name="node"> The node being visited. </param>
+        /// <returns> An expression to use in place of the node. </returns>
+        protected override Expression VisitExtension(Expression node)
+            => (node as DbFunctionExpression) != null
+                    ? VisitDbFunctionExpression(node as DbFunctionExpression)
+                    : base.VisitExtension(node);
+
+        /// <summary>
+        ///     Visits DB Function type roots.
+        /// </summary>
+        /// <param name="dbFunctionExpression"> The db function of the root. </param>
+        /// <returns> An expression to use in place of the node. </returns>
+        protected abstract Expression VisitDbFunctionExpression([NotNull] DbFunctionExpression dbFunctionExpression);
 
         /// <summary>
         ///     Visits entity type roots.

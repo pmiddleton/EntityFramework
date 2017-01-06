@@ -71,5 +71,82 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.FunctionalTests.TestModels
         {
             throw new NotImplementedException();
         }
+
+        public class ManagersEmployee
+        {
+            [Key]
+            public int EmployeeId { get; set; }
+            public int? ManagerId { get; set; }
+        }
+
+        [DbFunction(Schema = "dbo")]
+        public IQueryable<ManagersEmployee> FindReportsForManager()
+        {
+            return ExecuteTableValuedFunction<ManagersEmployee>(typeof(SqlServerDbFunctionsNorthwindContext).GetTypeInfo().GetDeclaredMethod(nameof(FindReportsForManager)));
+        }
+
+
+        public class OrderByYear
+        {
+            [Key]
+            public int OrderCount { get; set; }
+            public int Year { get; set; }
+        }
+
+        [DbFunction(Schema = "dbo")]
+        public IQueryable<OrderByYear> GetEmployeeOrderCountByYear(int employeeId)
+        {
+            return ExecuteTableValuedFunction<OrderByYear>(new object[] { employeeId });
+            //return ExecuteTableValuedFunction<OrderByYear>(typeof(SqlServerDbFunctionsNorthwindContext).GetMethod(nameof(GetEmployeeOrderCountByYear)), employeeId);
+        }
+
+        //[DbFunction(Schema = "dbo")]
+        public IQueryable<OrderByYear> GetEmployeeOrderCountByYear(Expression<Func<int>> employeeId)
+        {
+            //var mi = typeof(SqlServerDbFunctionsNorthwindContext).GetMethod(nameof(GetEmployeeOrderCountByYear)) ;
+
+            //return ExecuteTableValuedFunction<OrderByYear>(typeof(SqlServerDbFunctionsNorthwindContext).GetMethod(nameof(GetEmployeeOrderCountByYear)), employeeId);
+            return ExecuteTableValuedFunction<OrderByYear>(new object[] { employeeId });
+        }
+
+        public class TopSellingProduct
+        {
+            [Key]
+            public int? ProductId { get; set; }
+            public int? AmountSold { get; set; }
+        }
+
+        [DbFunction(Schema = "dbo")]
+        public IQueryable<TopSellingProduct> GetTopThreeSellingProducts()
+        {
+            return ExecuteTableValuedFunction<TopSellingProduct>(typeof(SqlServerDbFunctionsNorthwindContext).GetTypeInfo().GetDeclaredMethod(nameof(GetTopThreeSellingProducts)));
+        }
+
+        //[DbFunction(Schema = "dbo")]
+        public IQueryable<TopSellingProduct> GetTopThreeSellingProductsForYear(Expression<Func<DateTime>> salesYear)
+        {
+            return ExecuteTableValuedFunction<TopSellingProduct>(new object[] { salesYear });
+            //return ExecuteTableValuedFunction<TopSellingProduct>(typeof(SqlServerDbFunctionsNorthwindContext).GetMethod(nameof(GetTopThreeSellingProductsForYear)), salesYear);
+            //return ExecuteTableValuedFunction<TopSellingProduct>(typeof(SqlServerDbFunctionsNorthwindContext).GetMethod(nameof(GetTopThreeSellingProducts)), salesYear);
+        }
+
+        [DbFunction(Schema = "dbo")]
+        public IQueryable<TopSellingProduct> GetTopThreeSellingProductsForYear(DateTime salesYear)
+        {
+            return ExecuteTableValuedFunction<TopSellingProduct>(typeof(SqlServerDbFunctionsNorthwindContext).GetTypeInfo().GetDeclaredMethod(nameof(GetTopThreeSellingProducts)), salesYear);
+        }
+
+        public class LastOrderDetail
+        {
+            [Key]
+            public int? OrderId { get; set; }
+            public DateTime? OrderDate { get; set; }
+        }
+
+        [DbFunction(Schema = "dbo")]
+        public IQueryable<LastOrderDetail> GetLatestNOrdersForCustomer(int lastNOrder, string customerId)
+        {
+            return ExecuteTableValuedFunction<LastOrderDetail>(typeof(SqlServerDbFunctionsNorthwindContext).GetTypeInfo().GetDeclaredMethod(nameof(GetLatestNOrdersForCustomer)), lastNOrder, customerId);
+        }
     }
 }

@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
@@ -1144,5 +1147,59 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>The entity found, or null.</returns>
         public virtual Task<TEntity> FindAsync<TEntity>([NotNull] object[] keyValues, CancellationToken cancellationToken) where TEntity : class
             => ((IEntityFinder<TEntity>)Finder(typeof(TEntity))).FindAsync(keyValues, cancellationToken);
+
+        /// <summary>
+        ///     Executes a table valued function 
+        /// </summary>
+        /// <param name="callingMethod"> Calling methods <see cref="MethodInfo" /> </param>
+        /// <param name="methodParams"> Parameters for the TVF </param>
+        protected IQueryable<T> ExecuteTableValuedFunction<T>(MethodInfo callingMethod, params object[] methodParams)
+        {
+            var paramExps = methodParams.Select<object, Expression>(mp =>
+            {
+                if ((mp as Expression)?.NodeType == ExpressionType.Lambda)
+                    return Expression.Invoke(mp as Expression);
+
+                return Expression.Constant(mp);
+            });
+
+            return QueryProvider.CreateQuery<T>(
+                   Expression.Call(
+                       Expression.Constant(this),
+                       callingMethod,
+                       paramExps));
+        }
+
+        /// <summary>
+        ///     Executes a table valued function 
+        /// </summary>
+        /// <param name="callerName"> Calling methods <see cref="MethodInfo" /> </param>
+        /// <param name="methodParams"> Parameters for the TVF </param>
+        protected IQueryable<T> ExecuteTableValuedFunction<T>(object[] methodParams, [CallerMemberName] string callerName = "")
+        {
+            var paramTypes = methodParams.Select(mp => (mp as LambdaExpression)?.ReturnType ?? mp.GetType()).ToArray();
+
+            //TODO - test and  clean this up
+            var methodInfo = GetType().GetTypeInfo().GetDeclaredMethods(callerName)
+                                .SingleOrDefault(mi =>
+                                {
+                                    var miParams = mi.GetParameters();
+
+                                    if (paramTypes.Length == miParams.Length)
+                                    {
+                                        for (int i = 0; i < paramTypes.Length; i++)
+                                        {
+                                            if (paramTypes[i] != miParams[i].ParameterType)
+                                                return false;
+                                        }
+
+                                        return true;
+                                    }
+
+                                    return false;
+                                });
+
+            return ExecuteTableValuedFunction<T>(methodInfo, methodParams);
+        }
     }
 }

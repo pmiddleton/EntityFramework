@@ -125,11 +125,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions.Internal
                                                ? Expression.Constant(p.Value)
                                                : pa?.Argument).ToList());
 
-            /*if (_dbFunction.ReturnType.GetTypeInfo().IsGenericType == true
+            if (_dbFunction.ReturnType.GetTypeInfo().IsGenericType == true
                    && _dbFunction.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
             {
                 FunctionType = DbFunctionType.TableValued;
-            }*/
+            }
         }
 
         private Expression GerneateIdentiferExpression(DbFunctionParameter dbFunctionParameter, Expression argunment)

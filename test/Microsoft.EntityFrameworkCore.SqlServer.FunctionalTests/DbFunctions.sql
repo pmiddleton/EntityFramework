@@ -93,3 +93,134 @@ end
 GO
 
 
+IF object_id(N'[FindReportsForManager]', N'TF') IS NOT NULL
+    DROP FUNCTION [FindReportsForManager]
+GO
+
+create function [dbo].FindReportsForManager()
+returns @reports table
+(
+	EmployeeId int not null,
+	ManagerId int null
+)
+as
+begin
+	with FindEmploeeHeirarchyCTE as
+	(
+		SELECT EmployeeID, ReportsTo    
+		FROM Employees 
+		WHERE ReportsTo IS NULL 
+	
+		UNION ALL 
+
+		SELECT e.employeeID, e.ReportsTo 
+		FROM Employees e INNER JOIN FindEmploeeHeirarchyCTE h  
+		ON e.ReportsTo = h.employeeID 
+	)
+
+	insert into @reports
+	select EmployeeID, ReportsTo
+	from FindEmploeeHeirarchyCTE
+
+	return 
+end
+go
+
+IF object_id(N'[GetEmployeeOrderCountByYear]', N'TF') IS NOT NULL
+    DROP FUNCTION [GetEmployeeOrderCountByYear]
+GO
+
+create function [dbo].GetEmployeeOrderCountByYear(@employeeId int)
+returns @reports table
+(
+	OrderCount int not null,
+	Year int not null
+)
+as
+begin
+	
+	insert into @reports
+	select count(orderId), year(orderDate)
+	from orders
+	where employeeId = @employeeId
+	group by employeeId, year(orderDate)
+	order by year(orderDate)
+	
+	return 
+end
+go
+
+
+IF object_id(N'[GetTopThreeSellingProducts]', N'TF') IS NOT NULL
+    DROP FUNCTION [GetTopThreeSellingProducts]
+GO
+
+create function [dbo].GetTopThreeSellingProducts()
+returns @products table
+(
+	ProductId int not null,
+	AmountSold int
+)
+as
+begin
+	
+	insert into @products
+	select top 3 ProductID, sum(quantity) as totalSold
+	from [order details]
+	group by ProductID
+	order by totalSold desc
+
+	return 
+end
+go
+
+
+IF object_id(N'[GetTopThreeSellingProductsForYear]', N'TF') IS NOT NULL
+    DROP FUNCTION [GetTopThreeSellingProductsForYear]
+GO
+
+create function [dbo].GetTopThreeSellingProductsForYear(@salesYear dateTime)
+returns @products table
+(
+	ProductId int not null,
+	AmountSold int
+)
+as
+begin
+	
+	insert into @products
+	select top 3 ProductID, sum(quantity) as totalSold
+	from [order details] od
+	join orders o on od.orderId = o.orderId
+	where year(o.orderDate) = year(@salesYear)
+	group by ProductID
+	order by totalSold desc
+
+	return 
+end
+go
+
+
+
+IF object_id(N'[GetLatestNOrdersForCustomer]', N'TF') IS NOT NULL
+    DROP FUNCTION [GetLatestNOrdersForCustomer]
+GO
+
+create function [dbo].GetLatestNOrdersForCustomer(@lastNOrders int, @customerId nvarchar(5))
+returns @products table
+(
+	OrderId int,
+	OrderDate datetime
+)
+as
+begin
+	
+	insert into @products
+	select top(@lastNOrders) orderId, orderDate
+	from orders
+	where orders.customerid = @customerId
+	order by orderDate desc
+
+	return 
+end
+go

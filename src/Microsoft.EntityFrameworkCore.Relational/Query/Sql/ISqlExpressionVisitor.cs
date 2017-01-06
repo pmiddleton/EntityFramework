@@ -173,5 +173,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         ///     An Expression.
         /// </returns>
         Expression VisitSqlFragment([NotNull] SqlFragmentExpression sqlFragmentExpression);
+
+        /// <summary>
+        ///     Visit a TableValuedSqlFunctionExpression.
+        /// </summary>
+        /// <param name="tableValuedSqlFunctionExpression"> The SQL table valued function expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        Expression VisitTableValuedSqlFunction([NotNull] TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression);
     }
 }

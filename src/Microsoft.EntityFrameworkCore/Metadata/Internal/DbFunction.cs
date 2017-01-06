@@ -209,7 +209,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                 || returnType == typeof(string)
                 || returnType == typeof(DateTime)
                 || returnType == typeof(Guid)
-                || returnType == typeof(Decimal));
+                || returnType == typeof(Decimal)
+                || returnType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IQueryable<>));
         }
     }
 }

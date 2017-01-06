@@ -189,6 +189,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         }
 
         /// <summary>
+        ///     Adds TableValuedSqlFunctionExpression to this SelectExprssion.
+        /// </summary>
+        /// <param name="tableValuedSqlFunctionExpression"> The table expressions. </param>
+        /// /// <param name="createUniqueAlias"> true to create unique alias. </param>
+        public virtual void AddTableValuedSqlFunctionExpression([NotNull] TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression, bool createUniqueAlias = true)
+        {
+            Check.NotNull(tableValuedSqlFunctionExpression, nameof(tableValuedSqlFunctionExpression));
+
+            AddTable(tableValuedSqlFunctionExpression, createUniqueAlias);
+        }
+
+        /// <summary>
         ///     Removes any tables added to this SelectExpression.
         /// </summary>
         public virtual void ClearTables() => _tables.Clear();

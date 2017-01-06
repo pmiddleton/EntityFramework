@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -190,6 +192,13 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             foreach (var dbFunctionMethodInfo in DbFunctionFinder.FindFunctions(context))
             {
                 modelBuilder.DbFunction(dbFunctionMethodInfo);
+
+                //TODO - need a way to represent TVF return types.  Hack it in as an entity for now.
+                if (dbFunctionMethodInfo.ReturnType.GetTypeInfo().IsGenericType == true
+                    && dbFunctionMethodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+                {
+                    modelBuilder.Entity(dbFunctionMethodInfo.ReturnType.GenericTypeArguments[0]);
+                }
             }
         }
 

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Remotion.Linq.Clauses;
+using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 {
@@ -71,6 +72,11 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                 InMemoryQueryModelVisitor.ProjectionQueryMethodInfo,
                 EntityQueryModelVisitor.QueryContextParameter,
                 Expression.Constant(entityType));
+        }
+
+        protected override Expression VisitDbFunctionExpression([NotNull] DbFunctionExpression dbFunctionExpression)
+        {
+            throw new NotImplementedException();
         }
     }
 }

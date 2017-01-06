@@ -1302,6 +1302,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         }
 
         /// <summary>
+        ///     Visits a TableValuedSqlFunctionExpression.
+        /// </summary>
+        /// <param name="tableValuedSqlFunctionExpression"> The SQL function expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        public virtual Expression VisitTableValuedSqlFunction(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
+        {
+            return VisitSqlFunction(tableValuedSqlFunctionExpression.SqlFunctionExpression);
+        }
+
+        /// <summary>
         ///     Visit a SQL ExplicitCastExpression.
         /// </summary>
         /// <param name="explicitCastExpression"> The explicit cast expression. </param>

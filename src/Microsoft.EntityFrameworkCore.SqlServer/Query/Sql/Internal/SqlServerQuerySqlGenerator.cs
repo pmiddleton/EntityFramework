@@ -110,5 +110,25 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
 
             return base.VisitSqlFunction(sqlFunctionExpression);
         }
+
+        /// <summary>
+        ///     Visits a TableValuedSqlFunctionExpression.
+        /// </summary>
+        /// <param name="tableValuedSqlFunctionExpression"> The SQL function expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        public override Expression VisitTableValuedSqlFunction(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
+        {
+            base.VisitTableValuedSqlFunction(tableValuedSqlFunctionExpression);
+
+            if (tableValuedSqlFunctionExpression.Alias != null)
+            {
+                Sql.Append(" AS ")
+                    .Append(SqlGenerator.DelimitIdentifier(tableValuedSqlFunctionExpression.Alias));
+            }
+
+            return tableValuedSqlFunctionExpression;
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         private readonly IMaterializerFactory _materializerFactory;
         private readonly IShaperCommandContextFactory _shaperCommandContextFactory;
         private readonly IRelationalAnnotationProvider _relationalAnnotationProvider;
+        private readonly ISqlTranslatingExpressionVisitorFactory _sqlTranslatingExpressionVisitorFactory;
 
         /// <summary>
         ///     Creates a new instance of <see cref="RelationalEntityQueryableExpressionVisitorFactory" />.
@@ -31,24 +32,28 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         /// <param name="materializerFactory"> The materializer factory. </param>
         /// <param name="shaperCommandContextFactory"> The shaper command context factory. </param>
         /// <param name="relationalAnnotationProvider"> The relational annotation provider. </param>
+        /// <param name="sqlTranslatingExpressionVisitorFactory"> The SQL translating expression visitor factory. </param>
         public RelationalEntityQueryableExpressionVisitorFactory(
             [NotNull] IModel model,
             [NotNull] ISelectExpressionFactory selectExpressionFactory,
             [NotNull] IMaterializerFactory materializerFactory,
             [NotNull] IShaperCommandContextFactory shaperCommandContextFactory,
-            [NotNull] IRelationalAnnotationProvider relationalAnnotationProvider)
+            [NotNull] IRelationalAnnotationProvider relationalAnnotationProvider,
+            [NotNull] ISqlTranslatingExpressionVisitorFactory sqlTranslatingExpressionVisitorFactory)
         {
             Check.NotNull(model, nameof(model));
             Check.NotNull(selectExpressionFactory, nameof(selectExpressionFactory));
             Check.NotNull(materializerFactory, nameof(materializerFactory));
             Check.NotNull(shaperCommandContextFactory, nameof(shaperCommandContextFactory));
             Check.NotNull(relationalAnnotationProvider, nameof(relationalAnnotationProvider));
+            Check.NotNull(sqlTranslatingExpressionVisitorFactory, nameof(sqlTranslatingExpressionVisitorFactory));
 
             _model = model;
             _selectExpressionFactory = selectExpressionFactory;
             _materializerFactory = materializerFactory;
             _shaperCommandContextFactory = shaperCommandContextFactory;
             _relationalAnnotationProvider = relationalAnnotationProvider;
+            _sqlTranslatingExpressionVisitorFactory = sqlTranslatingExpressionVisitorFactory;
         }
 
         /// <summary>
@@ -68,6 +73,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 _shaperCommandContextFactory,
                 _relationalAnnotationProvider,
                 (RelationalQueryModelVisitor)Check.NotNull(queryModelVisitor, nameof(queryModelVisitor)),
+                _sqlTranslatingExpressionVisitorFactory,
                 querySource);
     }
 }
