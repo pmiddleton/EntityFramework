@@ -8,6 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.EntityFrameworkCore.Relational\Microsoft.EntityFrameworkCore.Relational.csproj" />
     <ProjectReference Include="..\Microsoft.EntityFrameworkCore\Microsoft.EntityFrameworkCore.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators;
+using Microsoft.EntityFrameworkCore.Query.DbFunctions.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Query.Sql.Internal;
@@ -69,6 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddSingleton<IRelationalTypeMapper, SqliteTypeMapper>()
                 .TryAddSingleton<ISqlGenerationHelper, SqliteSqlGenerationHelper>()
                 .TryAddSingleton<IMigrationsAnnotationProvider, SqliteMigrationsAnnotationProvider>()
+                .TryAddSingleton<IDbFunctionInitalizer, SqliteDbFunctionInitalizer>()
                 .TryAddScoped<IConventionSetBuilder, SqliteConventionSetBuilder>()
                 .TryAddScoped<IUpdateSqlGenerator, SqliteUpdateSqlGenerator>()
                 .TryAddScoped<IModificationCommandBatchFactory, SqliteModificationCommandBatchFactory>()

@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Query.Expressions;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
 {
@@ -11,26 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
     /// </summary>
     public class SqlServerCompositeMethodCallTranslator : RelationalCompositeMethodCallTranslator
     {
-        private static readonly IMethodCallTranslator[] _methodCallTranslators =
-        {
-            new SqlServerContainsOptimizedTranslator(),
-            new SqlServerConvertTranslator(),
-            new SqlServerDateAddTranslator(),
-            new SqlServerEndsWithOptimizedTranslator(),
-            new SqlServerMathTranslator(),
-            new SqlServerNewGuidTranslator(),
-            new SqlServerObjectToStringTranslator(),
-            new SqlServerStartsWithOptimizedTranslator(),
-            new SqlServerStringIsNullOrWhiteSpaceTranslator(),
-            new SqlServerStringReplaceTranslator(),
-            new SqlServerStringSubstringTranslator(),
-            new SqlServerStringToLowerTranslator(),
-            new SqlServerStringToUpperTranslator(),
-            new SqlServerStringTrimEndTranslator(),
-            new SqlServerStringTrimStartTranslator(),
-            new SqlServerStringTrimTranslator()
-        };
-
+        // ReSharper disable once SuggestBaseTypeForParameter
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -39,8 +25,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionTranslators.Internal
             [NotNull] RelationalCompositeMethodCallTranslatorDependencies dependencies)
             : base(dependencies)
         {
-            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            AddTranslators(_methodCallTranslators);
         }
     }
 }

@@ -592,7 +592,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                     = methodCallExpression.Arguments
                         .Where(e => !(e is QuerySourceReferenceExpression)
                                     && !(e is SubQueryExpression))
-                        .Select(e => (e as ConstantExpression)?.Value is Array ? e : Visit(e))
+                        .Select(e => (e as ConstantExpression)?.Value is Array || e.Type == typeof(EFFunctions)
+                             ? e
+                             : Visit(e))
                         .Where(e => e != null)
                         .ToArray();
 
@@ -1025,6 +1027,21 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
 
                 return newAccessOperation;
             }
+
+            var dbFunctionExpression = expression as DbFunctionExpression;
+            if (dbFunctionExpression != null)
+            {
+                var newArguments = Visit(dbFunctionExpression.Arguments);
+
+                if (newArguments.Any(a => a == null))
+                    return null;
+
+                return dbFunctionExpression.Translate(newArguments)
+                        ?? new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type, dbFunctionExpression.SchemaName, newArguments);
+            }
+
+            if ((expression as IdentifierExpression) != null)
+                return expression;
 
             return base.VisitExtension(expression);
         }
