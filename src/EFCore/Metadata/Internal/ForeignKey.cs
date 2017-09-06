@@ -50,6 +50,11 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             Check.NotNull(principalKey, nameof(principalKey));
             Check.NotNull(principalEntityType, nameof(principalEntityType));
 
+            if (principalEntityType.IsViewType())
+            {
+                throw new InvalidOperationException(CoreStrings.ViewTypeCannotBePrincipal(principalEntityType.DisplayName()));
+            }
+
             Properties = dependentProperties;
             PrincipalKey = principalKey;
             DeclaringEntityType = dependentEntityType;

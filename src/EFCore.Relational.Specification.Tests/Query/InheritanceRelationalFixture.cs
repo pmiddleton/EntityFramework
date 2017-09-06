@@ -32,11 +32,13 @@ namespace Microsoft.EntityFrameworkCore.Query
             modelBuilder.Entity<Lilt>().Property(e => e.Carbination).HasColumnName("LiltCO2");
             modelBuilder.Entity<Lilt>().Property(e => e.SugarGrams).HasColumnName("SugarGrams");
             modelBuilder.Entity<Tea>().Property(e => e.CaffeineGrams).HasColumnName("CaffeineGrams");
+
+            modelBuilder.View<AnimalView>().ToTable("Animal");
+            modelBuilder.View<KiwiView>().HasDiscriminator().HasValue("Kiwi");
+            modelBuilder.View<EagleView>().HasDiscriminator().HasValue("Eagle");
         }
 
         public override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-            => base.AddOptions(builder).ConfigureWarnings(
-                c => c
-                    .Log(RelationalEventId.QueryClientEvaluationWarning));
+            => base.AddOptions(builder).ConfigureWarnings(c => c.Log(RelationalEventId.QueryClientEvaluationWarning));
     }
 }

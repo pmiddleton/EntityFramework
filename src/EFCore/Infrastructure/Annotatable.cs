@@ -60,7 +60,8 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
             var previousLength = _annotations.Value.Count;
             SetAnnotation(name, annotation);
 
-            if (previousLength == _annotations.Value.Count)
+            if (previousLength == _annotations.Value.Count
+                && !ReferenceEquals(FindAnnotation(name), annotation))
             {
                 throw new InvalidOperationException(CoreStrings.DuplicateAnnotation(name));
             }

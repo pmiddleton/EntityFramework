@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
+
 namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
 {
     public class NorthwindContext : DbContext
@@ -15,6 +17,8 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<Product> Products { get; set; }
+
+        public virtual DbView<CustomerView> CustomerViews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +66,39 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
                     });
 
             modelBuilder.Entity<OrderDetail>(e => { e.HasKey(od => new { od.OrderID, od.ProductID }); });
+
+            modelBuilder.View<CustomerView>()
+                .ToQuery(
+                    () => Customers
+                        .Select(
+                            c => new CustomerView
+                            {
+                                Address = c.Address,
+                                City = c.City,
+                                CompanyName = c.CompanyName,
+                                ContactName = c.ContactName,
+                                ContactTitle = c.ContactTitle
+                            }));
+
+            modelBuilder.View<OrderView>()
+                .ToQuery(() => Orders
+                    .Select(
+                        o => new OrderView
+                        {
+                            CustomerID = o.CustomerID
+                        }));
+
+            modelBuilder.View<ProductView>()
+                .ToQuery(
+                    () => Products
+                        .Where(p => !p.Discontinued)
+                        .Select(
+                            p => new ProductView
+                            {
+                                ProductID = p.ProductID,
+                                ProductName = p.ProductName,
+                                CategoryName = "Food"
+                            }));
         }
 
         public string TenantPrefix { get; set; } = "B";

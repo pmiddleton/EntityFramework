@@ -30,6 +30,55 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         protected NorthwindContext CreateContext() => Fixture.CreateContext();
 
+
+        [ConditionalFact]
+        public virtual async Task View_simple()
+        {
+            await AssertQuery<CustomerView>(cvs => cvs);
+        }
+
+        [ConditionalFact]
+        public virtual async Task View_where_simple()
+        {
+            await AssertQuery<CustomerView>(
+                cvs => cvs.Where(c => c.City == "London"));
+        }
+
+        [ConditionalFact]
+        public virtual async Task View_backed_by_view()
+        {
+            using (var context = CreateContext())
+            {
+                var results = await context.View<ProductView>().ToArrayAsync();
+
+                Assert.Equal(69, results.Length);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual async Task View_with_nav()
+        {
+            await AssertQuery<OrderView>(ovs => ovs.Where(ov => ov.CustomerID == "ALFKI"));
+        }
+
+        [ConditionalFact]
+        public virtual async Task Select_view_where_navigation()
+        {
+            await AssertQuery<OrderView>(
+                ovs => from ov in ovs
+                       where ov.Customer.City == "Seattle"
+                       select ov);
+        }
+
+        [ConditionalFact]
+        public virtual async Task Select_view_where_navigation_multi_level()
+        {
+            await AssertQuery<OrderView>(
+                ovs => from ov in ovs
+                       where ov.Customer.Orders.Any()
+                       select ov);
+        }
+
         [ConditionalFact]
         public virtual async Task Projection_when_client_evald_subquery()
         {

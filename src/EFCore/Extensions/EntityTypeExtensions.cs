@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -37,6 +38,18 @@ namespace Microsoft.EntityFrameworkCore
                     yield return derivedType;
                 }
             }
+        }
+
+        /// <summary>
+        ///     Gets all types in the model that derive from a given entity type.
+        /// </summary>
+        /// <param name="entityType"> The base type to find types that derive from. </param>
+        /// <returns> The derived types. </returns>
+        public static bool IsViewType([NotNull] this IEntityType entityType)
+        {
+            Check.NotNull(entityType, nameof(entityType));
+
+            return entityType[CoreAnnotationNames.IsViewTypeAnnotation] != null;
         }
 
         /// <summary>

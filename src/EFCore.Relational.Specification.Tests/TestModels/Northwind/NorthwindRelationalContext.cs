@@ -22,6 +22,10 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
 
             modelBuilder.Entity<CustomerOrderHistory>().HasKey(coh => coh.ProductName);
             modelBuilder.Entity<MostExpensiveProduct>().HasKey(mep => mep.TenMostExpensiveProducts);
+
+            modelBuilder.View<CustomerView>().ToTable("Customers");
+            modelBuilder.View<OrderView>().ToTable("Orders");
+            modelBuilder.View<ProductView>().ToTable("Alphabetical list of products");
         }
     }
 }

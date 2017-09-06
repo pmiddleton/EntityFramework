@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Remotion.Linq.Clauses.Expressions;
@@ -68,38 +69,64 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                 var type = ((IQueryable)constantExpression.Value).ElementType;
                 var entityType = _queryCompilationContext.Model.FindEntityType(type)?.RootType();
 
-                if (entityType?.QueryFilter != null)
+                if (entityType != null)
                 {
-                    var parameterizedFilter
-                        = (LambdaExpression)_queryModelGenerator
-                            .ExtractParameters(
-                                _queryCompilationContext.Logger,
-                                entityType.QueryFilter,
-                                _parameters,
-                                parameterize: false,
-                                generateContextAccessors: true);
+                    if (entityType.QueryFilter != null)
+                    {
+                        var parameterizedFilter
+                            = (LambdaExpression)_queryModelGenerator
+                                .ExtractParameters(
+                                    _queryCompilationContext.Logger,
+                                    entityType.QueryFilter,
+                                    _parameters,
+                                    parameterize: false,
+                                    generateContextAccessors: true);
 
-                    var oldParameterExpression = parameterizedFilter.Parameters[0];
-                    var newParameterExpression = Expression.Parameter(type, oldParameterExpression.Name);
+                        var oldParameterExpression = parameterizedFilter.Parameters[0];
+                        var newParameterExpression = Expression.Parameter(type, oldParameterExpression.Name);
 
-                    var predicateExpression
-                        = ReplacingExpressionVisitor
-                            .Replace(
-                                oldParameterExpression,
-                                newParameterExpression,
-                                parameterizedFilter.Body);
-                    
-                    var whereExpression
-                        = Expression.Call(
-                            _whereMethod.MakeGenericMethod(type),
-                            constantExpression,
-                            Expression.Lambda(
-                                predicateExpression,
-                                newParameterExpression));
+                        var predicateExpression
+                            = ReplacingExpressionVisitor
+                                .Replace(
+                                    oldParameterExpression,
+                                    newParameterExpression,
+                                    parameterizedFilter.Body);
 
-                    var subQueryModel = _queryModelGenerator.ParseQuery(whereExpression);
+                        var whereExpression
+                            = Expression.Call(
+                                _whereMethod.MakeGenericMethod(type),
+                                constantExpression,
+                                Expression.Lambda(
+                                    predicateExpression,
+                                    newParameterExpression));
 
-                    return new SubQueryExpression(subQueryModel);
+                        var subQueryModel = _queryModelGenerator.ParseQuery(whereExpression);
+
+                        return new SubQueryExpression(subQueryModel);
+                    }
+
+                    if (entityType.IsViewType())
+                    {
+                        var annotation = entityType.FindAnnotation(CoreAnnotationNames.DefiningQuery);
+
+                        if (annotation != null)
+                        {
+                            var query = (LambdaExpression)annotation.Value;
+
+                            var parameterizedQuery
+                                = _queryModelGenerator
+                                    .ExtractParameters(
+                                        _queryCompilationContext.Logger,
+                                        query.Body,
+                                        _parameters,
+                                        parameterize: false,
+                                        generateContextAccessors: true);
+
+                            var subQueryModel = _queryModelGenerator.ParseQuery(parameterizedQuery);
+
+                            return new SubQueryExpression(subQueryModel);
+                        }
+                    }
                 }
             }
 

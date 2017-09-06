@@ -213,6 +213,19 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
+        public virtual void Can_query_all_animal_views()
+        {
+            using (var context = CreateContext())
+            {
+                var animalViews = context.View<AnimalView>().OrderBy(av => av.CountryId).ToList();
+
+                Assert.Equal(2, animalViews.Count);
+                Assert.IsType<KiwiView>(animalViews[0]);
+                Assert.IsType<EagleView>(animalViews[1]);
+            }
+        }
+
+        [Fact]
         public virtual void Can_query_all_plants()
         {
             using (var context = CreateContext())

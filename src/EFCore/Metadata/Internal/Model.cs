@@ -110,6 +110,32 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             var entityType = new EntityType(type, this, configurationSource);
 
             _clrTypeMap[type] = entityType;
+
+            return AddEntityType(entityType);
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual EntityType AddViewType([NotNull] Type type)
+        {
+            Check.NotNull(type, nameof(type));
+
+            var entityType = new EntityType(type, this, ConfigurationSource.Explicit);
+
+            var keyProperty = entityType.AddProperty("__ViewTypeKey__", typeof(int), ConfigurationSource.Convention);
+
+            entityType.AddKey(keyProperty, ConfigurationSource.Convention);
+            entityType.SetPrimaryKey(new[] { keyProperty }, ConfigurationSource.Convention);
+
+            entityType.SetAnnotation(
+                CoreAnnotationNames.IsViewTypeAnnotation,
+                new object(), 
+                ConfigurationSource.Explicit);
+
+            _clrTypeMap[type] = entityType;
+
             return AddEntityType(entityType);
         }
 

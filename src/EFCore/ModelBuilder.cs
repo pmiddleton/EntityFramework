@@ -190,6 +190,83 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         /// <summary>
+        ///     Returns an object that can be used to configure a given view type in the model.
+        ///     If the view type is not already part of the model, it will be added to the model.
+        /// </summary>
+        /// <typeparam name="TView"> The view type to be configured. </typeparam>
+        /// <returns> An object that can be used to configure the view type. </returns>
+        public virtual ViewTypeBuilder<TView> View<TView>()
+            where TView : class
+        {
+            return new ViewTypeBuilder<TView>(Builder.View(typeof(TView)));
+        }
+
+        /// <summary>
+        ///     Returns an object that can be used to configure a given view type in the model.
+        ///     If the view type is not already part of the model, it will be added to the model.
+        /// </summary>
+        /// <param name="type"> The view type to be configured. </param>
+        /// <returns> An object that can be used to configure the view type. </returns>
+        public virtual ViewTypeBuilder View([NotNull] Type type)
+        {
+            Check.NotNull(type, nameof(type));
+
+            return new ViewTypeBuilder(Builder.View(type));
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Performs configuration of a given view type in the model. If the view type is not already part
+        ///         of the model, it will be added to the model.
+        ///     </para>
+        ///     <para>
+        ///         This overload allows configuration of the view type to be done in line in the method call rather
+        ///         than being chained after a call to <see cref="View{TView}()" />. This allows additional
+        ///         configuration at the model level to be chained after configuration for the view type.
+        ///     </para>
+        /// </summary>
+        /// <typeparam name="TView"> The view type to be configured. </typeparam>
+        /// <param name="buildAction"> An action that performs configuration of the view type. </param>
+        /// <returns>
+        ///     The same <see cref="ModelBuilder" /> instance so that additional configuration calls can be chained.
+        /// </returns>
+        public virtual ModelBuilder View<TView>([NotNull] Action<ViewTypeBuilder<TView>> buildAction)
+            where TView : class
+        {
+            Check.NotNull(buildAction, nameof(buildAction));
+
+            buildAction(View<TView>());
+
+            return this;
+        }
+
+        /// <summary>
+        ///     <para>
+        ///         Performs configuration of a given view type in the model. If the view type is not already part
+        ///         of the model, it will be added to the model.
+        ///     </para>
+        ///     <para>
+        ///         This overload allows configuration of the view type to be done in line in the method call rather
+        ///         than being chained after a call to <see cref="View{TView}()" />. This allows additional
+        ///         configuration at the model level to be chained after configuration for the view type.
+        ///     </para>
+        /// </summary>
+        /// <param name="type"> The view type to be configured. </param>
+        /// <param name="buildAction"> An action that performs configuration of the view type. </param>
+        /// <returns>
+        ///     The same <see cref="ModelBuilder" /> instance so that additional configuration calls can be chained.
+        /// </returns>
+        public virtual ModelBuilder View([NotNull] Type type, [NotNull] Action<ViewTypeBuilder> buildAction)
+        {
+            Check.NotNull(type, nameof(type));
+            Check.NotNull(buildAction, nameof(buildAction));
+
+            buildAction(View(type));
+
+            return this;
+        }
+
+        /// <summary>
         ///     Excludes the given entity type from the model. This method is typically used to remove types from
         ///     the model that were added by convention.
         /// </summary>

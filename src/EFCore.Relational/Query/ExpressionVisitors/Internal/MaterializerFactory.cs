@@ -54,40 +54,36 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
 
             typeIndexMap = null;
 
-            var valueBufferParameter
-                = Expression.Parameter(typeof(ValueBuffer), "valueBuffer");
+            var valueBufferParameter = Expression.Parameter(typeof(ValueBuffer), "valueBuffer");
+            var concreteEntityTypes = entityType.GetConcreteTypesInHierarchy().ToList();
+            var rootEntityType = concreteEntityTypes[0];
+            var indexMap = new int[rootEntityType.PropertyCount()];
 
-            var concreteEntityTypes
-                = entityType.GetConcreteTypesInHierarchy().ToList();
-
-            var indexMap = new int[concreteEntityTypes[0].PropertyCount()];
-            var propertyIndex = 0;
-
-            foreach (var property in concreteEntityTypes[0].GetProperties())
+            foreach (var property in rootEntityType.GetProperties().Where(p => p.Name != "__ViewTypeKey__"))
             {
-                indexMap[propertyIndex++]
-                    = projectionAdder(property, selectExpression);
+                indexMap[property.GetIndex()] = projectionAdder(property, selectExpression);
             }
 
             var materializer
                 = _entityMaterializerSource
                     .CreateMaterializeExpression(
-                        concreteEntityTypes[0], valueBufferParameter, indexMap);
+                        rootEntityType, valueBufferParameter, indexMap);
 
             if (concreteEntityTypes.Count == 1
-                && concreteEntityTypes[0].RootType() == concreteEntityTypes[0])
+                && rootEntityType.RootType() == rootEntityType)
             {
                 return Expression.Lambda<Func<ValueBuffer, object>>(materializer, valueBufferParameter);
             }
 
-            var discriminatorProperty = concreteEntityTypes[0].Relational().DiscriminatorProperty;
+            var discriminatorProperty = rootEntityType.Relational().DiscriminatorProperty;
 
             var discriminatorColumn
-                = selectExpression.Projection.Last(c => (c as ColumnExpression)?.Property == discriminatorProperty);
+                = selectExpression.Projection
+                    .Last(c => (c as ColumnExpression)?.Property == discriminatorProperty);
 
             var firstDiscriminatorValue
                 = Expression.Constant(
-                    concreteEntityTypes[0].Relational().DiscriminatorValue,
+                    rootEntityType.Relational().DiscriminatorValue,
                     discriminatorColumn.Type);
 
             var discriminatorPredicate
@@ -115,7 +111,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                             .CreateReadValueExpression(
                                 valueBufferParameter,
                                 discriminatorProperty.ClrType,
-                                discriminatorProperty.GetIndex(),
+                                indexMap[discriminatorProperty.GetIndex()],
                                 discriminatorProperty)),
                     Expression.IfThenElse(
                         Expression.Equal(discriminatorValueVariable, firstDiscriminatorValue),
@@ -123,7 +119,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
                         Expression.Throw(
                             Expression.Call(
                                 _createUnableToDiscriminateException,
-                                Expression.Constant(concreteEntityTypes[0])))),
+                                Expression.Constant(rootEntityType)))),
                     Expression.Label(
                         returnLabelTarget,
                         Expression.Default(returnLabelTarget.Type))
@@ -132,13 +128,12 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal
             foreach (var concreteEntityType in concreteEntityTypes.Skip(1))
             {
                 indexMap = new int[concreteEntityType.PropertyCount()];
-                propertyIndex = 0;
+
                 var shadowPropertyExists = false;
 
-                foreach (var property in concreteEntityType.GetProperties())
+                foreach (var property in concreteEntityType.GetProperties().Where(p => p.Name != "__ViewTypeKey__"))
                 {
-                    indexMap[propertyIndex++]
-                        = projectionAdder(property, selectExpression);
+                    indexMap[property.GetIndex()] = projectionAdder(property, selectExpression);
 
                     shadowPropertyExists = shadowPropertyExists || property.IsShadowProperty;
                 }

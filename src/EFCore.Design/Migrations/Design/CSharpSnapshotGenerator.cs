@@ -70,7 +70,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations.Design
                 stringBuilder.AppendLine(";");
             }
 
-            GenerateEntityTypes(builderName, Sort(model.GetEntityTypes().ToList()), stringBuilder);
+            GenerateEntityTypes(builderName, Sort(model.GetEntityTypes().Where(et => !et.IsViewType()).ToList()), stringBuilder);
         }
 
         private IReadOnlyList<IEntityType> Sort(IReadOnlyList<IEntityType> entityTypes)

@@ -301,6 +301,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             if (!_queryCompilationContext.IgnoreQueryFilters)
             {
                 queryModel.TransformExpressions(_filterApplyingExpressionVisitor.Visit);
+
+                QueryCompilationContext.Logger.QueryModelOptimized(queryModel);
             }
 
             // Second pass of optimizations
@@ -570,6 +572,16 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         private bool TrackResults(QueryModel queryModel)
         {
+//            var projectedEntityType
+//                = QueryCompilationContext.Model.FindEntityType(
+//                    queryModel.SelectClause.Selector.Type);
+//
+//            if (projectedEntityType != null
+//                && projectedEntityType.IsViewType())
+//            {
+//                return false;
+//            }
+            
             // TODO: Unify with QCC
 
             var lastTrackingModifier

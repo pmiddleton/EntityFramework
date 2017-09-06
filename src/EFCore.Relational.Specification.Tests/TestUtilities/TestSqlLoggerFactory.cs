@@ -19,12 +19,11 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
         private const string FileNewLine = @"
 ";
 
-        private static readonly string EOL = Environment.NewLine;
+        private static readonly string _eol = Environment.NewLine;
 
         public void AssertBaseline(string[] expected, bool assertOrder = true)
         {
-            var sqlStatements
-                = _logger.SqlStatements;
+            var sqlStatements = _logger.SqlStatements;
 
             try
             {
@@ -39,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                 {
                     foreach (var expectedFragment in expected)
                     {
-                        var normalizedExpectedFragment = expectedFragment.Replace("\r", string.Empty).Replace("\n", EOL);
+                        var normalizedExpectedFragment = expectedFragment.Replace("\r", string.Empty).Replace("\n", _eol);
                         Assert.Contains(
                             normalizedExpectedFragment,
                             sqlStatements);
@@ -49,7 +48,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
             catch
             {
                 var methodCallLine = Environment.StackTrace.Split(
-                        new[] { EOL },
+                        new[] { _eol },
                         StringSplitOptions.RemoveEmptyEntries)[4]
                     .Substring(6);
 
@@ -101,7 +100,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
         public IReadOnlyList<string> Parameters => _logger.Parameters;
 
-        public string Sql => string.Join(EOL + EOL, SqlStatements);
+        public string Sql => string.Join(_eol + _eol, SqlStatements);
 
         public CancellationToken CancelQuery()
         {
@@ -181,7 +180,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
                             if (!string.IsNullOrWhiteSpace(parameters))
                             {
                                 Parameters.Add(parameters);
-                                parameters = parameters.Replace(", ", EOL) + EOL + EOL;
+                                parameters = parameters.Replace(", ", _eol) + _eol + _eol;
                             }
 
                             SqlStatements.Add(parameters + commandText);
@@ -193,7 +192,7 @@ namespace Microsoft.EntityFrameworkCore.TestUtilities
 
                         if (eventId.Id != RelationalEventId.CommandExecuted.Id)
                         {
-                            TestOutputHelper?.WriteLine(format + EOL);
+                            TestOutputHelper?.WriteLine(format + _eol);
                         }
                     }
                 }

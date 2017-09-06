@@ -1894,6 +1894,46 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 GetString("SeedDatumDerivedType", nameof(entityType), nameof(derivedType)),
                 entityType, derivedType);
 
+        /// <summary>
+        ///     Cannot create a DbSet for '{typeName}' because it is a view type. Use the DbContext.View method to create a DbView instead.
+        /// </summary>
+        public static string InvalidSetTypeView([CanBeNull] object typeName)
+            => string.Format(
+                GetString("InvalidSetTypeView", nameof(typeName)),
+                typeName);
+
+        /// <summary>
+        ///     Cannot create a DbView for '{typeName}' because it is not a view type. Use the DbContext.Set method to create a DbSet instead.
+        /// </summary>
+        public static string InvalidSetTypeEntity([CanBeNull] object typeName)
+            => string.Format(
+                GetString("InvalidSetTypeEntity", nameof(typeName)),
+                typeName);
+
+        /// <summary>
+        ///     Unable to create a foreign key with the view type '{viewType}' as the principal type. Only entity types are allowed as foreign key principal types.
+        /// </summary>
+        public static string ViewTypeCannotBePrincipal([CanBeNull] object viewType)
+            => string.Format(
+                GetString("ViewTypeCannotBePrincipal", nameof(viewType)),
+                viewType);
+
+        /// <summary>
+        ///     Unable to track an instance of type '{type}' because it is a view type. Only entity types may be tracked.
+        /// </summary>
+        public static string ViewTypeNotValid([CanBeNull] object type)
+            => string.Format(
+                GetString("ViewTypeNotValid", nameof(type)),
+                type);
+
+        /// <summary>
+        ///     Cannot set '{baseType}' as the base type of '{derivedType}'. Inheritance hierarchies cannot contain a mix of entity types and view types.
+        /// </summary>
+        public static string ErrorMixedViewEntityTypeInheritance([CanBeNull] object baseType, [CanBeNull] object derivedType)
+            => string.Format(
+                GetString("ErrorMixedViewEntityTypeInheritance", nameof(baseType), nameof(derivedType)),
+                baseType, derivedType);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

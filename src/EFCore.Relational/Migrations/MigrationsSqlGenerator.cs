@@ -1508,7 +1508,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             [CanBeNull] string schema,
             [NotNull] string tableName)
             => model?.GetEntityTypes().Where(
-                t => t.Relational().TableName == tableName && t.Relational().Schema == schema);
+                t => t.Relational().TableName == tableName && t.Relational().Schema == schema && !t.IsViewType());
 
         /// <summary>
         ///     <para>

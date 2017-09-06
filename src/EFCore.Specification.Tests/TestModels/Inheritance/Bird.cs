@@ -8,4 +8,10 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Inheritance
         public bool IsFlightless { get; set; }
         public string EagleId { get; set; }
     }
+
+    public abstract class BirdView : AnimalView
+    {
+        public bool IsFlightless { get; set; }
+        public string EagleId { get; set; }
+    }
 }

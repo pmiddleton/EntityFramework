@@ -76,7 +76,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <param name="resultOperatorHandler"> The <see cref="IResultOperatorHandler" /> to be used when processing the query. </param>
         /// <param name="entityMaterializerSource"> The <see cref="IEntityMaterializerSource" /> to be used when processing the query. </param>
         /// <param name="expressionPrinter"> The <see cref="IExpressionPrinter" /> to be used when processing the query. </param>
-        /// <param name="queryModelGenerator"> The <see cref="IQueryModelGenerator" /> to be used when processing the query. </param>
+        /// <param name="queryModelGenerator"> <see cref="IQueryModelGenerator" /> to be used when processing the query. </param>
         public EntityQueryModelVisitorDependencies(
             [NotNull] IQueryOptimizer queryOptimizer,
             [NotNull] INavigationRewritingExpressionVisitorFactory navigationRewritingExpressionVisitorFactory,

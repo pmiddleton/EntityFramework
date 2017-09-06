@@ -44,5 +44,17 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public const string TypeMapping = "Relational:TypeMapping"; // "Relational:" prefix to prevent breaking changes from 2.0
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public const string IsViewTypeAnnotation = "IsViewType";
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public const string DefiningQuery = "DefiningQuery";
     }
 }

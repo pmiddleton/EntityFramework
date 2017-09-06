@@ -60,6 +60,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             var entityType = clrType == null
                 ? Metadata.FindEntityType(type.Name)
                 : Metadata.FindEntityType(clrType);
+
             if (entityType == null)
             {
                 if (clrType == null)
@@ -81,6 +82,29 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             }
 
             return entityType?.Builder;
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual InternalEntityTypeBuilder View([NotNull] Type clrType)
+        {
+            if (IsIgnored(clrType, ConfigurationSource.Explicit))
+            {
+                return null;
+            }
+
+            var entityType = Metadata.FindEntityType(clrType);
+
+            if (entityType == null)
+            {
+                Metadata.Unignore(clrType);
+
+                entityType = Metadata.AddViewType(clrType);
+            }
+
+            return entityType.Builder;
         }
 
         /// <summary>
