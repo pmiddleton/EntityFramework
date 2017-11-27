@@ -1376,6 +1376,18 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         }
 
         /// <summary>
+        ///     Visits a todo.
+        /// </summary>
+        /// <param name="sqlFunctionSourceExpression">todo </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        public virtual Expression VisitSqlFunctionSource(SqlFunctionSourceExpression sqlFunctionSourceExpression)
+        {
+            return VisitSqlFunction(sqlFunctionSourceExpression.SqlFunctionExpression);
+        }
+
+        /// <summary>
         ///     Visit a SQL ExplicitCastExpression.
         /// </summary>
         /// <param name="explicitCastExpression"> The explicit cast expression. </param>

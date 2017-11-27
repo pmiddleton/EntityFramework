@@ -108,6 +108,26 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         }
 
         /// <summary>
+        ///     Visits a TableValuedSqlFunctionExpression.
+        /// </summary>
+        /// <param name="sqlFunctionSourceExpression"> The SQL function expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        public override Expression VisitSqlFunctionSource(SqlFunctionSourceExpression sqlFunctionSourceExpression)
+        {
+            base.VisitSqlFunctionSource(sqlFunctionSourceExpression);
+
+            if (sqlFunctionSourceExpression.Alias != null)
+            {
+                Sql.Append(" AS ")
+                    .Append(SqlGenerator.DelimitIdentifier(sqlFunctionSourceExpression.Alias));
+            }
+
+            return sqlFunctionSourceExpression;
+        }
+
+        /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>

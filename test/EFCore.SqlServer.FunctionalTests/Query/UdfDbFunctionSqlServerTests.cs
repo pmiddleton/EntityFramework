@@ -190,6 +190,12 @@ namespace Microsoft.EntityFrameworkCore.Query
                 throw new NotImplementedException();
             }
 
+            public string SCHEMA_NAME()
+            {
+                //TODO - how to remove the generic params here?
+                return ExecuteScalarMethod<UDFSqlContext, string>(db => db.SCHEMA_NAME());
+            }
+
             #endregion
 
             public UDFSqlContext(DbContextOptions options)
@@ -228,6 +234,9 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 modelBuilder.HasDbFunction(methodInfo2)
                     .HasTranslation(args => new SqlFunctionExpression("len", methodInfo2.ReturnType, args));
+
+                //Bootstrap
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(SCHEMA_NAME))).HasName("SCHEMA_NAME");
             }
         }
 
@@ -1495,6 +1504,31 @@ FROM [Customers] AS [c]");
                     @"SELECT TOP(2) [c].[Id]
 FROM [Customers] AS [c]
 WHERE 3 = [dbo].CustomerOrderCount(ABS([c].[Id]))");
+            }
+        }
+
+        #endregion
+
+        #region BootStrap
+
+        [Fact]
+        private void BootstrapTest()
+        {
+            using (var context = CreateContext())
+            {
+                //var q = context.Customers.Where(c => c.FirstName == "paul").Select(c => c.FirstName);
+             //   var q = context.Customers.Select(c => c.FirstName).ToList();
+             //   var q1 = context.Customers.Select(c => 1).ToList();
+                  
+         //       var q2 = context.Customers ;
+           //     var r = q2.ToList();
+                   
+                var schame = context.SCHEMA_NAME();
+
+                /*Assert.Equal("dbo", schame);
+
+                AssertSql(
+                    @"SELECT SCHEMA_NAME()");*/
             }
         }
 
