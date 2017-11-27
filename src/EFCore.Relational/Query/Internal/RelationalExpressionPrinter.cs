@@ -47,7 +47,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     var querySqlGenerator = shaperCommandContext.QuerySqlGeneratorFactory();
                     var sql = querySqlGenerator.GenerateSql(new Dictionary<string, object>()).CommandText;
-
+                    
                     var lines = sql.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
                     for (var i = 0; i < lines.Length; i++)
                     {
