@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1348,6 +1349,28 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         IServiceProvider IInfrastructure<IServiceProvider>.Instance => InternalServiceProvider;
 
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="T">todo</typeparam>
+        /// <typeparam name="U">todo</typeparam>
+        /// <param name="dbFuncCall">todo</param>
+        /// <returns>todo</returns>
+        protected virtual T ExecuteScalarMethod<U, T>(Expression<Func<U, T>> dbFuncCall)
+            where U : DbContext
+        {
+            //todo - verify dbFuncCall contains a method call expression (is there a way to validate it is a registered dbFunction here?)
+            var exp = new DbFunctionExpression(dbFuncCall.Body as MethodCallExpression);
+            var resultsQuery =  DbContextDependencies.QueryProvider.Execute(exp) as IEnumerable<T>;
+
+            var results = resultsQuery.ToList();
+
+            return results[0];
+            //how am I going to get the dbFunction from the model here - I can't access FindDbFunction because it is in relational.
+            //maybe I need to pass a reference to the model and find it later?  If I move DbFunctionExpression into relational I can access it, but then how do I create DbFunctionExpression.
+            //need some kind of factory.....
+        }
+
         #region Hidden System.Object members
 
         /// <summary>
@@ -1373,5 +1396,70 @@ namespace Microsoft.EntityFrameworkCore
         public override int GetHashCode() => base.GetHashCode();
 
         #endregion
+    }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public class DbFunctionExpression : Expression
+    {
+        //todo - do we need to store this?
+        private MethodCallExpression _expression;
+        private readonly Type _returnType;
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public override ExpressionType NodeType => ExpressionType.Extension;
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public override Type Type => ReturnType;
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public virtual Type ReturnType => _returnType;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual string Name => _expression.Method.Name; //TODO - I need the DBFunction here just use the name for now
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="expression">todo</param>
+        public DbFunctionExpression([NotNull] MethodCallExpression expression)
+        {
+            //todo - what are we going to need here?  The dbFunction, the methodCallExpression, the methodInfo?
+            //I need the DbFunction at some point to do the translation.... where am I going to get it from?
+            _expression = expression;
+
+            //tood - check return type is a valid type (see dbFunction valid return types)
+            _returnType = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected override Expression Accept(ExpressionVisitor visitor)
+        {
+            return base.Accept(visitor);
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="visitor">todo</param>
+        /// <returns>todo</returns>
+        protected override Expression VisitChildren(ExpressionVisitor visitor)
+        {
+            //todo - deal with parameters
+            return this;
+        }
     }
 }
