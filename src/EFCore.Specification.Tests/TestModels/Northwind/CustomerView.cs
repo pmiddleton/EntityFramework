@@ -17,39 +17,35 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
         public bool IsLondon => City == "London";
 
         protected bool Equals(CustomerView other)
-        {
-            return string.Equals(CompanyName, other.CompanyName);
-        }
+            => string.Equals(CompanyName, other.CompanyName);
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, obj))
+            {
                 return true;
+            }
 
             return obj.GetType() == GetType()
-                   && Equals((CustomerView) obj);
+                   && Equals((CustomerView)obj);
         }
 
         public static bool operator ==(CustomerView left, CustomerView right)
-        {
-            return Equals(left, right);
-        }
+            => Equals(left, right);
 
         public static bool operator !=(CustomerView left, CustomerView right)
-        {
-            return !Equals(left, right);
-        }
+            => !Equals(left, right);
 
         public override int GetHashCode()
-        {
-            return CompanyName.GetHashCode();
-        }
+            // ReSharper disable once NonReadonlyMemberInGetHashCode
+            => CompanyName.GetHashCode();
 
         public override string ToString()
-        {
-            return "CustomerView " + CompanyName;
-        }
+            => "CustomerView " + CompanyName;
     }
 }

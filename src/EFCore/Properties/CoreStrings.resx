@@ -841,4 +841,10 @@
   <data name="ErrorMixedViewEntityTypeInheritance" xml:space="preserve">
     <value>Cannot set '{baseType}' as the base type of '{derivedType}'. Inheritance hierarchies cannot contain a mix of entity types and view types.</value>
   </data>
+  <data name="CannotAccessEntityAsView" xml:space="preserve">
+    <value>Cannot access type '{type}' as a view type because it has already been declared as an entity type.</value>
+  </data>
+  <data name="CannotAccessViewAsEntity" xml:space="preserve">
+    <value>Cannot access type '{type}' as an entity type because it has already been declared as a view type.</value>
+  </data>
 </root>

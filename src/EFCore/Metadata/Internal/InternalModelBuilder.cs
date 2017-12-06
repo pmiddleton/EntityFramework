@@ -37,19 +37,19 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual InternalEntityTypeBuilder Entity(
-            [NotNull] string name, ConfigurationSource configurationSource)
-            => Entity(new TypeIdentity(name), configurationSource);
+            [NotNull] string name, ConfigurationSource configurationSource, bool throwOnView = false)
+            => Entity(new TypeIdentity(name), configurationSource, throwOnView);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual InternalEntityTypeBuilder Entity(
-            [NotNull] Type type, ConfigurationSource configurationSource)
-            => Entity(new TypeIdentity(type), configurationSource);
+            [NotNull] Type type, ConfigurationSource configurationSource, bool throwOnView = false)
+            => Entity(new TypeIdentity(type), configurationSource, throwOnView);
 
         private InternalEntityTypeBuilder Entity(
-            TypeIdentity type, ConfigurationSource configurationSource)
+            TypeIdentity type, ConfigurationSource configurationSource, bool throwOnView)
         {
             if (IsIgnored(type, configurationSource))
             {
@@ -78,6 +78,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             }
             else
             {
+                if (throwOnView && entityType.IsViewType())
+                {
+                    throw new InvalidOperationException(
+                        CoreStrings.CannotAccessViewAsEntity(entityType.DisplayName()));
+                }
+
                 entityType.UpdateConfigurationSource(configurationSource);
             }
 
@@ -102,6 +108,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                 Metadata.Unignore(clrType);
 
                 entityType = Metadata.AddViewType(clrType);
+            }
+            else
+            {
+                if (!entityType.IsViewType())
+                {
+                    throw new InvalidOperationException(
+                        CoreStrings.CannotAccessEntityAsView(entityType.DisplayName()));
+                }
             }
 
             return entityType.Builder;

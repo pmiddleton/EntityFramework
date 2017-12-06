@@ -33,6 +33,13 @@ WHERE [c].[City] = N'London'");
 FROM [Alphabetical list of products] AS [a]");
         }
 
+
+
+        public override void View_with_nav_defining_query()
+        {
+            base.View_with_nav_defining_query();
+        }
+
         public override void View_with_mixed_tracking()
         {
             base.View_with_mixed_tracking();

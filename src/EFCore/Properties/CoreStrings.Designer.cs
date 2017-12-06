@@ -1934,6 +1934,22 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 GetString("ErrorMixedViewEntityTypeInheritance", nameof(baseType), nameof(derivedType)),
                 baseType, derivedType);
 
+        /// <summary>
+        ///     Cannot access type '{type}' as a view type because it has already been declared as an entity type.
+        /// </summary>
+        public static string CannotAccessEntityAsView([CanBeNull] object type)
+            => string.Format(
+                GetString("CannotAccessEntityAsView", nameof(type)),
+                type);
+
+        /// <summary>
+        ///     Cannot access type '{type}' as an entity type because it has already been declared as a view type.
+        /// </summary>
+        public static string CannotAccessViewAsEntity([CanBeNull] object type)
+            => string.Format(
+                GetString("CannotAccessViewAsEntity", nameof(type)),
+                type);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

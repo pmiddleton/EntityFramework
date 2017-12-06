@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Xunit;
 
@@ -21,6 +23,20 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             Assert.NotNull(entityBuilder);
             Assert.NotNull(model.FindEntityType(typeof(Customer)));
             Assert.Same(entityBuilder, modelBuilder.Entity(typeof(Customer).FullName, ConfigurationSource.DataAnnotation));
+        }
+        [Fact]
+        public void View_throws_when_entity_type()
+        {
+            var model = new Model();
+            var modelBuilder = CreateModelBuilder(model);
+
+            modelBuilder.Entity(typeof(Customer), ConfigurationSource.Explicit);
+
+            Assert.Equal(
+                CoreStrings.CannotAccessEntityAsView(nameof(Customer)),
+                Assert.Throws<InvalidOperationException>(
+                    () =>
+                        modelBuilder.View(typeof(Customer))).Message);
         }
 
         [Fact]

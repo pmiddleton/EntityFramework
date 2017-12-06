@@ -67,7 +67,8 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
 
             modelBuilder.Entity<OrderDetail>(e => { e.HasKey(od => new { od.OrderID, od.ProductID }); });
 
-            modelBuilder.View<CustomerView>()
+            modelBuilder
+                .View<CustomerView>()
                 .ToQuery(
                     () => Customers
                         .Select(
@@ -80,7 +81,8 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
                                 ContactTitle = c.ContactTitle
                             }));
 
-            modelBuilder.View<OrderView>()
+            modelBuilder
+                .View<OrderView>()
                 .ToQuery(() => Orders
                     .Select(
                         o => new OrderView
@@ -88,7 +90,8 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
                             CustomerID = o.CustomerID
                         }));
 
-            modelBuilder.View<ProductView>()
+            modelBuilder
+                .View<ProductView>()
                 .ToQuery(
                     () => Products
                         .Where(p => !p.Discontinued)
@@ -99,6 +102,16 @@ namespace Microsoft.EntityFrameworkCore.TestModels.Northwind
                                 ProductName = p.ProductName,
                                 CategoryName = "Food"
                             }));
+
+            modelBuilder
+                .View<CustomerQuery>()
+                .ToQuery(() =>
+                    Customers.Select(c =>
+                        new CustomerQuery
+                        {
+                            CompanyName = c.CompanyName,
+                            OrderCount = c.Orders.Count()
+                        }));
         }
 
         public string TenantPrefix { get; set; } = "B";

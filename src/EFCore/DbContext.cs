@@ -145,6 +145,12 @@ namespace Microsoft.EntityFrameworkCore
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        IDbViewSource IDbContextDependencies.ViewSource => DbContextDependencies.ViewSource;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         IEntityFinderFactory IDbContextDependencies.EntityFinderFactory => DbContextDependencies.EntityFinderFactory;
 
         /// <summary>
@@ -233,7 +239,7 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns> A view for the given view type. </returns>
         public virtual DbView<TView> View<TView>()
             where TView : class
-            => new InternalDbView<TView>(this);
+            => (DbView<TView>)((IDbViewCache)this).GetOrAddView(DbContextDependencies.ViewSource, typeof(TView));
 
         private IEntityFinder Finder(Type type)
         {

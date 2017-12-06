@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public object CreateView(DbContext context, Type type)
+        public virtual object CreateView(DbContext context, Type type)
             => CreateCore(context, type, _genericCreateView);
 
         private object CreateCore(DbContext context, Type type, MethodInfo createMethod)

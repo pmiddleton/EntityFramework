@@ -28,6 +28,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
             [NotNull] ICurrentDbContext currentContext,
             [NotNull] IChangeDetector changeDetector,
             [NotNull] IDbSetSource setSource,
+            [NotNull] IDbViewSource viewSource,
             [NotNull] IEntityFinderSource entityFinderSource,
             [NotNull] IEntityGraphAttacher entityGraphAttacher,
             [NotNull] IModel model,
@@ -38,6 +39,7 @@ namespace Microsoft.EntityFrameworkCore.Internal
         {
             ChangeDetector = changeDetector;
             SetSource = setSource;
+            ViewSource = viewSource;
             EntityGraphAttacher = entityGraphAttacher;
             Model = model;
             QueryProvider = queryProvider;
@@ -58,6 +60,12 @@ namespace Microsoft.EntityFrameworkCore.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public IDbSetSource SetSource { get; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public IDbViewSource ViewSource { get; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

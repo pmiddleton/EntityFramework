@@ -16,7 +16,6 @@ namespace Microsoft.EntityFrameworkCore.Query
     public abstract partial class SimpleQueryTestBase<TFixture>
     {
         // TODO:
-
         // - Conventions - can't be principal, key detection?
         // - State manager
         // - Migrations ignores
@@ -24,8 +23,8 @@ namespace Microsoft.EntityFrameworkCore.Query
         // - Defining query parameterization
         // - ToQuery cannot have include/navs?
         // - Combining ToTable and ToQuery
-        // - Calling Entity after View/View after Entity?
-
+        // - Calling Entity after View / View after Entity?
+         
         [ConditionalFact]
         public virtual void View_simple()
         {
@@ -58,6 +57,20 @@ namespace Microsoft.EntityFrameworkCore.Query
                 var results = context.CustomerViews.ToArray();
 
                 Assert.Equal(91, results.Length);
+            }
+        }
+
+        [ConditionalFact]
+        public virtual void View_with_nav_defining_query()
+        {
+            using (var context = CreateContext())
+            {
+                var results
+                    = context.View<CustomerQuery>()
+                        .Where(cq => cq.OrderCount > 0)
+                        .ToArray();
+
+                Assert.Equal(89, results.Length);
             }
         }
 
