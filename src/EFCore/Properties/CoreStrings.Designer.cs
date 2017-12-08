@@ -1950,6 +1950,14 @@ namespace Microsoft.EntityFrameworkCore.Internal
                 GetString("CannotAccessViewAsEntity", nameof(type)),
                 type);
 
+        /// <summary>
+        ///     Cannot create a navigation targeting type '{type}' because it is a view type. Only entity types can be used as navigation target types.
+        /// </summary>
+        public static string ErrorNavCannotTargetViewType([CanBeNull] object type)
+            => string.Format(
+                GetString("ErrorNavCannotTargetViewType", nameof(type)),
+                type);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

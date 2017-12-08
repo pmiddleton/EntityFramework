@@ -32,9 +32,7 @@ WHERE [c].[City] = N'London'");
                 @"SELECT [a].[CategoryName], [a].[ProductID], [a].[ProductName]
 FROM [Alphabetical list of products] AS [a]");
         }
-
-
-
+        
         public override void View_with_nav_defining_query()
         {
             base.View_with_nav_defining_query();

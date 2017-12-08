@@ -15,7 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             ITestOutputHelper testOutputHelper)
             : base(fixture)
         {
-            TestLoggerFactory.TestOutputHelper = testOutputHelper;
+            //TestLoggerFactory.TestOutputHelper = testOutputHelper;
         }
 
         public override void View_with_nav_defining_query()

@@ -847,4 +847,7 @@
   <data name="CannotAccessViewAsEntity" xml:space="preserve">
     <value>Cannot access type '{type}' as an entity type because it has already been declared as a view type.</value>
   </data>
+  <data name="ErrorNavCannotTargetViewType" xml:space="preserve">
+    <value>Cannot create a navigation targeting type '{type}' because it is a view type. Only entity types can be used as navigation target types.</value>
+  </data>
 </root>

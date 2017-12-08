@@ -1419,6 +1419,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                 navigationToTarget != null
                 || inverseNavigation != null);
 
+            if (targetEntityTypeBuilder.Metadata.IsViewType())
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.ErrorNavCannotTargetViewType(targetEntityTypeBuilder.Metadata.DisplayName()));
+            }
+
             var navigationProperty = navigationToTarget?.Property;
             if (inverseNavigation == null
                 && navigationProperty != null
