@@ -129,6 +129,10 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
             public abstract TestModelBuilder Entity<TEntity>(Action<TestEntityTypeBuilder<TEntity>> buildAction)
                 where TEntity : class;
 
+            public virtual ViewTypeBuilder<TView> View<TView>()
+                where TView : class
+                => ModelBuilder.View<TView>();
+
             public abstract TestModelBuilder Ignore<TEntity>()
                 where TEntity : class;
 

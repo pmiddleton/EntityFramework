@@ -17,12 +17,10 @@ namespace Microsoft.EntityFrameworkCore.Query
     {
         // TODO:
         // - Conventions - can't be principal, key detection?
-        // - State manager
         // - Migrations ignores
         // - Query filters
         // - Defining query parameterization
         // - ToQuery cannot have include/navs?
-        // - Combining ToTable and ToQuery
         // - Calling Entity after View / View after Entity?
          
         [ConditionalFact]

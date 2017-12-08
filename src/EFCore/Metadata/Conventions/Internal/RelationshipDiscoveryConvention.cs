@@ -77,8 +77,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal
             {
                 var navigationPropertyInfo = candidateTuple.Key;
                 var targetClrType = candidateTuple.Value;
-
-                if (entityTypeBuilder.IsIgnored(navigationPropertyInfo.Name, ConfigurationSource.Convention))
+                
+                if (entityTypeBuilder.IsIgnored(navigationPropertyInfo.Name, ConfigurationSource.Convention)
+                    || (entityTypeBuilder.Metadata.IsViewType()
+                        && navigationPropertyInfo.PropertyType.TryGetSequenceType() != null))
                 {
                     continue;
                 }

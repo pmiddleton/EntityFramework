@@ -47,6 +47,15 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
         }
 
         [Fact]
+        public void Entity_throws_when_called_for_view()
+        {
+            var modelBuilder = InMemoryTestHelpers.Instance.CreateConventionBuilder();
+
+            modelBuilder.View<Customer>();
+            modelBuilder.Entity<Customer>();
+        }
+
+        [Fact]
         public void Can_discover_large_models_through_navigations()
         {
             var modelBuilder = InMemoryTestHelpers.Instance.CreateConventionBuilder();
