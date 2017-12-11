@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -169,7 +170,19 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             public string StarValueInstance(int starCount, int value)
             {
-                throw new NotImplementedException();
+                return this.ExecuteScalarMethod<UDFSqlContext, string>(db => db.StarValueInstance(starCount, value));
+            }
+
+            public string StarValueInstance(int starCount)
+            {
+                throw new Exception();
+            }
+
+            public string StarValueInstance(Expression<Func<int>> starCount)
+            {
+                //var s = this.ExecuteScalarMethod<UDFSqlContext, string>(db => db.StarValueInstance(db.CustomerOrderCountInstance(1)));
+                return this.ExecuteScalarMethod<UDFSqlContext, string>(db => db.StarValueInstance(starCount));
+
             }
 
             public bool IsTopCustomerInstance(int customerId)
@@ -198,10 +211,15 @@ namespace Microsoft.EntityFrameworkCore.Query
                 throw new NotImplementedException();
             }
 
-            public string SCHEMA_NAME()
+            public string SchemaName()
             {
                 //TODO - how to remove the generic params here?
-                return ExecuteScalarMethod<UDFSqlContext, string>(db => db.SCHEMA_NAME());
+                return this.ExecuteScalarMethod<UDFSqlContext, string>(db => db.SchemaName());
+            }
+
+            public string StarValueInstanceBootstrap(int starCount, int value)
+            {
+                return this.ExecuteScalarMethod<UDFSqlContext, string>(db => db.StarValueInstance(starCount, value));
             }
 
             #endregion
@@ -230,13 +248,17 @@ namespace Microsoft.EntityFrameworkCore.Query
                 //Instance
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(CustomerOrderCountInstance))).HasName("CustomerOrderCount");
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(CustomerOrderCountWithClientInstance))).HasName("CustomerOrderCount");
-                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(StarValueInstance))).HasName("StarValue");
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(IsTopCustomerInstance))).HasName("IsTopCustomer");
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerWithMostOrdersAfterDateInstance))).HasName("GetCustomerWithMostOrdersAfterDate");
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetReportingPeriodStartDateInstance))).HasName("GetReportingPeriodStartDate");
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(IsDateInstance))).HasSchema("").HasName("IsDate");
-
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(DollarValueInstance))).HasName("DollarValue");
+
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(StarValueInstance), new[] { typeof(int), typeof(int)})).HasName("StarValue");
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(StarValueInstance), new[] { typeof(Expression<Func<int>>)})).HasName("StarValue");
+
+                //  modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(StarValueInstance), new[] { typeof(Expression<Func<int>>), typeof(int) })).HasName("StarValue");
+
 
                 var methodInfo2 = typeof(UDFSqlContext).GetMethod(nameof(MyCustomLengthInstance));
 
@@ -244,7 +266,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                     .HasTranslation(args => new SqlFunctionExpression("len", methodInfo2.ReturnType, args));
 
                 //Bootstrap
-                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(SCHEMA_NAME))).HasName("SCHEMA_NAME");
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(SchemaName))).HasName("SCHEMA_NAME").HasSchema("");
             }
         }
 
@@ -1539,7 +1561,7 @@ WHERE 3 = [dbo].CustomerOrderCount(ABS([c].[Id]))");
         #region BootStrap
 
         [Fact]
-        private void BootstrapTest()
+        public void BootstrapTest()
         {
             using (var context = CreateContext())
             {
@@ -1550,15 +1572,63 @@ WHERE 3 = [dbo].CustomerOrderCount(ABS([c].[Id]))");
          //       var q2 = context.Customers ;
            //     var r = q2.ToList();
                    
-                var schame = context.SCHEMA_NAME();
+                var schame = context.SchemaName();
 
-                /*Assert.Equal("dbo", schame);
+                Assert.Equal("dbo", schame);
 
-                AssertSql(
-                    @"SELECT SCHEMA_NAME()");*/
+                AssertSql(@"SELECT SCHEMA_NAME()");
             }
         }
 
+        [Fact]
+        public void Function_bootstrap_with_wrapper()
+        {
+            using (var context = CreateContext())
+            {
+                var starValue = context.StarValueInstanceBootstrap(4, 5);
+
+                Assert.Equal("****5", starValue);
+
+                AssertSql(@"@__starCount_0='4'
+@__value_1='5'
+
+SELECT [dbo].StarValue(@__starCount_0, @__value_1)");
+            }
+        }
+
+        [Fact]
+        public void Function_with_constant_parameter()
+        {
+            using (var context = CreateContext())
+            {
+                var starValue = context.StarValueInstance(4, 5);
+
+                Assert.Equal("****5", starValue);
+
+                AssertSql(@"@__starCount_0='4'
+@__value_1='5'
+
+SELECT [dbo].StarValue(@__starCount_0, @__value_1)");
+            }
+        }
+
+        [Fact]
+        public void Function_with_function_parameter()
+        {
+            using (var context = CreateContext())
+            {
+                var starValue = context.StarValueInstance(() => context.CustomerOrderCountInstance(1));
+
+                // var starValue = context.ExecuteScalarMethod<UDFSqlContext, string>(db => db.StarValueInstance(db.CustomerOrderCountInstance(1), 5));
+
+                Assert.Equal("***5", starValue);
+
+                AssertSql(@"@__starCount_0='4'
+@__value_1='5'
+
+SELECT [dbo].StarValue(@__starCount_0, @__value_1)");
+            }
+        }
         #endregion
 
         #endregion

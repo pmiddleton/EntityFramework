@@ -65,7 +65,9 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         /// </summary>
         protected virtual void ValidateDbFunctions([NotNull] IModel model)
         {
-            foreach (var dbFunction in model.Relational().DbFunctions)
+            return;
+            //todo - deal with Func<T>.  Need to unwrap and make sure return param is valid
+/*            foreach (var dbFunction in model.Relational().DbFunctions)
             {
                 var methodInfo = dbFunction.MethodInfo;
 
@@ -97,7 +99,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                         }
                     }
                 }
-            }
+            }*/
         }
 
         /// <summary>

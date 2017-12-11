@@ -261,40 +261,28 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         /// <returns>todo</returns>
         protected Expression VisitDbFunctionExpression([NotNull] DbFunctionExpression dbFunctionExpression)
         {
-             var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
-             var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
- 
-             QueryModelVisitor.AddQuery(_querySource, selectExpression);
- 
-             //TODO - how to deal with parameters which are sub expressions?  What does Re-Linq do with those?
-             // Debug.Assert(dbFunctionExpression.Type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IQueryable<>))) ;
- 
-             var sqlTranslatingExpressionVisitor = _sqlTranslatingExpressionVisitorFactory.Create(QueryModelVisitor);
- 
-             //TODO - how do we get this to bind 
-             var sqlFromExpression = sqlTranslatingExpressionVisitor.Visit(dbFunctionExpression) as SqlFunctionExpression;
- 
-             var funcAlias
-                 = _querySource.HasGeneratedItemName()
-                     ? dbFunctionExpression.Name[0].ToString().ToLowerInvariant() //TODO - this is just wrong
-                     : _querySource.ItemName;
+            var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
+            var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
+
+            QueryModelVisitor.AddQuery(_querySource, selectExpression);
+
+            //TODO - how to deal with parameters which are sub expressions?  What does Re-Linq do with those?
+            // Debug.Assert(dbFunctionExpression.Type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IQueryable<>))) ;
+
+            var sqlTranslatingExpressionVisitor = _sqlTranslatingExpressionVisitorFactory.Create(QueryModelVisitor);
+
+            //TODO - how do we get this to bind 
+            var sqlFuncExpression = sqlTranslatingExpressionVisitor.Visit(dbFunctionExpression) as SqlFunctionExpression;
 
             //TODO - will there ever be more than 1 from item here (table or function)?  the select expression relies on the order the tables are added.
             //selectExpression.AddSqlFunctionExpression(new SqlFunctionSourceExpression(sqlFromExpression, _querySource, funcAlias));
-            selectExpression.AddToProjection(sqlFromExpression);
+            selectExpression.AddToProjection(sqlFuncExpression);
 
             //dbFunctionExpression.
             //return dbFunctionExpression;
             Func<IQuerySqlGenerator> querySqlGeneratorFunc = selectExpression.CreateDefaultQuerySqlGenerator;
- 
-             //TODO - figure out the best way to deal with the IQueryable.  
-             //TODO - this ties into how we will handle direct selects from scalar functions here
-             //FIXME - this is hard coded and wrong
-             //var entityType = _model.FindEntityType(dbFunctionExpression.ReturnType.GenericTypeArguments[0]);
 
-            //var shaper = CreateShaper(dbFunctionExpression.ReturnType.GenericTypeArguments[0], entityType, selectExpression);
             var shaper = new ValueBufferShaper(_querySource);
-            //var shaper = new ValueBufferShaper(QuerySource);
 
             return Expression.Call(
                  QueryModelVisitor.QueryCompilationContext.QueryMethodProvider // TODO: Don't use ShapedQuery when projecting
