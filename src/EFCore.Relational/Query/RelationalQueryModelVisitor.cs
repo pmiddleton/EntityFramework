@@ -1068,6 +1068,21 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(selectClause, nameof(selectClause));
             Check.NotNull(queryModel, nameof(queryModel));
 
+            //this needs a lot of work.....
+            if ((selectClause.Selector.TryGetReferencedQuerySource() as MainFromClause)?.FromExpression is DbFunctionExpression)
+            {
+                var readExp = BindReadValueMethod(selectClause.Selector.Type, CurrentParameter, 0);
+
+                Expression = Expression.Call(
+                    LinqOperatorProvider.Select
+                        .MakeGenericMethod(CurrentParameter.Type, readExp.Type),
+                    Expression,
+                    Expression.Lambda(readExp, CurrentParameter));
+
+                return;
+            }
+
+            //BindReadValueMethod
             base.VisitSelectClause(selectClause, queryModel);
 
             if (Expression is MethodCallExpression methodCallExpression

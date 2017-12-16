@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +108,8 @@ namespace Microsoft.EntityFrameworkCore
             ServiceProviderCache.Instance.GetOrAdd(options, providerRequired: false)
                 .GetRequiredService<IDbSetInitializer>()
                 .InitializeSets(this);
+
+             EmptySet = new InternalDbSet<EmptySet>(this);
         }
 
         /// <summary>
@@ -1348,6 +1351,23 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         IServiceProvider IInfrastructure<IServiceProvider>.Instance => InternalServiceProvider;
 
+        /// <summary>
+        /// todo
+        /// </summary>
+        public DbSet<EmptySet> EmptySet { get; set; } 
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="expression">todo</param>
+        /// <returns>todo</returns>
+        protected virtual object Execute([NotNull] Expression expression)
+        {
+            Check.NotNull(expression, nameof(expression));
+
+            return DbContextDependencies.QueryProvider.Execute(expression);
+        }
+
         #region Hidden System.Object members
 
         /// <summary>
@@ -1374,4 +1394,10 @@ namespace Microsoft.EntityFrameworkCore
 
         #endregion
     }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public class EmptySet
+    { }
 }
