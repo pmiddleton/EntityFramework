@@ -69,20 +69,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// <param name="model">todo</param>
         public DbFunctionSourceExpression([NotNull] MethodCallExpression expression, [NotNull] IModel model)
         {
-            //get dbFunction from model
-            //temp hack to unwind any expression parameters?
-            //var method = expression.Method.DeclaringType.GetMethod(expression.Method.Name, expression.Method.GetParameters()
-            //  .Select(p => p.ParameterType == typeof(Expression) ? null : p.ParameterType)
-            //.ToArray());
-            //hack for test
-            var method = expression.Method.DeclaringType.GetMethod(expression.Method.Name, new[] { typeof(int), typeof(int) });
+            _dbFunction = FindDbFunction(expression, model);
 
-            _dbFunction = model.Relational().FindDbFunction(method);
-
-            //_dbFunction = model.Relational().FindDbFunction(expression.Method);
-            
-            //todo - what are we going to need here?  The dbFunction, the methodCallExpression, the methodInfo?
-            //I need the DbFunction at some point to do the translation.... where am I going to get it from?
             _expression = expression;
 
             Arguments = _expression.Arguments;
@@ -118,17 +106,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             _dbFunction = oldFuncExpression._dbFunction;
             ReturnType = oldFuncExpression.ReturnType;
             Type = oldFuncExpression.Type;
-
-            //    OriginalExpression = oldFuncExpression.OriginalExpression;
-        }
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        protected override Expression Accept(ExpressionVisitor visitor)
-        {
-            return base.Accept(visitor);
         }
 
         /// <summary>
@@ -138,11 +115,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// <returns>todo</returns>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            //  if (!(visitor is TransformingExpressionVisitor) && OriginalExpression != null)
-            //    this.OriginalExpression = visitor.Visit(this.OriginalExpression);
-
-            //can the parameterextractingexpressionvisitor unwrap the lambda for me here? - probably not safe
-            //can we watch for parameterextractingexpressionvisitor and unwrap ourselves here??
             var newArguments = visitor.Visit(Arguments);
 
             if (visitor is ParameterExtractingExpressionVisitor)
@@ -153,6 +125,41 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             return newArguments != Arguments
                 ? new DbFunctionSourceExpression(this, newArguments)
                 : this;
+        }
+
+        private IDbFunction FindDbFunction(MethodCallExpression exp, IModel model)
+        {
+            var method = exp.Method.DeclaringType.GetMethod(
+                exp.Method.Name,
+                exp.Method.GetParameters()
+                    .Select(p => UnwrapParamterType(p.ParameterType))
+                    .ToArray());
+
+            var dbFunction = model.Relational().FindDbFunction(method);
+
+            if (_dbFunction == null)
+            {
+                throw new Exception("cant find function exception");
+            }
+
+            return dbFunction;
+
+            Type UnwrapParamterType(Type paramType)
+            {
+                if (paramType.IsGenericType
+                    && paramType.GetGenericTypeDefinition() == typeof(Expression<>))
+                {
+                    var expressionType = paramType.GetGenericArguments()[0];
+
+                    if (expressionType.IsGenericType
+                        && expressionType.GetGenericTypeDefinition() == typeof(Func<>))
+                    {
+                        return expressionType.GetGenericArguments().Last();
+                    }
+                }
+
+                return paramType;
+            }
         }
     }
 }
