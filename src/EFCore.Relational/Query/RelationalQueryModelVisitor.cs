@@ -1132,7 +1132,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(selectClause, nameof(selectClause));
             Check.NotNull(queryModel, nameof(queryModel));
 
-            if ((selectClause.Selector.TryGetReferencedQuerySource() as MainFromClause)?.FromExpression is DbFunctionExpression)
+            if ((selectClause.Selector.TryGetReferencedQuerySource() as MainFromClause)?.FromExpression is DbFunctionSourceExpression d
+                    && !d.IsIQueryable)
             {
                 var readExp = BindReadValueMethod(selectClause.Selector.Type, CurrentParameter, 0);
 
