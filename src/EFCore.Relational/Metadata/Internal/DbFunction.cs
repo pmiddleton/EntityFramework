@@ -82,6 +82,13 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                     RelationalStrings.DbFunctionInvalidReturnType(methodInfo.DisplayName(), methodInfo.ReturnType.ShortDisplayName()));
             }
 
+            if (methodInfo.ReturnType.IsGenericType
+                && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>)
+                && model.FindEntityType(methodInfo.ReturnType.GetGenericArguments()[0]) == null)
+            {
+                model.AddQueryType(methodInfo.ReturnType.GetGenericArguments()[0]);
+            }
+
             MethodInfo = methodInfo;
 
             _model = model;

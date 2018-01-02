@@ -460,7 +460,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             }
         }
 
-        /// <summary>
+      /*  /// <summary>
         ///     Adds TableValuedSqlFunctionExpression to this SelectExprssion.
         /// </summary>
         /// <param name="sqlFunctionSourceExpression"> TODO. </param>
@@ -469,7 +469,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             Check.NotNull(sqlFunctionSourceExpression, nameof(sqlFunctionSourceExpression));
 
             AddTable(sqlFunctionSourceExpression);
-        }
+        }*/
 
         /// <summary>
         ///     Adds a table to this SelectExpression.

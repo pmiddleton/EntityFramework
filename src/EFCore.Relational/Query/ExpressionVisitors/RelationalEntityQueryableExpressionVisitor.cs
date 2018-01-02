@@ -121,16 +121,62 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         {
             Check.NotNull(node, nameof(node));
 
-            QueryModelVisitor
-                .BindMethodCallExpression(
-                    node,
-                    (property, querySource, selectExpression)
-                        => selectExpression.AddToProjection(
-                            property,
-                            querySource),
-                    bindSubQueries: true);
+            var dbFunc = _model.Relational().FindDbFunction(node.Method);
 
-            return base.VisitMethodCall(node);
+            if(dbFunc != null)
+            {
+                return VisitDbFunctionExpression(new DbFunctionExpression(node, _model));
+
+                /*//this is so much like VisitDbFunctionExpression - should we just call that or something?
+
+                //todo - refacor shared parts of VisitEntityQueryable?
+                var sqlTranslatingExpressionVisitor = _sqlTranslatingExpressionVisitorFactory.Create(QueryModelVisitor);
+
+                //TODO - how do we get this to bind - what did I mean by that?
+                var sqlFuncExpression = sqlTranslatingExpressionVisitor.Visit(node) as SqlFunctionExpression;
+
+                var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
+                var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
+                QueryModelVisitor.AddQuery(_querySource, selectExpression);
+
+                var name = dbFunc.FunctionName;
+
+                //todo - need this group join stuff?
+                var tableAlias
+                    = relationalQueryCompilationContext.CreateUniqueTableAlias(
+                        _querySource.HasGeneratedItemName()
+                            ? name[0].ToString().ToLowerInvariant()
+                            : (_querySource as GroupJoinClause)?.JoinClause.ItemName
+                              ?? _querySource.ItemName);
+
+                //selectExpression.AddCrossJoinLateral(new CrossJoinLateralExpression(new TableValuedSqlFunctionExpression(sqlFuncExpression, _querySource, tableAlias)));
+                selectExpression.AddTable(new TableValuedSqlFunctionExpression(sqlFuncExpression, _querySource, tableAlias));
+
+                Func<IQuerySqlGenerator> querySqlGeneratorFunc = selectExpression.CreateDefaultQuerySqlGenerator;
+
+                var shaper = new ValueBufferShaper(_querySource);
+
+                return Expression.Call(
+                    QueryModelVisitor.QueryCompilationContext.QueryMethodProvider // TODO: Don't use ShapedQuery when projecting
+                        .ShapedQueryMethod
+                        .MakeGenericMethod(shaper.Type),
+                    EntityQueryModelVisitor.QueryContextParameter,
+                    Expression.Constant(_shaperCommandContextFactory.Create(querySqlGeneratorFunc)),
+                    Expression.Constant(shaper));*/
+            }
+            else
+            { 
+                QueryModelVisitor
+                    .BindMethodCallExpression(
+                        node,
+                        (property, querySource, selectExpression)
+                            => selectExpression.AddToProjection(
+                                property,
+                                querySource),
+                        bindSubQueries: true);
+
+                return base.VisitMethodCall(node);
+            }
         }
 
         /// <summary>
@@ -261,48 +307,54 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         /// <returns>todo</returns>
         protected Expression VisitDbFunctionExpression([NotNull] DbFunctionExpression dbFunctionExpression)
         {
-             var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
-             var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
- 
-             QueryModelVisitor.AddQuery(_querySource, selectExpression);
- 
-             //TODO - how to deal with parameters which are sub expressions?  What does Re-Linq do with those?
-             // Debug.Assert(dbFunctionExpression.Type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IQueryable<>))) ;
- 
-             var sqlTranslatingExpressionVisitor = _sqlTranslatingExpressionVisitorFactory.Create(QueryModelVisitor);
- 
-             //TODO - how do we get this to bind 
-             var sqlFromExpression = sqlTranslatingExpressionVisitor.Visit(dbFunctionExpression) as SqlFunctionExpression;
- 
-             var funcAlias
-                 = _querySource.HasGeneratedItemName()
-                     ? dbFunctionExpression.Name[0].ToString().ToLowerInvariant() //TODO - this is just wrong
-                     : _querySource.ItemName;
+            var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
+            var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
+
+            QueryModelVisitor.AddQuery(_querySource, selectExpression);
+
+            //TODO - how to deal with parameters which are sub expressions?  What does Re-Linq do with those?
+            // Debug.Assert(dbFunctionExpression.Type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IQueryable<>))) ;
+
+            var sqlTranslatingExpressionVisitor = _sqlTranslatingExpressionVisitorFactory.Create(QueryModelVisitor);
+
+            //TODO - how do we get this to bind - what did I mean by that?
+            var sqlFuncExpression = (SqlFunctionExpression)sqlTranslatingExpressionVisitor.Visit(dbFunctionExpression);
+
+            Func<IQuerySqlGenerator> querySqlGeneratorFunc = selectExpression.CreateDefaultQuerySqlGenerator;
+
+            Shaper shaper;
 
             //TODO - will there ever be more than 1 from item here (table or function)?  the select expression relies on the order the tables are added.
-            //selectExpression.AddSqlFunctionExpression(new SqlFunctionSourceExpression(sqlFromExpression, _querySource, funcAlias));
-            selectExpression.AddToProjection(sqlFromExpression);
+            if (dbFunctionExpression.IsTableValued)
+            {
+                var tableAlias
+                    = relationalQueryCompilationContext.CreateUniqueTableAlias(
+                        _querySource.HasGeneratedItemName()
+                            ? dbFunctionExpression.Name[0].ToString().ToLowerInvariant()
+                            : (_querySource as GroupJoinClause)?.JoinClause.ItemName
+                              ?? _querySource.ItemName);
 
-            //dbFunctionExpression.
-            //return dbFunctionExpression;
-            Func<IQuerySqlGenerator> querySqlGeneratorFunc = selectExpression.CreateDefaultQuerySqlGenerator;
- 
-             //TODO - figure out the best way to deal with the IQueryable.  
-             //TODO - this ties into how we will handle direct selects from scalar functions here
-             //FIXME - this is hard coded and wrong
-             //var entityType = _model.FindEntityType(dbFunctionExpression.ReturnType.GenericTypeArguments[0]);
+                selectExpression.AddTable(new TableValuedSqlFunctionExpression(sqlFuncExpression, _querySource, tableAlias));
 
-            //var shaper = CreateShaper(dbFunctionExpression.ReturnType.GenericTypeArguments[0], entityType, selectExpression);
-            var shaper = new ValueBufferShaper(_querySource);
-            //var shaper = new ValueBufferShaper(QuerySource);
+                //TODO - figure out the best way to deal with the IQueryable.  what did I mean by that back then?
+                var entityType = _model.FindEntityType(dbFunctionExpression.ReturnType);
+
+                shaper = CreateShaper(dbFunctionExpression.ReturnType, entityType, selectExpression);
+            }
+            else
+            { 
+                selectExpression.AddToProjection(sqlFuncExpression);
+
+                shaper = new ValueBufferShaper(_querySource);
+            }
 
             return Expression.Call(
-                 QueryModelVisitor.QueryCompilationContext.QueryMethodProvider // TODO: Don't use ShapedQuery when projecting
-                     .ShapedQueryMethod
-                     .MakeGenericMethod(shaper.Type),
-                 EntityQueryModelVisitor.QueryContextParameter,
-                 Expression.Constant(_shaperCommandContextFactory.Create(querySqlGeneratorFunc)),
-                 Expression.Constant(shaper));
+                QueryModelVisitor.QueryCompilationContext.QueryMethodProvider // TODO: Don't use ShapedQuery when projecting
+                    .ShapedQueryMethod
+                    .MakeGenericMethod(shaper.Type),
+                EntityQueryModelVisitor.QueryContextParameter,
+                Expression.Constant(_shaperCommandContextFactory.Create(querySqlGeneratorFunc)),
+                Expression.Constant(shaper));
         }
 
         private Shaper CreateShaper(Type elementType, IEntityType entityType, SelectExpression selectExpression)

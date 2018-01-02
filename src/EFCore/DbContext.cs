@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -1403,8 +1404,8 @@ namespace Microsoft.EntityFrameworkCore
             where U : DbContext
         {
             //todo - verify dbFuncCall contains a method call expression (is there a way to validate it is a registered dbFunction here?)
-            var exp = new DbFunctionExpression(dbFuncCall.Body as MethodCallExpression);
-            var resultsQuery =  DbContextDependencies.QueryProvider.Execute(exp) as IEnumerable<T>;
+            var exp = new DbFunctionExpression(dbFuncCall.Body as MethodCallExpression, Model);
+            var resultsQuery = DbContextDependencies.QueryProvider.Execute(exp) as IEnumerable<T>;
 
             var results = resultsQuery.ToList();
 
@@ -1448,7 +1449,6 @@ namespace Microsoft.EntityFrameworkCore
     {
         //todo - do we need to store this?
         private MethodCallExpression _expression;
-        private readonly Type _returnType;
 
         /// <summary>
         /// todo
@@ -1458,12 +1458,17 @@ namespace Microsoft.EntityFrameworkCore
         /// <summary>
         /// todo
         /// </summary>
-        public override Type Type => ReturnType;
+        public override Type Type { get; }
 
         /// <summary>
         /// todo
         /// </summary>
-        public virtual Type ReturnType => _returnType;
+        public virtual Type ReturnType  { get; }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public virtual bool IsTableValued { get; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
@@ -1471,18 +1476,57 @@ namespace Microsoft.EntityFrameworkCore
         /// </summary>
         public virtual string Name => _expression.Method.Name; //TODO - I need the DBFunction here just use the name for now
 
+        //public virtual DbFunction
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual ReadOnlyCollection<Expression> Arguments { get; [param: NotNull] set; }
+
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="expression">todo</param>
-        public DbFunctionExpression([NotNull] MethodCallExpression expression)
+        /// <param name="model">todo</param>
+        public DbFunctionExpression([NotNull] MethodCallExpression expression, [NotNull] IModel model)
         {
+            //get dbFunction from model
+
             //todo - what are we going to need here?  The dbFunction, the methodCallExpression, the methodInfo?
             //I need the DbFunction at some point to do the translation.... where am I going to get it from?
             _expression = expression;
 
-            //tood - check return type is a valid type (see dbFunction valid return types)
-            _returnType = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
+            Arguments = _expression.Arguments;
+
+            //todo - check return type is a valid type (see dbFunction valid return types)
+            //does the IQueryable need to be converted to IEnumerable?
+            if (_expression.Method.ReturnType.IsGenericType
+                && _expression.Method.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+            {
+                IsTableValued = true;
+                Type = _expression.Method.ReturnType;
+                ReturnType = _expression.Method.ReturnType.GetGenericArguments()[0];
+            }
+            else
+            {
+                Type = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
+                ReturnType = _expression.Method.ReturnType;
+            }
+        }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public DbFunctionExpression([NotNull] DbFunctionExpression oldFuncExpression, [NotNull] ReadOnlyCollection<Expression> newArguments)
+        {
+            Arguments = new ReadOnlyCollection<Expression>(newArguments);
+            _expression = oldFuncExpression._expression;
+            IsTableValued = oldFuncExpression.IsTableValued;
+            ReturnType = oldFuncExpression.ReturnType;
+
+            //    OriginalExpression = oldFuncExpression.OriginalExpression;
         }
 
         /// <summary>
@@ -1501,8 +1545,14 @@ namespace Microsoft.EntityFrameworkCore
         /// <returns>todo</returns>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
-            //todo - deal with parameters
-            return this;
+          //  if (!(visitor is TransformingExpressionVisitor) && OriginalExpression != null)
+            //    this.OriginalExpression = visitor.Visit(this.OriginalExpression);
+
+            var newArguments = visitor.Visit(Arguments);
+
+            return newArguments != Arguments
+                ? new DbFunctionExpression(this, newArguments)
+                : this;
         }
     }
 }

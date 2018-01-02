@@ -1113,16 +1113,20 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 case DbFunctionExpression dbFunctionExpression:
                 {
                     //todo - lots here.  Deal with custom translate and arguments and schema
-                    return new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type);
+                   // return new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type);
 
-                        //var newArguments = Visit(dbFunctionExpression.Arguments);
+                    var newArguments = Visit(dbFunctionExpression.Arguments);
 
-                        //if (newArguments.Any(a => a == null))
-                        //return null;
-
-                        //return dbFunctionExpression.Translate(newArguments)
-                        //     ?? new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type, dbFunctionExpression.SchemaName, newArguments);
+                    if (newArguments.Any(a => a == null))
+                    { 
+                        return null;
                     }
+
+                    //todo - need schema here
+                    return //dbFunctionExpression.Translate(newArguments)
+                            //??
+                            new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type, newArguments);
+                }
                 default:
                     return base.VisitExtension(expression);
             }
