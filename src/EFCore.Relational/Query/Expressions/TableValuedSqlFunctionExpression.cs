@@ -11,12 +11,12 @@ using Remotion.Linq.Clauses;
 
 namespace Microsoft.EntityFrameworkCore.Query.Expressions
 {
-   /* /// <summary>
-    /// todo
+    /// <summary>
+    ///     Represents a SQL Table Valued Fuction.
     /// </summary>
-    public class SqlFunctionSourceExpression : TableExpressionBase
+    public class TableValuedSqlFunctionExpression : TableExpressionBase
     {
-        private readonly SqlFunctionExpression _sqlFunctionExpression;
+        private SqlFunctionExpression _sqlFunctionExpression;
 
         /// <summary>
         /// todo
@@ -29,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// <param name="sqlFunction">todo</param>
         /// <param name="querySource">todo</param>
         /// <param name="alias">todo</param>
-        public SqlFunctionSourceExpression([NotNull] SqlFunctionExpression sqlFunction, [NotNull] IQuerySource querySource, [CanBeNull] string alias)
+        public TableValuedSqlFunctionExpression([NotNull] SqlFunctionExpression sqlFunction, [NotNull] IQuerySource querySource, [CanBeNull] string alias)
              : this(sqlFunction.FunctionName, sqlFunction.Type, sqlFunction.Schema, sqlFunction.Arguments, querySource, alias)
         {
 
@@ -44,7 +44,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// <param name="arguments">todo</param>
         /// <param name="querySource">todo</param>
         /// <param name="alias">todo</param>
-        public SqlFunctionSourceExpression([NotNull] string functionName,
+        public TableValuedSqlFunctionExpression([NotNull] string functionName,
                 [NotNull] Type returnType,
                 [CanBeNull] string schema,
                 [NotNull] IEnumerable<Expression> arguments,
@@ -73,14 +73,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// <returns>todo</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
-            //return visitor.Visit(_sqlFunctionExpression);
-
             Check.NotNull(visitor, nameof(visitor));
 
-            var specificVisitor = visitor as ISqlExpressionVisitor;
-
-            return specificVisitor != null
-                ? specificVisitor.VisitSqlFunctionSource(this)
+            return visitor is ISqlExpressionVisitor specificVisitor
+                ? specificVisitor.VisitTableValuedSqlFunctionExpression(this)
                 : base.Accept(visitor);
         }
 
@@ -94,9 +90,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             var newArguments = visitor.Visit(new ReadOnlyCollection<Expression>(_sqlFunctionExpression.Arguments.ToList()));
 
             return newArguments != _sqlFunctionExpression.Arguments
-                ? new SqlFunctionSourceExpression(new SqlFunctionExpression(_sqlFunctionExpression.FunctionName, Type, _sqlFunctionExpression.Schema, newArguments), QuerySource, Alias)
+                ? new TableValuedSqlFunctionExpression(new SqlFunctionExpression(_sqlFunctionExpression.FunctionName, Type, _sqlFunctionExpression.Schema, newArguments), QuerySource, Alias)
                 : this;
         }
-
-    }*/
+    }
 }

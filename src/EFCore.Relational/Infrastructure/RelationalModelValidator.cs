@@ -80,7 +80,11 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
 
                 if (dbFunction.Translation == null)
                 {
-                    if (RelationalDependencies.CoreTypeMapper.FindMapping(methodInfo.ReturnType) == null)
+                    if (methodInfo.ReturnType.IsGenericType && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+                    {
+                        //todo verify generic parameter is a registered view type
+                    }
+                    else if (RelationalDependencies.CoreTypeMapper.FindMapping(methodInfo.ReturnType) == null)
                     {
                         throw new InvalidOperationException(
                             RelationalStrings.DbFunctionInvalidReturnType(

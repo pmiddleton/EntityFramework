@@ -1406,7 +1406,7 @@ namespace Microsoft.EntityFrameworkCore
         {
             //todo - verify dbFuncCall contains a method call expression (is there a way to validate it is a registered dbFunction here?)
             var exp = new DbFunctionExpression(dbFuncCall.Body as MethodCallExpression);
-            var resultsQuery =  DbContextDependencies.QueryProvider.Execute(exp) as IEnumerable<T>;
+            var resultsQuery = DbContextDependencies.QueryProvider.Execute(exp) as IEnumerable<T>;
 
             var results = resultsQuery.ToList();
 
@@ -1460,12 +1460,17 @@ namespace Microsoft.EntityFrameworkCore
         /// <summary>
         /// todo
         /// </summary>
-        public override Type Type => ReturnType;
+        public override Type Type { get; }
 
         /// <summary>
         /// todo
         /// </summary>
         public virtual Type ReturnType => _returnType;
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public virtual bool IsTableValued { get; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
@@ -1483,8 +1488,20 @@ namespace Microsoft.EntityFrameworkCore
             //I need the DbFunction at some point to do the translation.... where am I going to get it from?
             _expression = expression;
 
-            //tood - check return type is a valid type (see dbFunction valid return types)
-            _returnType = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
+            //todo - check return type is a valid type (see dbFunction valid return types)
+            //does the IQueryable need to be converted to IEnumerable?
+            if (_expression.Method.ReturnType.IsGenericType
+                && _expression.Method.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+            {
+                IsTableValued = true;
+                Type = _expression.Method.ReturnType;
+                _returnType = _expression.Method.ReturnType.GetGenericArguments()[0];
+            }
+            else
+            {
+                Type = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
+                _returnType = _expression.Method.ReturnType;
+            }
         }
 
         /// <summary>
