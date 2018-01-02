@@ -130,21 +130,21 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql.Internal
         /// <summary>
         ///     Visits a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="sqlFunctionSourceExpression"> The SQL function expression. </param>
+        /// <param name="tableValuedSqlFunctionExpression"> The SQL function expression. </param>
         /// <returns>
         ///     An Expression.
         /// </returns>
-        public override Expression VisitSqlFunctionSource(SqlFunctionSourceExpression sqlFunctionSourceExpression)
+        public override Expression VisitTableValuedSqlFunctionExpression(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
         {
-            base.VisitSqlFunctionSource(sqlFunctionSourceExpression);
+            base.VisitTableValuedSqlFunctionExpression(tableValuedSqlFunctionExpression);
 
-            if (sqlFunctionSourceExpression.Alias != null)
+            if (tableValuedSqlFunctionExpression.Alias != null)
             {
                 Sql.Append(" AS ")
-                    .Append(SqlGenerator.DelimitIdentifier(sqlFunctionSourceExpression.Alias));
+                    .Append(SqlGenerator.DelimitIdentifier(tableValuedSqlFunctionExpression.Alias));
             }
 
-            return sqlFunctionSourceExpression;
+            return tableValuedSqlFunctionExpression;
         }
 
         /// <summary>

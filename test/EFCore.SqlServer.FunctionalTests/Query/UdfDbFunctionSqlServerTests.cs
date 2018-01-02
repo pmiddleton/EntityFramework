@@ -55,6 +55,8 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             #region Function Stubs
 
+            #region Static Functions
+
             public enum ReportingPeriod
             {
                 Winter = 0,
@@ -206,6 +208,23 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             #endregion
 
+            #region Table Functions
+
+            public class OrderByYear
+            {
+                public int Count { get; set; }
+                public int Year { get; set; }
+            }
+
+            public IQueryable<OrderByYear> GetCustomerOrderCountByYear(int customerId)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
+            #endregion
+
             public UDFSqlContext(DbContextOptions options)
                 : base(options)
             {
@@ -245,6 +264,10 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 //Bootstrap
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(SCHEMA_NAME))).HasName("SCHEMA_NAME");
+
+                //Table
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear)));
+                
             }
         }
 
@@ -1563,6 +1586,31 @@ WHERE 3 = [dbo].CustomerOrderCount(ABS([c].[Id]))");
 
         #endregion
 
+        #region Table Valued Tests
+
+
+        [Fact]
+        public void Table_Function_CrossApply_Correlated_Select_Result()
+        {
+            using (var context = CreateContext())
+            {
+               // var cust = (from c in context.Customers
+              //           select c).ToList();
+
+                var orders = (from c in context.Customers
+                              from r in context.GetCustomerOrderCountByYear(c.Id)
+                              orderby r.Count descending
+                              select r).ToList();
+
+                Assert.Equal(4, orders.Count);
+               // Assert.Equal(81, orders[0].Count);
+                //Assert.Equal(71, orders[1].Count);
+                //Assert.Equal(55, orders[2].Count);
+            }
+        }
+
+        #endregion
+
         public class SqlServerUDFFixture : SharedStoreFixtureBase<DbContext>
         {
             protected override string StoreName { get; } = "UDFDbFunctionSqlServerTests";
@@ -1637,12 +1685,31 @@ WHERE 3 = [dbo].CustomerOrderCount(ABS([c].[Id]))");
                                                         return @customerName;
                                                     end");
 
+                context.Database.ExecuteSqlCommand(@"create function [dbo].GetCustomerOrderCountByYear(@customerId int)
+                                                    returns @reports table
+                                                    (
+	                                                    Count int not null,
+	                                                    Year int not null
+                                                    )
+                                                    as
+                                                    begin
+	
+	                                                    insert into @reports
+	                                                    select count(id), year(orderDate)
+	                                                    from orders
+	                                                    where customerId = @customerId
+	                                                    group by customerId, year(orderDate)
+	                                                    order by year(orderDate)
+	
+	                                                    return 
+                                                    end");
+
                 var order11 = new Order { Name = "Order11", ItemCount = 4, OrderDate = new DateTime(2000, 1, 20) };
                 var order12 = new Order { Name = "Order12", ItemCount = 8, OrderDate = new DateTime(2000, 2, 21) };
-                var order13 = new Order { Name = "Order13", ItemCount = 15, OrderDate = new DateTime(2000, 3, 20) };
+                var order13 = new Order { Name = "Order13", ItemCount = 15, OrderDate = new DateTime(2001, 3, 20) };
                 var order21 = new Order { Name = "Order21", ItemCount = 16, OrderDate = new DateTime(2000, 4, 21) };
                 var order22 = new Order { Name = "Order22", ItemCount = 23, OrderDate = new DateTime(2000, 5, 20) };
-                var order31 = new Order { Name = "Order31", ItemCount = 42, OrderDate = new DateTime(2000, 6, 21) };
+                var order31 = new Order { Name = "Order31", ItemCount = 42, OrderDate = new DateTime(2001, 6, 21) };
 
                 var customer1 = new Customer { FirstName = "Customer", LastName = "One", Orders = new List<Order> { order11, order12, order13 } };
                 var customer2 = new Customer { FirstName = "Customer", LastName = "Two", Orders = new List<Order> { order21, order22 } };

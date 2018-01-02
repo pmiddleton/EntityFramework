@@ -184,12 +184,12 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         Expression VisitColumnReference([NotNull] ColumnReferenceExpression columnReferenceExpression);
 
         /// <summary>
-        ///     Visit a SqlFunctionSourceExpression.
+        ///     Visit a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="sqlFunctionSourceExpression"> todo </param>
+        /// <param name="tableValuedSqlFunctionExpression"> todo </param>
         /// <returns>
         ///     An Expression.
         /// </returns>
-        Expression VisitSqlFunctionSource([NotNull] SqlFunctionSourceExpression sqlFunctionSourceExpression);
+        Expression VisitTableValuedSqlFunctionExpression([NotNull] TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression);
     }
 }

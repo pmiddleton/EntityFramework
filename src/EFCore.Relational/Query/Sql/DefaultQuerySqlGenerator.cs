@@ -1472,13 +1472,13 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         /// <summary>
         ///     Visits a todo.
         /// </summary>
-        /// <param name="sqlFunctionSourceExpression">todo </param>
+        /// <param name="tableValuedSqlFunctionExpression">todo </param>
         /// <returns>
         ///     An Expression.
         /// </returns>
-        public virtual Expression VisitSqlFunctionSource(SqlFunctionSourceExpression sqlFunctionSourceExpression)
+        public virtual Expression VisitTableValuedSqlFunctionExpression(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
         {
-            return VisitSqlFunction(sqlFunctionSourceExpression.SqlFunctionExpression);
+            return VisitSqlFunction(tableValuedSqlFunctionExpression.SqlFunctionExpression);
         }
 
         /// <summary>
