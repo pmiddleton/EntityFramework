@@ -137,7 +137,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
 
             var dbFunction = model.Relational().FindDbFunction(method);
 
-            if (_dbFunction == null)
+            if (dbFunction == null)
             {
                 throw new Exception("cant find function exception");
             }
