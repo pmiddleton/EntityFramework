@@ -461,17 +461,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             }
         }
 
-      /*  /// <summary>
-        ///     Adds TableValuedSqlFunctionExpression to this SelectExprssion.
-        /// </summary>
-        /// <param name="sqlFunctionSourceExpression"> TODO. </param>
-        public virtual void AddSqlFunctionExpression([NotNull] SqlFunctionSourceExpression sqlFunctionSourceExpression)
-        {
-            Check.NotNull(sqlFunctionSourceExpression, nameof(sqlFunctionSourceExpression));
-
-            AddTable(sqlFunctionSourceExpression);
-        }*/
-
         /// <summary>
         ///     Adds a table to this SelectExpression.
         /// </summary>
@@ -1016,6 +1005,34 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             _projection.AddRange(projection);
 
             return crossJoinLateralExpression;
+        }
+
+        /// <summary>
+        ///     Adds a SQL CROSS JOIN LATERAL to this SelectExpression.
+        /// </summary>
+        /// <param name="tableExpression"> The target table expression. </param>
+        /// <param name="projection"> A sequence of expressions that should be added to the projection. </param>
+        public virtual JoinExpressionBase AddCrossJoinLateralOuter(
+            [NotNull] TableExpressionBase tableExpression,
+            [NotNull] IEnumerable<Expression> projection)
+        {
+            Check.NotNull(tableExpression, nameof(tableExpression));
+            Check.NotNull(projection, nameof(projection));
+
+            //todo - this seems very wrong - where is the right place to do this?  By the caller?  By the sql walker?
+            //for TVF we need to unwrap the inner select clause
+            if (tableExpression is SelectExpression s && s.Tables.First() is TableValuedSqlFunctionExpression)
+            { 
+                tableExpression = s.Tables.First();
+                projection = s.Projection;
+            }
+
+            var crossJoinLateralOuterExpression = new CrossJoinLateralOuterExpression(tableExpression);
+            
+            _tables.Add(crossJoinLateralOuterExpression);
+            _projection.AddRange(projection);
+
+            return crossJoinLateralOuterExpression;
         }
 
         /// <summary>

@@ -1116,7 +1116,6 @@ namespace Microsoft.EntityFrameworkCore.Query
         private bool IsPartOfLeftJoinPattern(AdditionalFromClause additionalFromClause, QueryModel queryModel)
         {
             var index = queryModel.BodyClauses.IndexOf(additionalFromClause);
-            var groupJoinClause = queryModel.BodyClauses.ElementAtOrDefault(index - 1) as GroupJoinClause;
 
             var subQueryModel
                 = (additionalFromClause?.FromExpression as SubQueryExpression)
@@ -1125,7 +1124,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             var referencedQuerySource
                 = subQueryModel?.MainFromClause.FromExpression.TryGetReferencedQuerySource();
 
-            if (groupJoinClause != null
+            if (queryModel.BodyClauses.ElementAtOrDefault(index - 1) is GroupJoinClause groupJoinClause
                 && groupJoinClause == referencedQuerySource
                 && queryModel.CountQuerySourceReferences(groupJoinClause) == 1
                 && subQueryModel.BodyClauses.Count == 0

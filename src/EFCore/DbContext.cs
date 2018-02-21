@@ -1409,7 +1409,7 @@ namespace Microsoft.EntityFrameworkCore
         protected virtual T ExecuteScalarMethod<U, T>(Expression<Func<U, T>> dbFuncCall)
             where U : DbContext
         {
-            //todo - verify dbFuncCall contains a method call expression (is there a way to validate it is a registered dbFunction here?)
+            //todo - verify dbFuncCall contains a method call expression
             var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
             var resultsQuery = DbContextDependencies.QueryProvider.Execute(dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model)) as IEnumerable<T>;
 
@@ -1419,6 +1419,24 @@ namespace Microsoft.EntityFrameworkCore
             //how am I going to get the dbFunction from the model here - I can't access FindDbFunction because it is in relational.
             //maybe I need to pass a reference to the model and find it later?  If I move DbFunctionSourceExpression into relational I can access it, but then how do I create DbFunctionSourceExpression.
             //need some kind of factory.....
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="U">todo</typeparam>
+        /// <typeparam name="T">todo</typeparam>
+        /// <param name="dbFuncCall">todo</param>
+        /// <returns>todo</returns>
+        protected IQueryable<T> ExecuteTableValuedFunction<U, T>(Expression<Func<U, IQueryable<T>>> dbFuncCall)
+            where U : DbContext
+        {
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+         
+            //todo - verify dbFuncCall contains a method call expression
+            var resultsQuery = dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model);
+
+            return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
         }
 
         /// <summary>

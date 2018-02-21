@@ -85,6 +85,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             if (methodInfo.ReturnType.IsGenericType
                 && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
             {
+                if(methodInfo.IsStatic)
+                { 
+                    throw new ArgumentException(
+                        RelationalStrings.DbFunctionQueryableNotStatic(methodInfo.DisplayName()));
+                }
+
                 IsIQueryable = true;
 
                 if (model.FindEntityType(methodInfo.ReturnType.GetGenericArguments()[0]) == null)

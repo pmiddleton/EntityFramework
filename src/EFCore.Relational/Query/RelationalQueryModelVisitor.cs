@@ -1496,9 +1496,14 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var joinExpression
                 = correlated
-                    ? outerSelectExpression.AddCrossJoinLateral(
-                        innerSelectExpression.Tables.First(),
-                        innerSelectExpression.Projection)
+                    ? QueryCompilationContext.IsLateralJoinOuterSupported
+                            && innerShapedQuery?.Method.MethodIsClosedFormOf(LinqOperatorProvider.DefaultIfEmpty) == true
+                        ? outerSelectExpression.AddCrossJoinLateralOuter(
+                            innerSelectExpression.Tables.First(),
+                            innerSelectExpression.Projection)
+                        : outerSelectExpression.AddCrossJoinLateral(
+                            innerSelectExpression.Tables.First(),
+                            innerSelectExpression.Projection)
                     : outerSelectExpression.AddCrossJoin(
                         innerSelectExpression.Tables.First(),
                         innerSelectExpression.Projection);

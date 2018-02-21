@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 
@@ -16,8 +17,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
     /// </summary>
     public class DbFunctionSourceExpression : Expression
     {
-        //todo - do we need to store this?
-        private readonly MethodCallExpression _expression;
         private readonly IDbFunction _dbFunction ;
 
         /// <summary>
@@ -45,11 +44,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// </summary>
         public virtual Type UnwrappedType => Type.IsGenericType ? Type.GetGenericArguments()[0] : Type;
 
-       /// <summary>
+        /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual string Name => _expression.Method.Name; //TODO - I need the DBFunction here just use the name for now
+        public virtual string Name => _dbFunction.FunctionName;
 
         /// <summary>
         /// todo
@@ -70,28 +69,25 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         public DbFunctionSourceExpression([NotNull] MethodCallExpression expression, [NotNull] IModel model)
         {
             _dbFunction = FindDbFunction(expression, model);
+            Arguments = expression.Arguments;
 
-            _expression = expression;
-
-            Arguments = _expression.Arguments;
-
-            //todo - need to make sure generic is something other than IQueryable?
-            //todo - check return type is a valid type (see dbFunction valid return types)
-            //does the IQueryable need to be converted to IEnumerable?
-            if (_expression.Method.ReturnType.IsGenericType)
+            if (expression.Method.ReturnType.IsGenericType)
             {
-                if (_expression.Method.ReturnType.GetGenericTypeDefinition() != typeof(IQueryable<>))
+                //todo - add unit test
+                if (expression.Method.ReturnType.GetGenericTypeDefinition() != typeof(IQueryable<>))
                 {
-                    throw new Exception("message here - must be iqueryable");
+                    throw new InvalidOperationException(
+                        RelationalStrings.DbFunctionTableValuedFunctionMustReturnIQueryable(_dbFunction.FunctionName));
                 }
 
-                Type = _expression.Method.ReturnType;
-                ReturnType = _expression.Method.ReturnType.GetGenericArguments()[0];
+                //todo - should i be using the dbfunction return type here?  If not do I have to verify the expression return type?
+                Type = expression.Method.ReturnType;
+                ReturnType = expression.Method.ReturnType.GetGenericArguments()[0];
             }
             else
             {
-                Type = typeof(IEnumerable<>).MakeGenericType(_expression.Method.ReturnType);
-                ReturnType = _expression.Method.ReturnType;
+                Type = typeof(IEnumerable<>).MakeGenericType(expression.Method.ReturnType);
+                ReturnType = expression.Method.ReturnType;
             }
         }
 
@@ -102,7 +98,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         public DbFunctionSourceExpression([NotNull] DbFunctionSourceExpression oldFuncExpression, [NotNull] ReadOnlyCollection<Expression> newArguments)
         {
             Arguments = new ReadOnlyCollection<Expression>(newArguments);
-            _expression = oldFuncExpression._expression;
             _dbFunction = oldFuncExpression._dbFunction;
             ReturnType = oldFuncExpression.ReturnType;
             Type = oldFuncExpression.Type;
@@ -137,9 +132,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
 
             var dbFunction = model.Relational().FindDbFunction(method);
 
+            //todo - add unit test
             if (dbFunction == null)
             {
-                throw new Exception("cant find function exception");
+                throw new InvalidOperationException(
+                    RelationalStrings.DbFunctionNotFound(method.Name));
             }
 
             return dbFunction;

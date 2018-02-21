@@ -132,20 +132,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
             }
         }
 
-      /*  /// <summary>
-        /// todo
-        /// </summary>
-        /// <typeparam name="T">todo</typeparam>
-        /// <param name="expression">todo</param>
-        /// <returns>todo</returns>
-        protected override Expression VisitLambda<T>(Expression<T> expression)
-        {
-            //todo - check that this is "our" lambda somehow?
-            return base.Visit(expression.Body);
-
-            //return base.VisitLambda(expression);
-        }*/
-
         /// <summary>
         ///     Visit a binary expression.
         /// </summary>
@@ -1120,10 +1106,6 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 }
                 case DbFunctionSourceExpression dbFunctionExpression:
                 {
-                    //todo - lots here.  Deal with custom translate and arguments and schema
-                   // return new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.Type);
-
-                        //we need to unwrap lambdas right here so we don't have to override visitlamda.. otherwise parameterextractingexpressionvisitor?
                     var newArguments = Visit(dbFunctionExpression.Arguments);
 
                     if (newArguments.Any(a => a == null))
@@ -1131,6 +1113,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                         return null;
                     }
 
+                    //TODO - can you custom translate here?
                     return //dbFunctionExpression.Translate(newArguments)
                             //??
                             new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.UnwrappedType, dbFunctionExpression.Schema, newArguments);
