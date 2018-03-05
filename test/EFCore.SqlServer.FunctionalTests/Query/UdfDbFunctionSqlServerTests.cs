@@ -273,6 +273,11 @@ namespace Microsoft.EntityFrameworkCore.Query
                 return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProductsCustomTranslation());
             }
 
+            public IQueryable<TopSellingProduct> GetTopTwoSellingProductsCustomTranslation()
+            {
+                return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProductsCustomTranslation());
+            }
+
             #endregion
 
             #endregion
@@ -2364,6 +2369,16 @@ ORDER BY [p].[Id] DESC");
 
                 Assert.Equal(5, orders.Count);
 
+                Assert.Equal(1, orders[0].Id);
+                Assert.Equal(1, orders[1].Id);
+                Assert.Equal(2, orders[2].Id);
+                Assert.Equal(3, orders[3].Id);
+                Assert.Equal(4, orders[4].Id);
+                Assert.Equal("One", orders[0].LastName);
+                Assert.Equal("One", orders[1].LastName);
+                Assert.Equal("Two", orders[2].LastName);
+                Assert.Equal("Three", orders[3].LastName);
+                Assert.Equal("Four", orders[4].LastName);
                 Assert.Equal(2, orders[0].Count);
                 Assert.Equal(1, orders[1].Count);
                 Assert.Equal(2, orders[2].Count);
@@ -2373,14 +2388,8 @@ ORDER BY [p].[Id] DESC");
                 Assert.Equal(2001, orders[1].Year);
                 Assert.Equal(2000, orders[2].Year);
                 Assert.Equal(2001, orders[3].Year);
-                Assert.Null(orders[4].Year);
-                Assert.Equal(1, orders[0].CustomerId);
-                Assert.Equal(1, orders[1].CustomerId);
-                Assert.Equal(2, orders[2].CustomerId);
-                Assert.Equal(3, orders[3].CustomerId);
-                Assert.Null(orders[4].CustomerId);
 
-                AssertSql(@"SELECT [g].[Count], [g].[CustomerId], [g].[Year]
+                AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
 FROM [Customers] AS [c]
 OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
 ORDER BY [c].[Id], [g].[Year]");
