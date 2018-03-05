@@ -1491,8 +1491,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                 = correlated
                     ? QueryCompilationContext.IsLateralJoinOuterSupported
                             && innerShapedQuery?.Method.MethodIsClosedFormOf(LinqOperatorProvider.DefaultIfEmpty) == true
-                            && innerSelectExpression.Tables.First() is SelectExpression s
-                            && s.Tables.First() is TableValuedSqlFunctionExpression
+                            && ((innerSelectExpression.Tables.First() is SelectExpression s
+                                && s.Tables.First() is TableValuedSqlFunctionExpression)
+                                || innerSelectExpression.Tables.First() is TableValuedSqlFunctionExpression)
                         ? outerSelectExpression.AddCrossJoinLateralOuter(
                             innerSelectExpression.Tables.First(),
                             innerSelectExpression.Projection)

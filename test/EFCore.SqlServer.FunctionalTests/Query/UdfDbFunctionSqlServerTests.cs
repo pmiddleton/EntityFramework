@@ -1811,7 +1811,75 @@ ORDER BY [c].[Id], [r].[Year]");
         }
 
         [Fact]
-        public void Table_Function_CrossApply_Correlated_Select_Result()
+        public void TV_Function_Select_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var cust = (from c in context.Customers
+                           orderby c.Id
+                           select new
+                           {
+                         //     c.Id,
+                               Prods = context.GetTopTwoSellingProducts().ToList()
+                           }).ToList();
+            }
+        }
+
+        [Fact]
+        public void Apauldevtest()
+        {
+            using (var context = CreateContext())
+            {
+                var cust = (from c in context.Customers
+                            select new
+                            {
+                                OrderCount = c.Orders.ToList()
+                            }).ToList();
+
+                AssertSql(
+                    @"SELECT TOP(2) [c].[LastName], [dbo].[CustomerOrderCount]([c].[Id]) AS [OrderCount]
+FROM [Customers] AS [c]
+WHERE [c].[Id] = 1");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Correlated_Select_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var cust = (from c in context.Customers
+                              orderby c.Id
+                              select new
+                              {
+                                  c.Id,
+                                  c.LastName,
+                                  Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                              }).ToList();
+
+                Assert.Equal(4, cust.Count);
+                Assert.Equal(2, cust[0].Orders[0].Count);
+                Assert.Equal(1, cust[0].Orders[0].Count);
+                Assert.Equal(2, cust[0].Orders[0].Count);
+                Assert.Equal(1, cust[0].Orders[0].Count);
+                Assert.Equal("One", cust[0].LastName);
+                Assert.Equal("Two", cust[1].LastName);
+                Assert.Equal("Three", cust[2].LastName);
+                Assert.Equal("Four", cust[3].LastName);
+                Assert.Equal(1, cust[0].Id);
+                Assert.Equal(1, cust[1].Id);
+                Assert.Equal(2, cust[2].Id);
+                Assert.Equal(3, cust[3].Id);
+
+                AssertSql(@"SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
+FROM [Customers] AS [c]
+CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [r]
+ORDER BY [c].[Id], [r].[Year]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_CrossApply_Correlated_Select_Result()
         {
             using (var context = CreateContext())
             {
@@ -2018,15 +2086,6 @@ ORDER BY [p].[Id] DESC");
                               orderby c.Id, r.Year
                               select r).ToList();
 
-                /* 
-                 select new
-                 {
-                     c.Id,
-                     c.LastName,
-                     r.Year,
-                     r.Count
-                 }).ToList();*/
-
                 Assert.Equal(5, orders.Count);
 
                 Assert.Equal(2, orders[0].Count);
@@ -2046,6 +2105,120 @@ ORDER BY [p].[Id] DESC");
                 Assert.Null(orders[4].CustomerId);
 
                 AssertSql(@"SELECT [g].[Count], [g].[CustomerId], [g].[Year]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
+ORDER BY [c].[Id], [g].[Year]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_OuterApply_Correlated_Select_DbSet()
+        {
+            using (var context = CreateContext())
+            {
+                var custs = (from c in context.Customers
+                             from r in context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty()
+                             orderby c.Id, r.Year
+                             select c).ToList();
+
+                Assert.Equal(5, custs.Count);
+
+                Assert.Equal(1, custs[0].Id);
+                Assert.Equal(1, custs[1].Id);
+                Assert.Equal(2, custs[2].Id);
+                Assert.Equal(3, custs[3].Id);
+                Assert.Equal(4, custs[4].Id);
+                Assert.Equal("One", custs[0].LastName);
+                Assert.Equal("One", custs[1].LastName);
+                Assert.Equal("Two", custs[2].LastName);
+                Assert.Equal("Three", custs[3].LastName);
+                Assert.Equal("Four", custs[4].LastName);
+
+                AssertSql(@"SELECT [c].[Id], [c].[FirstName], [c].[LastName]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
+ORDER BY [c].[Id], [g].[Year]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_OuterApply_Correlated_Select_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var orders = (from c in context.Customers
+                              from r in context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty()
+                              orderby c.Id, r.Year
+                              select new
+                              {
+                                  c.Id,
+                                  c.LastName,
+                                  r.Year,
+                                  r.Count
+                              }).ToList();
+
+                Assert.Equal(5, orders.Count);
+
+                Assert.Equal(1, orders[0].Id);
+                Assert.Equal(1, orders[1].Id);
+                Assert.Equal(2, orders[2].Id);
+                Assert.Equal(3, orders[3].Id);
+                Assert.Equal(4, orders[4].Id);
+                Assert.Equal("One", orders[0].LastName);
+                Assert.Equal("One", orders[1].LastName);
+                Assert.Equal("Two", orders[2].LastName);
+                Assert.Equal("Three", orders[3].LastName);
+                Assert.Equal("Four", orders[4].LastName);
+                Assert.Equal(2, orders[0].Count);
+                Assert.Equal(1, orders[1].Count);
+                Assert.Equal(2, orders[2].Count);
+                Assert.Equal(1, orders[3].Count);
+                Assert.Null(orders[4].Count);
+                Assert.Equal(2000, orders[0].Year);
+                Assert.Equal(2001, orders[1].Year);
+                Assert.Equal(2000, orders[2].Year);
+                Assert.Equal(2001, orders[3].Year);
+
+                AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
+ORDER BY [c].[Id], [g].[Year]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_OuterApply_Correlated_Select_Anonymous_Has_Outer()
+        {
+            using (var context = CreateContext())
+            {
+                var cust = (from c in context.Customers
+                            orderby c.Id
+                            select new
+                            {
+                                c.Id,
+                                c.LastName,
+                                OrderCount = context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty().Select(r => r.Count).ToList()
+
+
+                            }).ToList();
+
+                Assert.Equal(4, cust.Count);
+
+                Assert.Equal(1, cust[0].Id);
+                Assert.Equal(2, cust[1].Id);
+                Assert.Equal(3, cust[2].Id);
+                Assert.Equal(4, cust[3].Id);
+                Assert.Equal("One", cust[0].LastName);
+                Assert.Equal("Two", cust[1].LastName);
+                Assert.Equal("Three", cust[2].LastName);
+                Assert.Equal("Four", cust[3].LastName);
+                Assert.Equal(2, cust[0].OrderCount[0]);
+                Assert.Equal(2, cust[1].OrderCount[0]);
+                Assert.Equal(1, cust[2].OrderCount[0]);
+                Assert.Null(cust[3].OrderCount);
+            
+
+                AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
 FROM [Customers] AS [c]
 OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
 ORDER BY [c].[Id], [g].[Year]");
@@ -2112,53 +2285,8 @@ ORDER BY [r].[Year]");
                     }
                 }
 
-                //TODO - test that throw exceptions when parameter type mismatch between c# definition and sql function (wrong names, types (when not convertable) etc)
-
-                [Fact]
-                public void TV_Function_OuterApply_Correlated_Select_Anonymous()
-                {
-                    using (var context = CreateContext())
-                    {
-                        var orders = (from c in context.Customers
-                                      from o in context.GetLatestNOrdersForCustomer(2, c.CustomerID).DefaultIfEmpty()
-                                      select new
-                                      {
-                                          c.CustomerID,
-                                          o.OrderId,
-                                          o.OrderDate
-                                      }).ToList();
-
-                        Assert.Equal(179, orders.Count);
-                    }
-                }
-
-                [Fact]
-                public void CrossJoin()
-                {
-                    using (var context = CreateContext())
-                    {
-                        var foo = (from c in context.Customers
-                                       //from p in context.Products
-                                       //select new { c, p }).ToList();
-                                   select c).ToList();
-                    }
-                }
-
-                [Fact]
-                public void TV_Function_OuterApply_Correlated_Select_Result()
-                {
-                    //TODO - currently fails because EF tries to change track the result item "o" which is null due to the outer apply
-                    //resolve once we figure out what kind of Type TVF return types are
-                    using (var context = CreateContext())
-                    {
-                        var orders = (from c in context.Customers
-                                      where c.CustomerID == "FISSA" || c.CustomerID == "BOLID"
-                                      from o in context.GetLatestNOrdersForCustomer(2, c.CustomerID).DefaultIfEmpty()
-                                      select new { c, o }).ToList();
-
-                        Assert.Equal(3, orders.Count);
-                    }
-                }
+                
+            
 
                 /* [Fact]
                  public void LeftOuterJoin()

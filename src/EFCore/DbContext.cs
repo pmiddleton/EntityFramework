@@ -1421,9 +1421,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <typeparam name="U">todo</typeparam>
         /// <param name="dbFuncCall">todo</param>
         /// <returns>todo</returns>
-        protected virtual T ExecuteScalarMethod<U, T>(Expression<Func<U, T>> dbFuncCall)
+        protected virtual T ExecuteScalarMethod<U, T>([NotNull] Expression<Func<U, T>> dbFuncCall)
             where U : DbContext
         {
+            Check.NotNull(dbFuncCall, nameof(dbFuncCall));
+
             //todo - verify dbFuncCall contains a method call expression
             var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
             var resultsQuery = DbContextDependencies.QueryProvider.Execute(dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model)) as IEnumerable<T>;
@@ -1443,9 +1445,11 @@ namespace Microsoft.EntityFrameworkCore
         /// <typeparam name="T">todo</typeparam>
         /// <param name="dbFuncCall">todo</param>
         /// <returns>todo</returns>
-        protected IQueryable<T> ExecuteTableValuedFunction<U, T>(Expression<Func<U, IQueryable<T>>> dbFuncCall)
+        protected virtual IQueryable<T> ExecuteTableValuedFunction<U, T>([NotNull] Expression<Func<U, IQueryable<T>>> dbFuncCall)
             where U : DbContext
         {
+            Check.NotNull(dbFuncCall, nameof(dbFuncCall));
+
             var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
          
             //todo - verify dbFuncCall contains a method call expression
@@ -1454,14 +1458,14 @@ namespace Microsoft.EntityFrameworkCore
             return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
         }
 
-        /// <summary>
+      /*  /// <summary>
         /// todo
         /// </summary>
         /// <typeparam name="T">todo</typeparam>
         /// <param name="callingMethod">todo</param>
         /// <param name="methodParams">todo</param>
         /// <returns>todo</returns>
-        protected IQueryable<T> ExecuteTableValuedFunction<T>(MethodInfo callingMethod, params object[] methodParams)
+        protected IQueryable<T> ExecuteTableValuedFunction<T>([NotNull] MethodInfo callingMethod, params object[] methodParams)
         {
             var c = Expression.Call(Expression.Constant(this),
                     callingMethod,
@@ -1489,7 +1493,7 @@ namespace Microsoft.EntityFrameworkCore
                       Expression.Constant(this),
                       callingMethod,
                       paramExps));*/
-        }
+      //  }
 
         #region Hidden System.Object members
 
