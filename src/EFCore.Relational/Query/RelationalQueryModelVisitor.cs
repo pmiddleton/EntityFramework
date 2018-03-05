@@ -1127,6 +1127,20 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(selectClause, nameof(selectClause));
             Check.NotNull(queryModel, nameof(queryModel));
 
+            if ((selectClause.Selector.TryGetReferencedQuerySource() as MainFromClause)?.FromExpression is DbFunctionSourceExpression d
+                && !d.IsIQueryable)
+            {
+                var readExp = BindReadValueMethod(selectClause.Selector.Type, CurrentParameter, 0);
+
+                Expression = Expression.Call(
+                    LinqOperatorProvider.Select
+                        .MakeGenericMethod(CurrentParameter.Type, readExp.Type),
+                    Expression,
+                    Expression.Lambda(readExp, CurrentParameter));
+
+                return;
+            }
+
             base.VisitSelectClause(selectClause, queryModel);
 
             if (Expression is MethodCallExpression methodCallExpression
@@ -1472,11 +1486,19 @@ namespace Microsoft.EntityFrameworkCore.Query
                 outerSelectExpression.RemoveRangeFromProjection(previousProjectionCount);
             }
 
+            //todo this first check is too complex here
             var joinExpression
                 = correlated
-                    ? outerSelectExpression.AddCrossJoinLateral(
-                        innerSelectExpression.Tables.First(),
-                        innerSelectExpression.Projection)
+                    ? QueryCompilationContext.IsLateralJoinOuterSupported
+                            && innerShapedQuery?.Method.MethodIsClosedFormOf(LinqOperatorProvider.DefaultIfEmpty) == true
+                            && innerSelectExpression.Tables.First() is SelectExpression s
+                            && s.Tables.First() is TableValuedSqlFunctionExpression
+                        ? outerSelectExpression.AddCrossJoinLateralOuter(
+                            innerSelectExpression.Tables.First(),
+                            innerSelectExpression.Projection)
+                        : outerSelectExpression.AddCrossJoinLateral(
+                            innerSelectExpression.Tables.First(),
+                            innerSelectExpression.Projection)
                     : outerSelectExpression.AddCrossJoin(
                         innerSelectExpression.Tables.First(),
                         innerSelectExpression.Projection);

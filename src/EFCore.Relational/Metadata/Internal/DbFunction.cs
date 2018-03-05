@@ -82,6 +82,23 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                     RelationalStrings.DbFunctionInvalidReturnType(methodInfo.DisplayName(), methodInfo.ReturnType.ShortDisplayName()));
             }
 
+            if (methodInfo.ReturnType.IsGenericType
+                && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+            {
+                if (methodInfo.IsStatic)
+                {
+                    throw new ArgumentException(
+                        RelationalStrings.DbFunctionQueryableNotStatic(methodInfo.DisplayName()));
+                }
+
+                IsIQueryable = true;
+
+                if (model.FindEntityType(methodInfo.ReturnType.GetGenericArguments()[0]) == null)
+                {
+                    model.AddQueryType(methodInfo.ReturnType.GetGenericArguments()[0]);
+                }
+            }
+
             MethodInfo = methodInfo;
 
             _model = model;
@@ -185,6 +202,12 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual Func<IReadOnlyCollection<Expression>, Expression> Translation { get; set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public virtual bool IsIQueryable { get; set; }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used

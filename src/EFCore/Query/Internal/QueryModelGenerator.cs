@@ -23,6 +23,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
     {
         private readonly INodeTypeProvider _nodeTypeProvider;
         private readonly IEvaluatableExpressionFilter _evaluatableExpressionFilter;
+        private readonly IExpressionTranformationProvider _expressionTranformationProvider;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -30,13 +31,16 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         /// </summary>
         public QueryModelGenerator(
             [NotNull] INodeTypeProviderFactory nodeTypeProviderFactory,
-            [NotNull] IEvaluatableExpressionFilter evaluatableExpressionFilter)
+            [NotNull] IEvaluatableExpressionFilter evaluatableExpressionFilter,
+            [NotNull] IExpressionTranformationProvider expressionTranformationProvider)
         {
             Check.NotNull(nodeTypeProviderFactory, nameof(nodeTypeProviderFactory));
             Check.NotNull(evaluatableExpressionFilter, nameof(evaluatableExpressionFilter));
+            Check.NotNull(expressionTranformationProvider, nameof(expressionTranformationProvider));
 
             _nodeTypeProvider = nodeTypeProviderFactory.Create();
             _evaluatableExpressionFilter = evaluatableExpressionFilter;
+            _expressionTranformationProvider = expressionTranformationProvider;
         }
 
         /// <summary>
@@ -78,7 +82,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                         new IExpressionTreeProcessor[]
                         {
                             new PartialEvaluatingExpressionTreeProcessor(_evaluatableExpressionFilter),
-                            new TransformingExpressionTreeProcessor(ExpressionTransformerRegistry.CreateDefault())
+                            new TransformingExpressionTreeProcessor(_expressionTranformationProvider)
                         })));
     }
 }
