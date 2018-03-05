@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1450,6 +1452,83 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         IServiceProvider IInfrastructure<IServiceProvider>.Instance => InternalServiceProvider;
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="T">todo</typeparam>
+        /// <typeparam name="U">todo</typeparam>
+        /// <param name="dbFuncCall">todo</param>
+        /// <returns>todo</returns>
+        protected virtual T ExecuteScalarMethod<U, T>(Expression<Func<U, T>> dbFuncCall)
+            where U : DbContext
+        {
+            //todo - verify dbFuncCall contains a method call expression
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+            var resultsQuery = DbContextDependencies.QueryProvider.Execute(dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model)) as IEnumerable<T>;
+
+            var results = resultsQuery.ToList();
+
+            return results[0];
+            //how am I going to get the dbFunction from the model here - I can't access FindDbFunction because it is in relational.
+            //maybe I need to pass a reference to the model and find it later?  If I move DbFunctionSourceExpression into relational I can access it, but then how do I create DbFunctionSourceExpression.
+            //need some kind of factory.....
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="U">todo</typeparam>
+        /// <typeparam name="T">todo</typeparam>
+        /// <param name="dbFuncCall">todo</param>
+        /// <returns>todo</returns>
+        protected IQueryable<T> ExecuteTableValuedFunction<U, T>(Expression<Func<U, IQueryable<T>>> dbFuncCall)
+            where U : DbContext
+        {
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+         
+            //todo - verify dbFuncCall contains a method call expression
+            var resultsQuery = dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model);
+
+            return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="T">todo</typeparam>
+        /// <param name="callingMethod">todo</param>
+        /// <param name="methodParams">todo</param>
+        /// <returns>todo</returns>
+        protected IQueryable<T> ExecuteTableValuedFunction<T>(MethodInfo callingMethod, params object[] methodParams)
+        {
+            var c = Expression.Call(Expression.Constant(this),
+                    callingMethod,
+                    methodParams.Select(mp => Expression.Constant(mp)));
+
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+            var resultsQuery = dbFuncFac.GenerateDbFunctionSource(c, Model);
+
+            return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
+
+            /*  this.DbContextDependencies.QueryProvider.CreateQuery<T>()
+              return (IQueryable<T>) DbContextDependencies.QuerySource.CreateQuery(this, callingMethod.ReturnType.GetGenericArguments()[0]);
+              */
+            /*  var paramExps = methodParams.Select<object, Expression>(mp =>
+              {
+                  if ((mp as Expression)?.NodeType == ExpressionType.Lambda)
+                      return Expression.Invoke(mp as Expression);
+  
+                  return Expression.Constant(mp);
+              });
+  
+              
+              return QueryProvider.CreateQuery<T>(
+                  Expression.Call(
+                      Expression.Constant(this),
+                      callingMethod,
+                      paramExps));*/
+        }
 
         #region Hidden System.Object members
 

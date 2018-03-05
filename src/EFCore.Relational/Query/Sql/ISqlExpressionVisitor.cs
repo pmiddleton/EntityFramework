@@ -94,6 +94,15 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         Expression VisitCrossJoinLateral([NotNull] CrossJoinLateralExpression crossJoinLateralExpression);
 
         /// <summary>
+        ///     Visit a CrossJoinLateralOuterExpression.
+        /// </summary>
+        /// <param name="crossJoinLateralOuterExpression"> The cross join lateral outer expression. </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        Expression VisitCrossJoinLateralOuter([NotNull] CrossJoinLateralOuterExpression crossJoinLateralOuterExpression);
+
+        /// <summary>
         ///     Visit an InnerJoinExpression.
         /// </summary>
         /// <param name="innerJoinExpression"> The inner join expression. </param>
@@ -182,5 +191,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         ///     An Expression.
         /// </returns>
         Expression VisitColumnReference([NotNull] ColumnReferenceExpression columnReferenceExpression);
+
+        /// <summary>
+        ///     Visit a TableValuedSqlFunctionExpression.
+        /// </summary>
+        /// <param name="tableValuedSqlFunctionExpression"> todo </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        Expression VisitTableValuedSqlFunctionExpression([NotNull] TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression);
     }
 }
