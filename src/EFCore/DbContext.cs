@@ -1454,80 +1454,80 @@ namespace Microsoft.EntityFrameworkCore
         IServiceProvider IInfrastructure<IServiceProvider>.Instance => InternalServiceProvider;
 
         /// <summary>
-        /// todo
+        /// Executes a query expression, which represents a function call, against the query store.
         /// </summary>
-        /// <typeparam name="T">todo</typeparam>
-        /// <typeparam name="U">todo</typeparam>
-        /// <param name="dbFuncCall">todo</param>
-        /// <returns>todo</returns>
-        protected virtual T ExecuteScalarMethod<U, T>(Expression<Func<U, T>> dbFuncCall)
-            where U : DbContext
+        /// <typeparam name="TResult"> The result type of the query expression </typeparam>
+        /// <typeparam name="TContext"> The type of the DB Context </typeparam>
+        /// <param name="expression"> The query expression to execute. </param>
+        /// <returns> The result of executing the funciton against the datastore. </returns>
+        protected virtual TResult Execute<TContext, TResult>([NotNull] Expression<Func<TContext, TResult>> expression)
+            where TContext : DbContext
         {
-            //todo - verify dbFuncCall contains a method call expression
+            Check.NotNull(expression, nameof(expression));
+
+            if (!(expression.Body is MethodCallExpression))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.ExpressionBodyMustBeMethodCallExpression());
+            }
+
             var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
-            var resultsQuery = DbContextDependencies.QueryProvider.Execute(dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model)) as IEnumerable<T>;
+            var resultsQuery = DbContextDependencies.QueryProvider.Execute(dbFuncFac.GenerateDbFunctionSource((MethodCallExpression)expression.Body , Model)) as IEnumerable<TResult>;
 
             var results = resultsQuery.ToList();
 
-            return results[0];
-            //how am I going to get the dbFunction from the model here - I can't access FindDbFunction because it is in relational.
-            //maybe I need to pass a reference to the model and find it later?  If I move DbFunctionSourceExpression into relational I can access it, but then how do I create DbFunctionSourceExpression.
-            //need some kind of factory.....
+            return results.Count == 0 ? default : results[0];
         }
 
         /// <summary>
-        /// todo
+        /// Executes a query expression, which represents a function call, against the query store.
         /// </summary>
-        /// <typeparam name="U">todo</typeparam>
-        /// <typeparam name="T">todo</typeparam>
-        /// <param name="dbFuncCall">todo</param>
-        /// <returns>todo</returns>
-        protected IQueryable<T> ExecuteTableValuedFunction<U, T>(Expression<Func<U, IQueryable<T>>> dbFuncCall)
-            where U : DbContext
+        /// <typeparam name="TResult"> The result type of the query expression </typeparam>
+        /// <typeparam name="TContext"> The type of the DB Context </typeparam>
+        /// <param name="expression"> The query expression to execute. </param>
+        /// <param name="cancellationToken"> The cancellation token. </param>
+        /// <returns> A task containing the result of executing the funciton against the datastore. </returns>
+        protected virtual Task<TResult> ExecuteAsync<TContext, TResult>([NotNull] Expression<Func<TContext, TResult>> expression, CancellationToken cancellationToken = default)
+            where TContext : DbContext
         {
-            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
-         
-            //todo - verify dbFuncCall contains a method call expression
-            var resultsQuery = dbFuncFac.GenerateDbFunctionSource(dbFuncCall.Body as MethodCallExpression, Model);
+            Check.NotNull(expression, nameof(expression));
 
-            return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
+            if (!(expression.Body is MethodCallExpression))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.ExpressionBodyMustBeMethodCallExpression());
+            }
+
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+
+            return DbContextDependencies.QueryProvider.ExecuteAsync<TResult>(
+                                        dbFuncFac.GenerateDbFunctionSource((MethodCallExpression)expression.Body, Model), cancellationToken);
         }
 
+
         /// <summary>
-        /// todo
+        /// Executes a query expression, which represents a function call, against the query store.
         /// </summary>
-        /// <typeparam name="T">todo</typeparam>
-        /// <param name="callingMethod">todo</param>
-        /// <param name="methodParams">todo</param>
-        /// <returns>todo</returns>
-        protected IQueryable<T> ExecuteTableValuedFunction<T>(MethodInfo callingMethod, params object[] methodParams)
+        /// <typeparam name="TResult"> The result type of the query expression </typeparam>
+        /// <typeparam name="TContext"> The type of the DB Context </typeparam>
+        /// <param name="expression"> The query expression to execute. </param>
+        /// <returns> An IQueryable representing the query. </returns>
+        protected virtual IQueryable<TResult> Execute<TContext, TResult>([NotNull] Expression<Func<TContext, IQueryable<TResult>>> expression)
+            where TContext : DbContext
         {
-            var c = Expression.Call(Expression.Constant(this),
-                    callingMethod,
-                    methodParams.Select(mp => Expression.Constant(mp)));
+            Check.NotNull(expression, nameof(expression));
 
             var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
-            var resultsQuery = dbFuncFac.GenerateDbFunctionSource(c, Model);
 
-            return DbContextDependencies.QueryProvider.CreateQuery<T>(resultsQuery);
+            if (!(expression.Body is MethodCallExpression))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.ExpressionBodyMustBeMethodCallExpression());
+            }
 
-            /*  this.DbContextDependencies.QueryProvider.CreateQuery<T>()
-              return (IQueryable<T>) DbContextDependencies.QuerySource.CreateQuery(this, callingMethod.ReturnType.GetGenericArguments()[0]);
-              */
-            /*  var paramExps = methodParams.Select<object, Expression>(mp =>
-              {
-                  if ((mp as Expression)?.NodeType == ExpressionType.Lambda)
-                      return Expression.Invoke(mp as Expression);
-  
-                  return Expression.Constant(mp);
-              });
-  
-              
-              return QueryProvider.CreateQuery<T>(
-                  Expression.Call(
-                      Expression.Constant(this),
-                      callingMethod,
-                      paramExps));*/
+            var resultsQuery = dbFuncFac.GenerateDbFunctionSource((MethodCallExpression)expression.Body, Model);
+
+            return DbContextDependencies.QueryProvider.CreateQuery<TResult>(resultsQuery);
         }
 
         #region Hidden System.Object members

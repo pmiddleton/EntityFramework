@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -218,18 +218,22 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             public string SCHEMA_NAME()
             {
-                //TODO - how to remove the generic params here?
-                return ExecuteScalarMethod<UDFSqlContext, string>(db => db.SCHEMA_NAME());
+                return Execute<UDFSqlContext, string>(db => db.SCHEMA_NAME());
+            }
+
+            public async Task<string> SCHEMA_NAME_Async()
+            {
+                return await ExecuteAsync<UDFSqlContext, string>(db => db.SCHEMA_NAME());
             }
 
             public int AddValues(int a, int b)
             {
-                return ExecuteScalarMethod<UDFSqlContext, int>(db => db.AddValues(a, b));
+                return Execute<UDFSqlContext, int>(db => db.AddValues(a, b));
             }
 
             public int AddValues(Expression<Func<int>> a, int b)
             {
-                return ExecuteScalarMethod<UDFSqlContext, int>(db => db.AddValues(a, b));
+                return Execute<UDFSqlContext, int>(db => db.AddValues(a, b));
             }
 
             #endregion
@@ -245,15 +249,12 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             public IQueryable<OrderByYear> GetCustomerOrderCountByYear(int customerId)
             {
-                //   return ExecuteTableValuedFunction<ManagersEmployee>(typeof(SqlServerDbFunctionsNorthwindContext).GetTypeInfo().GetDeclaredMethod(nameof(FindReportsForManager)));
-
-                // return ExecuteTableValuedFunction<OrderByYear>(GetType().GetMethod(nameof(GetCustomerOrderCountByYear)), customerId );
-                return ExecuteTableValuedFunction<UDFSqlContext, OrderByYear>(db => db.GetCustomerOrderCountByYear(customerId));
+                return Execute<UDFSqlContext, OrderByYear>(db => db.GetCustomerOrderCountByYear(customerId));
             }
 
             public IQueryable<OrderByYear> GetCustomerOrderCountByYear(Expression<Func<int>> customerId)
             {
-                return ExecuteTableValuedFunction<UDFSqlContext, OrderByYear>(db => db.GetCustomerOrderCountByYear(customerId));
+                return Execute<UDFSqlContext, OrderByYear>(db => db.GetCustomerOrderCountByYear(customerId));
             }
 
             public class TopSellingProduct
@@ -264,7 +265,12 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             public IQueryable<TopSellingProduct> GetTopTwoSellingProducts()
             {
-                return ExecuteTableValuedFunction<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProducts());
+                return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProducts());
+            }
+
+            public IQueryable<TopSellingProduct> GetTopTwoSellingProductsCustomTranslation()
+            {
+                return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProductsCustomTranslation());
             }
 
             #endregion
@@ -304,8 +310,6 @@ namespace Microsoft.EntityFrameworkCore.Query
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(DollarValueInstance))).HasName("DollarValue");
 
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(AddValues), new[] { typeof(int), typeof(int) }));
-                //  modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(AddValues), new[] { typeof(Expression<Func<int>>), typeof(int) }));
-
 
                 var methodInfo2 = typeof(UDFSqlContext).GetMethod(nameof(MyCustomLengthInstance));
 
@@ -318,6 +322,8 @@ namespace Microsoft.EntityFrameworkCore.Query
                 //Table
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear), new[] { typeof(int) }));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProducts)));
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
+                    .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
             }
         }
 
@@ -1628,6 +1634,20 @@ WHERE 3 = [dbo].[CustomerOrderCount](ABS([c].[Id]))");
         }
 
         [Fact]
+        public async Task BootstrapScalarNoParamsAsync()
+        {
+            using (var context = CreateContext())
+            {
+                var schema = await context.SCHEMA_NAME_Async();
+
+                Assert.Equal("dbo", schema);
+
+                AssertSql(
+                    @"SELECT SCHEMA_NAME()");
+            }
+        }
+
+        [Fact]
         public void BootstrapScalarParams()
         {
             using (var context = CreateContext())
@@ -1648,11 +1668,6 @@ SELECT [dbo].[AddValues](@__a_0, @__b_1)");
         {
             using (var context = CreateContext())
             {
-                //    var a1 = context.AddValues(1, 2);
-                //     var a = context.AddValues(() => 1, 2);
-                //var x = 5;
-                //var value = context.AddValues(() => context.AddValues(x, 2), 2);
-
                 var value = context.AddValues(() => context.AddValues(1, 2), 2);
 
                 Assert.Equal(5, value);
@@ -1706,6 +1721,27 @@ SELECT [dbo].[AddValues](1, @__b_0)");
             using (var context = CreateContext())
             {
                 var products = (from t in context.GetTopTwoSellingProducts()
+                                orderby t.ProductId
+                                select t).ToList();
+
+                Assert.Equal(2, products.Count);
+                Assert.Equal(1, products[0].ProductId);
+                Assert.Equal(27, products[0].AmountSold);
+                Assert.Equal(2, products[1].ProductId);
+                Assert.Equal(50, products[1].AmountSold);
+
+                AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
+ORDER BY [t].[ProductId]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Stand_Alone_With_Translation()
+        {
+            using (var context = CreateContext())
+            {
+                var products = (from t in context.GetTopTwoSellingProductsCustomTranslation()
                                 orderby t.ProductId
                                 select t).ToList();
 
@@ -1803,7 +1839,327 @@ ORDER BY [c].[Id], [r].[Year]");
         }
 
         [Fact]
-        public void Table_Function_CrossApply_Correlated_Select_Result()
+        public void TV_Function_Select_Direct_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                                 select new
+                                 {
+                                     c.Id,
+                                     Prods = context.GetTopTwoSellingProducts().ToList(), 
+                                 }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(2, results[0].Prods.Count);
+                Assert.Equal(2, results[1].Prods.Count);
+                Assert.Equal(2, results[2].Prods.Count);
+                Assert.Equal(2, results[3].Prods.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+                
+                    @"SELECT [t].[AmountSold], [t].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [t]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Select_Correlated_Direct_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   OrderCountYear = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                               }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(1, results[0].Id);
+                Assert.Equal(2, results[1].Id);
+                Assert.Equal(3, results[2].Id);
+                Assert.Equal(4, results[3].Id);
+                Assert.Equal(2, results[0].OrderCountYear.Count);
+                Assert.Equal(1, results[1].OrderCountYear.Count);
+                Assert.Equal(1, results[2].OrderCountYear.Count);
+                Assert.Equal(0, results[3].OrderCountYear.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+
+                    @"@_outer_Id='1'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='2'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='3'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='4'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                               where c.Id == 1
+                               select new
+                               {
+                                   c.Id,
+                                   OrderCountYear = context.GetCustomerOrderCountByYear(context.AddValues(c.Id, 1)).ToList()
+                               }).ToList();
+
+                Assert.Equal(1, results.Count);
+                Assert.Equal(1, results[0].Id);
+                Assert.Equal(1, results[0].OrderCountYear.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]
+WHERE [c].[Id] = 1",
+
+                    @"@_outer_Id='1'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](@_outer_Id, 1)) AS [o]");
+
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Select_Correlated_Subquery_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   OrderCountYear = context.GetCustomerOrderCountByYear(c.Id).Where(o => o.Year == 2000).ToList()
+                               }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(1, results[0].Id);
+                Assert.Equal(2, results[1].Id);
+                Assert.Equal(3, results[2].Id);
+                Assert.Equal(4, results[3].Id);
+                Assert.Equal(1, results[0].OrderCountYear.Count);
+                Assert.Equal(1, results[1].OrderCountYear.Count);
+                Assert.Equal(0, results[2].OrderCountYear.Count);
+                Assert.Equal(0, results[3].OrderCountYear.Count);
+            }
+
+            AssertSql(
+                @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+
+                @"@_outer_Id='1'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
+WHERE [o].[Year] = 2000",
+
+                @"@_outer_Id='2'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
+WHERE [o].[Year] = 2000",
+
+                @"@_outer_Id='3'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
+WHERE [o].[Year] = 2000",
+
+                @"@_outer_Id='4'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
+WHERE [o].[Year] = 2000");
+        }
+
+        [Fact]
+        public void TV_Function_Select_Correlated_Subquery_In_Anonymous_Nested()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   OrderCountYear = context.GetCustomerOrderCountByYear(1).Where(o => o.Year == 2000).Select(o => new
+                                   {
+                                        OrderCountYearNested = context.GetCustomerOrderCountByYear(2000).Where(o2 => o.Year == 2001).ToList(),
+                                        Prods = context.GetTopTwoSellingProducts().ToList(),
+                                   }).ToList()
+                               }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(1, results[0].OrderCountYear.Count);
+                Assert.Equal(2, results[0].OrderCountYear[0].Prods.Count);
+                Assert.Equal(0, results[0].OrderCountYear[0].OrderCountYearNested.Count);
+                Assert.Equal(1, results[1].OrderCountYear.Count);
+                Assert.Equal(2, results[1].OrderCountYear[0].Prods.Count);
+                Assert.Equal(0, results[1].OrderCountYear[0].OrderCountYearNested.Count);
+                Assert.Equal(1, results[2].OrderCountYear.Count);
+                Assert.Equal(2, results[2].OrderCountYear[0].Prods.Count);
+                Assert.Equal(0, results[2].OrderCountYear[0].OrderCountYearNested.Count);
+                Assert.Equal(1, results[3].OrderCountYear.Count);
+                Assert.Equal(2, results[3].OrderCountYear[0].Prods.Count);
+                Assert.Equal(0, results[3].OrderCountYear[0].OrderCountYearNested.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+
+                    @"SELECT [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](1) AS [o]
+WHERE [o].[Year] = 2000",
+
+                    @"@_outer_Year='2000' (Nullable = true)
+
+SELECT [o2].[Count], [o2].[CustomerId], [o2].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](2000) AS [o2]
+WHERE @_outer_Year = 2001");
+
+                Assert.Equal(13, Fixture.TestSqlLoggerFactory.SqlStatements.Count);
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Select_NonCorrelated_Subquery_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                                 select new
+                                 {
+                                     c.Id,
+                                     Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 27).Select(p => p.ProductId).ToList(),
+                                 }).ToList();
+            
+                Assert.Equal(4, results.Count);
+                Assert.Equal(1, results[0].Prods.Count);
+                Assert.Equal(1, results[1].Prods.Count);
+                Assert.Equal(1, results[2].Prods.Count);
+                Assert.Equal(1, results[3].Prods.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+
+                    @"SELECT [p].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
+WHERE [p].[AmountSold] = 27");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
+        {
+            using (var context = CreateContext())
+            {
+                var amount = 27;
+
+                var results = (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == amount).Select(p => p.ProductId).ToList(),
+                               }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(1, results[0].Prods.Count);
+                Assert.Equal(1, results[1].Prods.Count);
+                Assert.Equal(1, results[2].Prods.Count);
+                Assert.Equal(1, results[3].Prods.Count);
+
+                AssertSql(
+                    @"SELECT [c].[Id]
+FROM [Customers] AS [c]",
+
+                    @"@__amount_1='27'
+
+SELECT [p].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
+WHERE [p].[AmountSold] = @__amount_1");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_Correlated_Select_In_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var cust = (from c in context.Customers
+                              orderby c.Id
+                              select new
+                              {
+                                  c.Id,
+                                  c.LastName,
+                                  Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                              }).ToList();
+
+                Assert.Equal(4, cust.Count);
+                Assert.Equal(2, cust[0].Orders[0].Count);
+                Assert.Equal(2, cust[1].Orders[0].Count);
+                Assert.Equal(1, cust[2].Orders[0].Count);
+                Assert.Equal(0, cust[3].Orders.Count);
+                Assert.Equal("One", cust[0].LastName);
+                Assert.Equal("Two", cust[1].LastName);
+                Assert.Equal("Three", cust[2].LastName);
+                Assert.Equal("Four", cust[3].LastName);
+                Assert.Equal(1, cust[0].Id);
+                Assert.Equal(2, cust[1].Id);
+                Assert.Equal(3, cust[2].Id);
+                Assert.Equal(4, cust[3].Id);
+
+                AssertSql(@"SELECT [c].[Id], [c].[LastName]
+FROM [Customers] AS [c]
+ORDER BY [c].[Id]",
+
+                @"@_outer_Id='1'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='2'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='3'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
+
+                    @"@_outer_Id='4'
+
+SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]"
+);
+            }
+        }
+
+        [Fact]
+        public void TV_Function_CrossApply_Correlated_Select_Result()
         {
             using (var context = CreateContext())
             {
@@ -1886,12 +2242,11 @@ ORDER BY [r].[Count]");
                 Assert.Equal(2000, orders[0].Year);
 
                 AssertSql(@"@__custId_1='2'
-@__custId_2='2'
 
 SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
 FROM [Customers] AS [c]
 CROSS JOIN [dbo].[GetCustomerOrderCountByYear](@__custId_1) AS [r]
-WHERE [c].[Id] = @__custId_2
+WHERE [c].[Id] = @__custId_1
 ORDER BY [r].[Count]");
             }
         }
@@ -1899,7 +2254,6 @@ ORDER BY [r].[Count]");
         [Fact]
         public void TV_Function_Join()
         {
-            //performing a join requires the method to have a body which calls ExecuteTableValuedFunction
             using (var context = CreateContext())
             {
                 var products = (from p in context.Products
@@ -1930,7 +2284,6 @@ ORDER BY [p].[Id]");
         [Fact]
         public void TV_Function_LeftJoin_Select_Anonymous()
         {
-            //performing a join requires the method to have a body which calls ExecuteTableValuedFunction
             using (var context = CreateContext())
             {
                 var products = (from p in context.Products
@@ -1971,7 +2324,6 @@ ORDER BY [p].[Id] DESC");
         [Fact]
         public void TV_Function_LeftJoin_Select_Result()
         {
-            //performing a join requires the method to have a body which calls ExecuteTableValuedFunction
             using (var context = CreateContext())
             {
                 var products = (from p in context.Products
@@ -2010,15 +2362,6 @@ ORDER BY [p].[Id] DESC");
                               orderby c.Id, r.Year
                               select r).ToList();
 
-                /* 
-                 select new
-                 {
-                     c.Id,
-                     c.LastName,
-                     r.Year,
-                     r.Count
-                 }).ToList();*/
-
                 Assert.Equal(5, orders.Count);
 
                 Assert.Equal(2, orders[0].Count);
@@ -2045,9 +2388,83 @@ ORDER BY [c].[Id], [g].[Year]");
         }
 
         [Fact]
+        public void TV_Function_OuterApply_Correlated_Select_DbSet()
+        {
+            using (var context = CreateContext())
+            {
+                var custs = (from c in context.Customers
+                             from r in context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty()
+                             orderby c.Id, r.Year
+                             select c).ToList();
+
+                Assert.Equal(5, custs.Count);
+
+                Assert.Equal(1, custs[0].Id);
+                Assert.Equal(1, custs[1].Id);
+                Assert.Equal(2, custs[2].Id);
+                Assert.Equal(3, custs[3].Id);
+                Assert.Equal(4, custs[4].Id);
+                Assert.Equal("One", custs[0].LastName);
+                Assert.Equal("One", custs[1].LastName);
+                Assert.Equal("Two", custs[2].LastName);
+                Assert.Equal("Three", custs[3].LastName);
+                Assert.Equal("Four", custs[4].LastName);
+
+                AssertSql(@"SELECT [c].[Id], [c].[FirstName], [c].[LastName]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
+ORDER BY [c].[Id], [g].[Year]");
+            }
+        }
+
+        [Fact]
+        public void TV_Function_OuterApply_Correlated_Select_Anonymous()
+        {
+            using (var context = CreateContext())
+            {
+                var orders = (from c in context.Customers
+                              from r in context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty()
+                              orderby c.Id, r.Year
+                              select new
+                              {
+                                  c.Id,
+                                  c.LastName,
+                                  r.Year,
+                                  r.Count
+                              }).ToList();
+
+                Assert.Equal(5, orders.Count);
+
+                Assert.Equal(1, orders[0].Id);
+                Assert.Equal(1, orders[1].Id);
+                Assert.Equal(2, orders[2].Id);
+                Assert.Equal(3, orders[3].Id);
+                Assert.Equal(4, orders[4].Id);
+                Assert.Equal("One", orders[0].LastName);
+                Assert.Equal("One", orders[1].LastName);
+                Assert.Equal("Two", orders[2].LastName);
+                Assert.Equal("Three", orders[3].LastName);
+                Assert.Equal("Four", orders[4].LastName);
+                Assert.Equal(2, orders[0].Count);
+                Assert.Equal(1, orders[1].Count);
+                Assert.Equal(2, orders[2].Count);
+                Assert.Equal(1, orders[3].Count);
+                Assert.Null(orders[4].Count);
+                Assert.Equal(2000, orders[0].Year);
+                Assert.Equal(2001, orders[1].Year);
+                Assert.Equal(2000, orders[2].Year);
+                Assert.Equal(2001, orders[3].Year);
+
+                AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
+ORDER BY [c].[Id], [g].[Year]");
+            }
+        }
+
+        [Fact]
         public void TV_Function_Nested()
         {
-            //TODO - this is selecting too many employee columns in the query
             using (var context = CreateContext())
             {
                 var custId = 2;
@@ -2069,105 +2486,47 @@ ORDER BY [c].[Id], [g].[Year]");
                 Assert.Equal(2, orders[0].Count);
                 Assert.Equal(2000, orders[0].Year);
 
-                AssertSql(@"@__custId_2='2'
+                AssertSql(@"@__custId_1='2'
 
 SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
 FROM [Customers] AS [c]
 CROSS JOIN [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](1, 1)) AS [r]
-WHERE [c].[Id] = @__custId_2
+WHERE [c].[Id] = @__custId_1
 ORDER BY [r].[Year]");
             }
         }
 
-        /*
-                [Fact]
-                public void TV_Function_Join_Nested()
-                {
-                    using (var context = CreateContext())
-                    {
-                        var products = (from p in context.Products
-                                        join r in context.GetTopThreeSellingProductsForYear(() => context.GetBestYearEver()) on p.ProductID equals r.ProductId
-                                        select new
-                                        {
-                                            p.ProductID,
-                                            p.ProductName,
-                                            r.AmountSold
-                                        }).ToList();
+        
+        [Fact]
+        public void TV_Function_Correlated_Nested_Func_Call()
+        {
+            var custId = 2;
 
-                        Assert.Equal(3, products.Count);
-                        Assert.Equal(659, products[0].AmountSold);
-                        Assert.Equal(546, products[1].AmountSold);
-                        Assert.Equal(542, products[2].AmountSold);
-                        Assert.Equal("Konbu", products[0].ProductName);
-                        Assert.Equal("Guaraná Fantástica", products[1].ProductName);
-                        Assert.Equal("Camembert Pierrot", products[2].ProductName);
-                    }
-                }
+            using (var context = CreateContext())
+            {
+                var orders = (from c in context.Customers
+                              from r in context.GetCustomerOrderCountByYear(context.AddValues(c.Id, 1))
+                              where c.Id == custId
+                              select new
+                                {
+                                    c.Id,
+                                    r.Count,
+                                    r.Year
+                                }).ToList();
 
-                //TODO - test that throw exceptions when parameter type mismatch between c# definition and sql function (wrong names, types (when not convertable) etc)
+                Assert.Equal(1, orders.Count);
 
-                [Fact]
-                public void TV_Function_OuterApply_Correlated_Select_Anonymous()
-                {
-                    using (var context = CreateContext())
-                    {
-                        var orders = (from c in context.Customers
-                                      from o in context.GetLatestNOrdersForCustomer(2, c.CustomerID).DefaultIfEmpty()
-                                      select new
-                                      {
-                                          c.CustomerID,
-                                          o.OrderId,
-                                          o.OrderDate
-                                      }).ToList();
+                Assert.Equal(1, orders[0].Count);
+                Assert.Equal(2001, orders[0].Year);
 
-                        Assert.Equal(179, orders.Count);
-                    }
-                }
+                AssertSql(@"@__custId_1='2'
 
-                [Fact]
-                public void CrossJoin()
-                {
-                    using (var context = CreateContext())
-                    {
-                        var foo = (from c in context.Customers
-                                       //from p in context.Products
-                                       //select new { c, p }).ToList();
-                                   select c).ToList();
-                    }
-                }
-
-                [Fact]
-                public void TV_Function_OuterApply_Correlated_Select_Result()
-                {
-                    //TODO - currently fails because EF tries to change track the result item "o" which is null due to the outer apply
-                    //resolve once we figure out what kind of Type TVF return types are
-                    using (var context = CreateContext())
-                    {
-                        var orders = (from c in context.Customers
-                                      where c.CustomerID == "FISSA" || c.CustomerID == "BOLID"
-                                      from o in context.GetLatestNOrdersForCustomer(2, c.CustomerID).DefaultIfEmpty()
-                                      select new { c, o }).ToList();
-
-                        Assert.Equal(3, orders.Count);
-                    }
-                }
-
-                /* [Fact]
-                 public void LeftOuterJoin()
-                 {
-                     //TODO - currently fails because EF tries to change track the result item "o" which is null due to the outer apply
-                     //resolve once we figure out what kind of Type TVF return types are
-                     using (var context = CreateContext())
-                     {
-                         var orders = (from c in context.Customers
-                                       where c.CustomerID == "FISSA" || c.CustomerID == "BOLID"
-                                       join o in context.Orders on c.CustomerID equals o.CustomerID into temp
-                                       from t in temp.DefaultIfEmpty()
-                                       select t).ToList();
-
-                         Assert.Equal(832, orders.Count);
-                     }
-                 }*/
+SELECT [c].[Id], [r].[Count], [r].[Year]
+FROM [Customers] AS [c]
+CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues]([c].[Id], 1)) AS [r]
+WHERE [c].[Id] = @__custId_1");
+            }
+        }
 
         #endregion
 

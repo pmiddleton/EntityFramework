@@ -195,7 +195,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         /// <summary>
         ///     Visit a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="tableValuedSqlFunctionExpression"> todo </param>
+        /// <param name="tableValuedSqlFunctionExpression"> The TableValuedSqlFunctionExpression </param>
         /// <returns>
         ///     An Expression.
         /// </returns>

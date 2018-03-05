@@ -29,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         MethodInfo MethodInfo { get; }
 
         /// <summary>
-        ///     Does this method return IQueryable
+        ///     Whether this method returns IQueryable
         /// </summary>
         bool IsIQueryable { get; }
 

@@ -47,7 +47,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         /// <param name="selectExpressionFactory"> The select expression factory. </param>
         /// <param name="materializerFactory"> The materializer factory. </param>
         /// <param name="shaperCommandContextFactory"> The shaper command context factory. </param>
-        /// <param name="sqlTranslatingExpressionVisitorFactory"> TODO. </param>
+        /// <param name="sqlTranslatingExpressionVisitorFactory"> The sql translating expression factory. </param>
         public RelationalEntityQueryableExpressionVisitorDependencies(
             [NotNull] IModel model,
             [NotNull] ISelectExpressionFactory selectExpressionFactory,
@@ -89,11 +89,9 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         public IShaperCommandContextFactory ShaperCommandContextFactory { get; }
 
         /// <summary>
-        /// todo
+        ///     The sql translating expression factory.
         /// </summary>
         public ISqlTranslatingExpressionVisitorFactory SqlTranslatingExpressionVisitorFactory { get; }
-        
-        
 
         /// <summary>
         ///     Clones this dependency parameter object with one service replaced.

@@ -1136,14 +1136,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 
                     var newArguments = Visit(dbFunctionExpression.Arguments);
 
-                    if (newArguments.Any(a => a == null))
-                    {
-                        return null;
-                    }
-
-                    //TODO - can you custom translate here?
-                    return //dbFunctionExpression.Translate(newArguments)
-                            //??
+                    return dbFunctionExpression.Translation?.Invoke(newArguments) ??
                             new SqlFunctionExpression(dbFunctionExpression.Name, dbFunctionExpression.UnwrappedType, dbFunctionExpression.Schema, newArguments);
                 
                 case DiscriminatorPredicateExpression discriminatorPredicateExpression:

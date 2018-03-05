@@ -203,6 +203,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                 .AddDependencySingleton<RelationalValueBufferFactoryDependencies>()
                 .AddDependencySingleton<RelationalProjectionExpressionVisitorDependencies>()
                 .AddDependencySingleton<RelationalTransactionFactoryDependencies>()
+                .AddDependencySingleton<RelationalDbFunctionSourceFactoryDependencies>()
                 .AddDependencyScoped<RelationalConventionSetBuilderDependencies>()
                 .AddDependencyScoped<CommandBatchPreparerDependencies>()
                 .AddDependencyScoped<RelationalDatabaseCreatorDependencies>()

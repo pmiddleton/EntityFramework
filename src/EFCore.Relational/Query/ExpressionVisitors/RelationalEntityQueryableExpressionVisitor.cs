@@ -148,6 +148,8 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
         /// <returns> An expression to use in place of the node. </returns>
         protected override Expression VisitExtension(Expression node)
         {
+            Check.NotNull(node, nameof(node));
+
             switch (node)
             {
                 case DbFunctionSourceExpression dbNode:
@@ -264,13 +266,15 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 Expression.Constant(shaper));
         }
 
-         /// <summary>
-        /// todo
+        /// <summary>
+        /// Visit a <see cref="DbFunctionSourceExpression"/> node.
         /// </summary>
-        /// <param name="dbFunctionSourceExpression">todo</param>
-        /// <returns>todo</returns>
-        protected Expression VisitDbFunctionSourceExpression([NotNull] DbFunctionSourceExpression dbFunctionSourceExpression)
+        /// <param name="dbFunctionSourceExpression"> The node being visited. </param>
+        /// <returns> An Exprssion corresponding to the translated  DbFunctionSourceExpression. </returns>
+        protected virtual Expression VisitDbFunctionSourceExpression(DbFunctionSourceExpression dbFunctionSourceExpression)
         {
+            Check.NotNull(dbFunctionSourceExpression, nameof(dbFunctionSourceExpression));
+
             var relationalQueryCompilationContext = QueryModelVisitor.QueryCompilationContext;
             var selectExpression = _selectExpressionFactory.Create(relationalQueryCompilationContext);
 
@@ -306,14 +310,13 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
             }
 
             return Expression.Call(
-                QueryModelVisitor.QueryCompilationContext.QueryMethodProvider // TODO: Don't use ShapedQuery when projecting
+                QueryModelVisitor.QueryCompilationContext.QueryMethodProvider 
                     .ShapedQueryMethod
                     .MakeGenericMethod(shaper.Type),
                 EntityQueryModelVisitor.QueryContextParameter,
                 Expression.Constant(_shaperCommandContextFactory.Create(querySqlGeneratorFunc)),
                 Expression.Constant(shaper));
         }
-
 
         private Shaper CreateShaper(Type elementType, IEntityType entityType, SelectExpression selectExpression)
         {

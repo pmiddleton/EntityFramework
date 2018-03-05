@@ -152,6 +152,8 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.Query.Sql.Internal
         /// </returns>
         public override Expression VisitTableValuedSqlFunctionExpression(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
         {
+            Check.NotNull(tableValuedSqlFunctionExpression, nameof(tableValuedSqlFunctionExpression));
+
             base.VisitTableValuedSqlFunctionExpression(tableValuedSqlFunctionExpression);
 
             if (tableValuedSqlFunctionExpression.Alias != null)

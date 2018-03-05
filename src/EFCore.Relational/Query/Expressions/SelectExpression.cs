@@ -1115,8 +1115,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
             Check.NotNull(tableExpression, nameof(tableExpression));
             Check.NotNull(projection, nameof(projection));
 
-            //todo - this seems very wrong - where is the right place to do this?  By the caller?  By the sql walker?
-            //for TVF we need to unwrap the inner select clause
             if (tableExpression is SelectExpression s && s.Tables.First() is TableValuedSqlFunctionExpression)
             {
                 tableExpression = s.Tables.First();

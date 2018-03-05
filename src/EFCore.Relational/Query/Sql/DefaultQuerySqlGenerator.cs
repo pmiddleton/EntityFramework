@@ -897,8 +897,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         public virtual Expression VisitCrossJoinLateralOuter(CrossJoinLateralOuterExpression crossJoinLateralOuterExpression)
         {
             Check.NotNull(crossJoinLateralOuterExpression, nameof(crossJoinLateralOuterExpression));
+
             _relationalCommandBuilder.Append("CROSS JOIN LATERAL OUTER");
+
             Visit(crossJoinLateralOuterExpression.TableExpression);
+
             return crossJoinLateralOuterExpression;
         }
 
@@ -1577,14 +1580,16 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         }
 
         /// <summary>
-        ///     Visits a todo.
+        ///     Visits a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="tableValuedSqlFunctionExpression">todo </param>
+        /// <param name="tableValuedSqlFunctionExpression"> The TableValuedSqlFunctionExpression. </param>
         /// <returns>
         ///     An Expression.
         /// </returns>
         public virtual Expression VisitTableValuedSqlFunctionExpression(TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression)
         {
+            Check.NotNull(tableValuedSqlFunctionExpression, nameof(tableValuedSqlFunctionExpression));
+
             return VisitSqlFunction(tableValuedSqlFunctionExpression.SqlFunctionExpression);
         }
     

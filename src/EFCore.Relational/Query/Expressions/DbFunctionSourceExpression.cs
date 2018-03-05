@@ -3,44 +3,48 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
+using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Microsoft.EntityFrameworkCore.Query.Expressions
 {
     /// <summary>
-    ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
-    ///     directly from your code. This API may change or be removed in future releases.
+    ///    Represents a Db Function which acts as a query source in the ReLinq parse tree.
     /// </summary>
     public class DbFunctionSourceExpression : Expression
     {
         private readonly IDbFunction _dbFunction;
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public override ExpressionType NodeType => ExpressionType.Extension;
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public override Type Type { get; }
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual Type ReturnType { get; }
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual string Schema => _dbFunction.Schema;
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual Type UnwrappedType => Type.IsGenericType ? Type.GetGenericArguments()[0] : Type;
 
@@ -51,7 +55,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         public virtual string Name => _dbFunction.FunctionName;
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual bool IsIQueryable => _dbFunction.IsIQueryable;
 
@@ -62,25 +67,31 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         public virtual ReadOnlyCollection<Expression> Arguments { get; [param: NotNull] set; }
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="expression">todo</param>
-        /// <param name="model">todo</param>
+        public virtual Func<IReadOnlyCollection<Expression>, Expression> Translation => _dbFunction.Translation ;
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public DbFunctionSourceExpression([NotNull] MethodCallExpression expression, [NotNull] IModel model)
         {
+            Check.NotNull(expression, nameof(expression));
+            Check.NotNull(model, nameof(model));
+
             _dbFunction = FindDbFunction(expression, model);
             Arguments = expression.Arguments;
 
             if (expression.Method.ReturnType.IsGenericType)
             {
-                //todo - add unit test
                 if (expression.Method.ReturnType.GetGenericTypeDefinition() != typeof(IQueryable<>))
                 {
                     throw new InvalidOperationException(
                         RelationalStrings.DbFunctionTableValuedFunctionMustReturnIQueryable(_dbFunction.FunctionName));
                 }
 
-                //todo - should i be using the dbfunction return type here?  If not do I have to verify the expression return type?
                 Type = expression.Method.ReturnType;
                 ReturnType = expression.Method.ReturnType.GetGenericArguments()[0];
             }
@@ -97,6 +108,9 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// </summary>
         public DbFunctionSourceExpression([NotNull] DbFunctionSourceExpression oldFuncExpression, [NotNull] ReadOnlyCollection<Expression> newArguments)
         {
+            Check.NotNull(oldFuncExpression, nameof(oldFuncExpression));
+            Check.NotNull(newArguments, nameof(newArguments));
+
             Arguments = new ReadOnlyCollection<Expression>(newArguments);
             _dbFunction = oldFuncExpression._dbFunction;
             ReturnType = oldFuncExpression.ReturnType;
@@ -104,12 +118,13 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         }
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used 
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="visitor">todo</param>
-        /// <returns>todo</returns>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
+            Check.NotNull(visitor, nameof(visitor));
+
             var newArguments = visitor.Visit(Arguments);
 
             if (visitor is ParameterExtractingExpressionVisitor)
@@ -132,7 +147,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
 
             var dbFunction = model.Relational().FindDbFunction(method);
 
-            //todo - add unit test
             if (dbFunction == null)
             {
                 throw new InvalidOperationException(

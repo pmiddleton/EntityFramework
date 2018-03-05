@@ -19,12 +19,13 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         private readonly ExpressionTransformerRegistry _transformProvider;
 
         /// <summary>
-        /// todo
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        /// <param name="model">todo</param>
         public RelationalIExpressionTranformationProvider([NotNull] IModel model)
         {
             Check.NotNull(model, nameof(model));
+
             _transformProvider = ExpressionTransformerRegistry.CreateDefault();
             _transformProvider.Register(new RelationalDbFunctionTransformer(model));
         }
@@ -33,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public IEnumerable<ExpressionTransformation> GetTransformations(Expression expression)
+        public virtual IEnumerable<ExpressionTransformation> GetTransformations(Expression expression)
         {
             return _transformProvider.GetTransformations(expression);
         }

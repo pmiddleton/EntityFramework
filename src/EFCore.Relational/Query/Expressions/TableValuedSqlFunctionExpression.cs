@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Utilities;
@@ -12,65 +11,64 @@ using Remotion.Linq.Clauses;
 namespace Microsoft.EntityFrameworkCore.Query.Expressions
 {
     /// <summary>
-    ///     Represents a SQL Table Valued Fuction.
+    ///     Represents a SQL Table Valued Fuction in the sql generation tree.
     /// </summary>
     public class TableValuedSqlFunctionExpression : TableExpressionBase
     {
-        private SqlFunctionExpression _sqlFunctionExpression;
+        private readonly SqlFunctionExpression _sqlFunctionExpression;
 
         /// <summary>
-        /// todo
+        /// The sql function expression representing the database function
         /// </summary>
         public virtual SqlFunctionExpression SqlFunctionExpression => _sqlFunctionExpression;
 
         /// <summary>
-        /// todo
+        /// Creates a new instance of a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="sqlFunction">todo</param>
-        /// <param name="querySource">todo</param>
-        /// <param name="alias">todo</param>
+        /// <param name="sqlFunction"> The sqlFunctionExprssion representing the database function. </param>
+        /// <param name="querySource">  The query source. </param>
+        /// <param name="alias"> The alias. </param>
         public TableValuedSqlFunctionExpression([NotNull] SqlFunctionExpression sqlFunction, [NotNull] IQuerySource querySource, [CanBeNull] string alias)
              : this(sqlFunction.FunctionName, sqlFunction.Type, sqlFunction.Schema, sqlFunction.Arguments, querySource, alias)
         {
-
         }
 
         /// <summary>
-        /// todo
+        /// Creates a new instance of a TableValuedSqlFunctionExpression.
         /// </summary>
-        /// <param name="functionName">todo</param>
-        /// <param name="returnType">todo</param>
-        /// <param name="schema">todo</param>
-        /// <param name="arguments">todo</param>
-        /// <param name="querySource">todo</param>
-        /// <param name="alias">todo</param>
+        /// <param name="functionName"> The db function name. </param>
+        /// <param name="returnType"> The db function return type. </param>
+        /// <param name="schema"> The schema. </param>
+        /// <param name="arguments"> The arguemnts to the db function. </param>
+        /// <param name="querySource"> The query source. </param>
+        /// <param name="alias"> The alias. </param>
         public TableValuedSqlFunctionExpression([NotNull] string functionName,
                 [NotNull] Type returnType,
                 [CanBeNull] string schema,
                 [NotNull] IEnumerable<Expression> arguments,
                 [NotNull] IQuerySource querySource,
-                [CanBeNull]string alias)
-            : base(querySource, alias)
+                [CanBeNull] string alias)
+            : base(Check.NotNull(querySource, nameof(querySource)), alias)
         {
-            //TODO - make sure return type is of type IQueryable<T>
-            //TODO - Do I even need this class or can I just use the SqlFunctionExpression?  Thus far not much is happening in here
+            Check.NotNull(functionName, nameof(functionName));
+            Check.NotNull(returnType, nameof(returnType));
+            Check.NotNull(arguments, nameof(arguments));
+
             _sqlFunctionExpression = new SqlFunctionExpression(functionName, returnType, schema, arguments);
         }
 
         /// <summary>
-        /// todo
+        ///   Convert this object into a string representation.
         /// </summary>
-        /// <returns>todo</returns>
+        /// <returns> A string that represents this object. </returns>
         public override string ToString()
         {
             return _sqlFunctionExpression.ToString();
         }
 
         /// <summary>
-        /// todo
+        /// Dispatches to the specific visit method for this node type.
         /// </summary>
-        /// <param name="visitor">todo</param>
-        /// <returns>todo</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
             Check.NotNull(visitor, nameof(visitor));
@@ -81,15 +79,25 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         }
 
         /// <summary>
-        /// todo
+        ///     Reduces the node and then calls the <see cref="ExpressionVisitor.Visit(Expression)" /> method passing the
+        ///     reduced expression.
+        ///     Throws an exception if the node isn't reducible.
         /// </summary>
-        /// <param name="visitor">todo</param>
-        /// <returns>todo</returns>
+        /// <param name="visitor"> An instance of <see cref="ExpressionVisitor" />. </param>
+        /// <returns> The expression being visited, or an expression which should replace it in the tree. </returns>
+        /// <remarks>
+        ///     Override this method to provide logic to walk the node's children.
+        ///     A typical implementation will call visitor.Visit on each of its
+        ///     children, and if any of them change, should return a new copy of
+        ///     itself with the modified children.
+        /// </remarks>
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
+            Check.NotNull(visitor, nameof(visitor));
+
             var newArguments = visitor.Visit(new ReadOnlyCollection<Expression>(_sqlFunctionExpression.Arguments.ToList()));
 
-            return newArguments != _sqlFunctionExpression.Arguments
+            return !Equals(newArguments, _sqlFunctionExpression.Arguments)
                 ? new TableValuedSqlFunctionExpression(new SqlFunctionExpression(_sqlFunctionExpression.FunctionName, Type, _sqlFunctionExpression.Schema, newArguments), QuerySource, Alias)
                 : this;
         }

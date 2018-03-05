@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         public QueryModelGenerator(
             [NotNull] INodeTypeProviderFactory nodeTypeProviderFactory,
             [NotNull] IEvaluatableExpressionFilter evaluatableExpressionFilter,
-            [NotNull] IExpressionTranformationProvider expressionTranformationProvider)
+            [NotNull] IExpressionTranformationProvider expressionTranformationProvider,
             [NotNull] ICurrentDbContext currentDbContext)
         {
             Check.NotNull(nodeTypeProviderFactory, nameof(nodeTypeProviderFactory));

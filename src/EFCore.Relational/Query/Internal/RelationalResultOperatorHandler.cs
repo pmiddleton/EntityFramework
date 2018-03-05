@@ -367,7 +367,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 return handlerContext.EvalOnClient();
             }
 
-            if (!(handlerContext.QueryModel.MainFromClause.FromExpression is DbFunctionSourceExpression && handlerContext.QueryModelVisitor.QueryCompilationContext.IsLateralJoinOuterSupported))
+            if (!(handlerContext.QueryModel.MainFromClause.FromExpression is DbFunctionSourceExpression
+                    && handlerContext.QueryModelVisitor.QueryCompilationContext.IsLateralJoinOuterSupported))
             {
                 var selectExpression = handlerContext.SelectExpression;
 
