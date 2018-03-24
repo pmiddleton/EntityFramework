@@ -1312,6 +1312,9 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var typeIsExpressionTranslatingVisitor = new TypeIsExpressionTranslatingVisitor(QueryCompilationContext.Model);
             queryModel.TransformExpressions(typeIsExpressionTranslatingVisitor.Visit);
+
+            var dbFunctionSrouceSubqueryInjector = new DbFunctionSourceSubqueryInjector();
+            queryModel.SelectClause.TransformExpressions(dbFunctionSrouceSubqueryInjector.Visit);
         }
 
         /// <summary>
@@ -1326,6 +1329,31 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(queryModelElement, nameof(queryModelElement));
 
             QueryCompilationContext.Logger.QueryClientEvaluationWarning(queryModel, queryModelElement);
+        }
+
+        private class DbFunctionSourceSubqueryInjector : ExpressionVisitorBase
+        {
+            protected override Expression VisitExtension(Expression extensionExpression)
+            {
+                //need to not inject if already part of a subquery
+                //how do the nav rewrites deal with this issue?
+                if (extensionExpression is DbFunctionSourceExpression dbf)
+                {
+                    return DbFunctionSourceSubqueryInjector.InjectSubquery(dbf);
+                }
+
+                return base.VisitExtension(extensionExpression);
+            }
+
+            private static Expression InjectSubquery(DbFunctionSourceExpression expression)
+            {
+                var targetType = expression.ReturnType;
+                var mainFromClause = new MainFromClause(targetType.Name.Substring(0, 1).ToLowerInvariant(), targetType, expression);
+                var selector = new QuerySourceReferenceExpression(mainFromClause);
+
+                var subqueryModel = new QueryModel(mainFromClause, new SelectClause(selector));
+                return new SubQueryExpression(subqueryModel);
+            }
         }
 
         private class TypeIsExpressionTranslatingVisitor : ExpressionVisitorBase

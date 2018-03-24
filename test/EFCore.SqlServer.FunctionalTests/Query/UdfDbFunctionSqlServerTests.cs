@@ -1815,13 +1815,29 @@ ORDER BY [c].[Id], [r].[Year]");
         {
             using (var context = CreateContext())
             {
-                var cust = (from c in context.Customers
-                           orderby c.Id
+                //var cust = (from c in context.Customers
+                  //          select c.Id).ToList();
+
+
+                var cust2 = (from c in context.Customers
                            select new
                            {
-                         //     c.Id,
-                               Prods = context.GetTopTwoSellingProducts().ToList()
+                               //    Orders = c.Orders.Where(o => o.Name == c.FirstName).ToList()
+                               //  Orders = c.Orders.Where(o => o.Id == 4).Select(o => o.Name).ToList(),
+                               //  Orders2 = context.Orders.ToList()
+                               //     c.Id,
+                               //   OrderCount = context.CustomerOrderCountInstance(c.Id)
+
+                               //    OrderCountYear2 = context.GetCustomerOrderCountByYear(c.Id).DefaultIfEmpty().ToList()
+                               //Add = context.AddValues(c.Id, 5)
+
+                               Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == c.Id).Select(p =>p.ProductId).ToList(),
+                        //       Prods2 = context.GetTopTwoSellingProducts().ToList(), //FIX THIS
+                          //     OrderCountYear = context.GetCustomerOrderCountByYear(c.Id).ToList() //FIX THIS - guessing the second query cant find the first query to resolve the c.id.  Add reference to it when building the subquery maybe?
                            }).ToList();
+
+                //throw new Exception("how does relinq know how to deal with dbset - and how do we make dbfunctounsource the same");
+                //throw new Exception("is there a way to make a dbfunction an entityqueryable for parsing?");
             }
         }
 
@@ -1841,6 +1857,12 @@ ORDER BY [c].[Id], [r].[Year]");
 FROM [Customers] AS [c]
 WHERE [c].[Id] = 1");
             }
+        }
+
+        [Fact]
+        public void TV_Function_In_Subquery()
+        {
+            throw new NotImplementedException() ;
         }
 
         [Fact]
