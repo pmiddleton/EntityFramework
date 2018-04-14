@@ -273,11 +273,6 @@ namespace Microsoft.EntityFrameworkCore.Query
                 return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProductsCustomTranslation());
             }
 
-            public IQueryable<TopSellingProduct> GetTopTwoSellingProductsCustomTranslation()
-            {
-                return Execute<UDFSqlContext, TopSellingProduct>(db => db.GetTopTwoSellingProductsCustomTranslation());
-            }
-
             #endregion
 
             #endregion
@@ -1849,11 +1844,11 @@ ORDER BY [c].[Id], [r].[Year]");
             using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
-                                 select new
-                                 {
-                                     c.Id,
-                                     Prods = context.GetTopTwoSellingProducts().ToList(), 
-                                 }).ToList();
+                               select new
+                               {
+                                   c.Id,
+                                   Prods = context.GetTopTwoSellingProducts().ToList(),
+                               }).ToList();
 
                 Assert.Equal(4, results.Count);
                 Assert.Equal(2, results[0].Prods.Count);
@@ -1864,7 +1859,7 @@ ORDER BY [c].[Id], [r].[Year]");
                 AssertSql(
                     @"SELECT [c].[Id]
 FROM [Customers] AS [c]",
-                
+
                     @"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]");
             }
@@ -2011,8 +2006,8 @@ WHERE [o].[Year] = 2000");
                                    c.Id,
                                    OrderCountYear = context.GetCustomerOrderCountByYear(1).Where(o => o.Year == 2000).Select(o => new
                                    {
-                                        OrderCountYearNested = context.GetCustomerOrderCountByYear(2000).Where(o2 => o.Year == 2001).ToList(),
-                                        Prods = context.GetTopTwoSellingProducts().ToList(),
+                                       OrderCountYearNested = context.GetCustomerOrderCountByYear(2000).Where(o2 => o.Year == 2001).ToList(),
+                                       Prods = context.GetTopTwoSellingProducts().ToList(),
                                    }).ToList()
                                }).ToList();
 
@@ -2054,12 +2049,12 @@ WHERE @_outer_Year = 2001");
             using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
-                                 select new
-                                 {
-                                     c.Id,
-                                     Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 27).Select(p => p.ProductId).ToList(),
-                                 }).ToList();
-            
+                               select new
+                               {
+                                   c.Id,
+                                   Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 27).Select(p => p.ProductId).ToList(),
+                               }).ToList();
+
                 Assert.Equal(4, results.Count);
                 Assert.Equal(1, results[0].Prods.Count);
                 Assert.Equal(1, results[1].Prods.Count);
@@ -2114,13 +2109,13 @@ WHERE [p].[AmountSold] = @__amount_1");
             using (var context = CreateContext())
             {
                 var cust = (from c in context.Customers
-                              orderby c.Id
-                              select new
-                              {
-                                  c.Id,
-                                  c.LastName,
-                                  Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
-                              }).ToList();
+                            orderby c.Id
+                            select new
+                            {
+                                c.Id,
+                                c.LastName,
+                                Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                            }).ToList();
 
                 Assert.Equal(4, cust.Count);
                 Assert.Equal(2, cust[0].Orders[0].Count);
@@ -2369,16 +2364,6 @@ ORDER BY [p].[Id] DESC");
 
                 Assert.Equal(5, orders.Count);
 
-                Assert.Equal(1, orders[0].Id);
-                Assert.Equal(1, orders[1].Id);
-                Assert.Equal(2, orders[2].Id);
-                Assert.Equal(3, orders[3].Id);
-                Assert.Equal(4, orders[4].Id);
-                Assert.Equal("One", orders[0].LastName);
-                Assert.Equal("One", orders[1].LastName);
-                Assert.Equal("Two", orders[2].LastName);
-                Assert.Equal("Three", orders[3].LastName);
-                Assert.Equal("Four", orders[4].LastName);
                 Assert.Equal(2, orders[0].Count);
                 Assert.Equal(1, orders[1].Count);
                 Assert.Equal(2, orders[2].Count);
@@ -2388,8 +2373,14 @@ ORDER BY [p].[Id] DESC");
                 Assert.Equal(2001, orders[1].Year);
                 Assert.Equal(2000, orders[2].Year);
                 Assert.Equal(2001, orders[3].Year);
+                Assert.Null(orders[4].Year);
+                Assert.Equal(1, orders[0].CustomerId);
+                Assert.Equal(1, orders[1].CustomerId);
+                Assert.Equal(2, orders[2].CustomerId);
+                Assert.Equal(3, orders[3].CustomerId);
+                Assert.Null(orders[4].CustomerId);
 
-                AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
+                AssertSql(@"SELECT [g].[Count], [g].[CustomerId], [g].[Year]
 FROM [Customers] AS [c]
 OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
 ORDER BY [c].[Id], [g].[Year]");
@@ -2505,7 +2496,7 @@ ORDER BY [r].[Year]");
             }
         }
 
-        
+
         [Fact]
         public void TV_Function_Correlated_Nested_Func_Call()
         {
@@ -2517,11 +2508,11 @@ ORDER BY [r].[Year]");
                               from r in context.GetCustomerOrderCountByYear(context.AddValues(c.Id, 1))
                               where c.Id == custId
                               select new
-                                {
-                                    c.Id,
-                                    r.Count,
-                                    r.Year
-                                }).ToList();
+                              {
+                                  c.Id,
+                                  r.Count,
+                                  r.Year
+                              }).ToList();
 
                 Assert.Equal(1, orders.Count);
 

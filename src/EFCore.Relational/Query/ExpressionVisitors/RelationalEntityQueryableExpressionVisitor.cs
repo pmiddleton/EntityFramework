@@ -253,7 +253,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 }
             }
 
-            var shaper = CreateShaper(elementType, entityType, selectExpression);
+            var shaper = ShaperFactory.CreateShaper(_materializerFactory, _querySource, QueryModelVisitor, elementType, entityType, selectExpression);
 
             DiscriminateProjectionQuery(entityType, selectExpression, _querySource);
 
@@ -300,7 +300,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
 
                 var entityType = _model.FindEntityType(dbFunctionSourceExpression.ReturnType);
 
-                shaper = CreateShaper(dbFunctionSourceExpression.ReturnType, entityType, selectExpression);
+                shaper = ShaperFactory.CreateShaper(_materializerFactory, _querySource, QueryModelVisitor, dbFunctionSourceExpression.ReturnType, entityType, selectExpression);
             }
             else
             { 

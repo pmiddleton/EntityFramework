@@ -200,5 +200,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         ///     An Expression.
         /// </returns>
         Expression VisitTableValuedSqlFunctionExpression([NotNull] TableValuedSqlFunctionExpression tableValuedSqlFunctionExpression);
+
+        /// <summary>
+        ///     Visit a PivotExpression.
+        /// </summary>
+        /// <param name="pivotExpression"> The PivotExpression </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        Expression VisitPivotExpression([NotNull] PivotExpression pivotExpression);
     }
 }

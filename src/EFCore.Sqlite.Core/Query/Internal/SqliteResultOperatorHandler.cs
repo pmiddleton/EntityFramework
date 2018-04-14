@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
+using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
@@ -43,8 +44,9 @@ namespace Microsoft.EntityFrameworkCore.Sqlite.Query.Internal
             [NotNull] IModel model,
             [NotNull] ISqlTranslatingExpressionVisitorFactory sqlTranslatingExpressionVisitorFactory,
             [NotNull] ISelectExpressionFactory selectExpressionFactory,
-            [NotNull] IResultOperatorHandler resultOperatorHandler)
-            : base(model, sqlTranslatingExpressionVisitorFactory, selectExpressionFactory, resultOperatorHandler)
+            [NotNull] IResultOperatorHandler resultOperatorHandler,
+            [NotNull] IMaterializerFactory materializerFactory)
+            : base(model, sqlTranslatingExpressionVisitorFactory, selectExpressionFactory, resultOperatorHandler, materializerFactory)
         {
             _resultOperatorHandler = resultOperatorHandler;
         }

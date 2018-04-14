@@ -215,5 +215,36 @@ namespace Microsoft.EntityFrameworkCore
             [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
             bool fixedLength = true)
             => (PropertyBuilder<TProperty>)IsFixedLength((PropertyBuilder)propertyBuilder, fixedLength);
+
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="propertyBuilder">todo</param>
+        /// <param name="pivot">todo</param>
+        /// <returns>todo</returns>
+        public static PropertyBuilder IsPivot(
+            [NotNull] this PropertyBuilder propertyBuilder,
+            bool pivot = true)
+        {
+            Check.NotNull(propertyBuilder, nameof(propertyBuilder));
+
+            var internalPropertyBuilder = propertyBuilder.GetInfrastructure<InternalPropertyBuilder>();
+            internalPropertyBuilder.Relational(ConfigurationSource.Explicit).IsPivot(pivot);
+
+            return propertyBuilder;
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TProperty">todo</typeparam>
+        /// <param name="propertyBuilder">todo</param>
+        /// <param name="pivot">todo</param>
+        /// <returns>todo</returns>
+        public static PropertyBuilder<TProperty> IsPivot<TProperty>(
+            [NotNull] this PropertyBuilder<TProperty> propertyBuilder,
+            bool pivot = true)
+            => (PropertyBuilder<TProperty>)IsPivot((PropertyBuilder)propertyBuilder, pivot);
     }
 }

@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore.Query.Expressions;
 using Microsoft.EntityFrameworkCore.Query.Expressions.Internal;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors;
 using Microsoft.EntityFrameworkCore.Query.ExpressionVisitors.Internal;
+using Microsoft.EntityFrameworkCore.Query.ResultOperators.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
@@ -41,6 +42,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 IModel model,
                 ISqlTranslatingExpressionVisitorFactory sqlTranslatingExpressionVisitorFactory,
                 ISelectExpressionFactory selectExpressionFactory,
+                IMaterializerFactory materializerFactory,
                 RelationalQueryModelVisitor queryModelVisitor,
                 ResultOperatorBase resultOperator,
                 QueryModel queryModel,
@@ -55,6 +57,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 ResultOperator = resultOperator;
                 QueryModel = queryModel;
                 SelectExpression = selectExpression;
+                MaterializerFactory = materializerFactory;
             }
 
             public IModel Model { get; }
@@ -64,6 +67,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             public QueryModel QueryModel { get; }
             public RelationalQueryModelVisitor QueryModelVisitor { get; }
             public Expression EvalOnServer => QueryModelVisitor.Expression;
+            public IMaterializerFactory MaterializerFactory { get; }
 
             public Expression EvalOnClient(bool requiresClientResultOperator = true)
             {
@@ -97,13 +101,25 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 { typeof(SingleResultOperator), HandleSingle },
                 { typeof(SkipResultOperator), HandleSkip },
                 { typeof(SumResultOperator), HandleSum },
-                { typeof(TakeResultOperator), HandleTake }
+                { typeof(TakeResultOperator), HandleTake },
+                { typeof(PivotResultOperator), HandlePivot }
             };
+
+        private static readonly IDictionary<Type, string> _aggregateMappings = new Dictionary<Type, string>
+        {
+            { typeof(SumResultOperator), "SUM" },
+            { typeof(MinResultOperator), "MIN" },
+            { typeof(MaxResultOperator), "MAX" },
+            { typeof(CountResultOperator), "COUNT" },
+            { typeof(AverageResultOperator), "AVG" },
+            { typeof(LongCountResultOperator), "COUNT_BIG" }
+        };
 
         private readonly IModel _model;
         private readonly ISqlTranslatingExpressionVisitorFactory _sqlTranslatingExpressionVisitorFactory;
         private readonly ISelectExpressionFactory _selectExpressionFactory;
         private readonly IResultOperatorHandler _resultOperatorHandler;
+        private readonly IMaterializerFactory _materializerFactory;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
@@ -113,12 +129,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             [NotNull] IModel model,
             [NotNull] ISqlTranslatingExpressionVisitorFactory sqlTranslatingExpressionVisitorFactory,
             [NotNull] ISelectExpressionFactory selectExpressionFactory,
-            [NotNull] IResultOperatorHandler resultOperatorHandler)
+            [NotNull] IResultOperatorHandler resultOperatorHandler,
+            [NotNull] IMaterializerFactory materializerFactory)
         {
             _model = model;
             _sqlTranslatingExpressionVisitorFactory = sqlTranslatingExpressionVisitorFactory;
             _selectExpressionFactory = selectExpressionFactory;
             _resultOperatorHandler = resultOperatorHandler;
+            _materializerFactory = materializerFactory;
         }
 
         /// <summary>
@@ -143,6 +161,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                     _model,
                     _sqlTranslatingExpressionVisitorFactory,
                     _selectExpressionFactory,
+                    _materializerFactory,
                     relationalQueryModelVisitor,
                     resultOperator,
                     queryModel,
@@ -1013,6 +1032,62 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             }
 
             return handlerContext.EvalOnClient();
+        }
+
+        private static Expression HandlePivot(HandlerContext handlerContext)
+        {
+            var pivotResultOperator = (PivotResultOperator)handlerContext.ResultOperator;
+
+            //todo - I don't think we always have to do this - only if it is more than a single table
+            handlerContext.SelectExpression.PushDownSubquery();
+
+            //not sure we want to do this if we are directly selecting the queryModel.  How would we know in here if there is a select after the pivot though?
+            handlerContext.SelectExpression.IsProjectStar = false;
+
+            var sqlTranslatingExpressionVisitor = handlerContext.CreateSqlTranslatingVisitor();
+
+            var aggregateQueryModel = ((SubQueryExpression)pivotResultOperator.Aggregate).QueryModel;
+
+            //todo - deal with dbfunctions aggregates
+            if(_aggregateMappings.TryGetValue(aggregateQueryModel.ResultOperators[0].GetType(), out var funcName) == false)
+            { 
+                throw new Exception("unknown aggregate");
+            }
+
+            //todo - either we need to "unwrap" here or the HandlesQuerySource needs to deal with it?
+            var pivotColumn = sqlTranslatingExpressionVisitor.Visit(pivotResultOperator.PivotSelector);
+            var aggregateColumn = sqlTranslatingExpressionVisitor.Visit(pivotResultOperator.AggregateColumn);
+
+            var pivotExpression = new PivotExpression(
+                handlerContext.Model,
+                pivotColumn,
+                new SqlFunctionExpression(funcName, aggregateColumn.Type, new[] { aggregateColumn }),
+                pivotResultOperator.ResultSelector.Type,
+                handlerContext.QueryModelVisitor.QueryCompilationContext.CreateUniqueTableAlias(),
+                pivotResultOperator);
+
+            //todo - throw if pivotColumn or aggregateColumn is null?
+            
+            handlerContext.SelectExpression.ProjectStarTable = pivotExpression;
+            // handlerContext.SelectExpression.AddPivot(pivotExpression);
+            handlerContext.SelectExpression.AddTable(pivotExpression);
+            //  if (handlerContext.QueryModelVisitor.QueryCompilationContext.QuerySourceRequiresMaterialization(pivotResultOperator))
+            //   {
+            //       return handlerContext.QueryModelVisitor.ChangeResultOperatorShape(handlerContext.QueryModelVisitor.Expression as MethodCallExpression, pivotResultOperator.ResultSelector, pivotResultOperator);
+            //   }
+
+            var entityType = handlerContext.QueryModelVisitor.QueryCompilationContext.Model.FindEntityType(pivotResultOperator.ItemType);
+
+            var shapedQueryMethod = (MethodCallExpression)handlerContext.QueryModelVisitor.Expression;
+
+            var shaper = ShaperFactory.CreateShaper(handlerContext.MaterializerFactory, pivotResultOperator, handlerContext.QueryModelVisitor, pivotResultOperator.ItemType, entityType, handlerContext.SelectExpression);
+
+            return Expression.Call(
+                handlerContext.QueryModelVisitor.QueryCompilationContext.QueryMethodProvider
+                    .ShapedQueryMethod.MakeGenericMethod(shaper.Type),
+                shapedQueryMethod.Arguments[0],
+                shapedQueryMethod.Arguments[1],
+                Expression.Constant(shaper));
         }
 
         private static void SetConditionAsProjection(

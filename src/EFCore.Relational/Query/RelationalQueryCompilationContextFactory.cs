@@ -24,9 +24,10 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             Check.NotNull(relationalDependencies, nameof(relationalDependencies));
 
-            relationalDependencies
-                .NodeTypeProviderFactory
-                .RegisterMethods(FromSqlExpressionNode.SupportedMethods, typeof(FromSqlExpressionNode));
+            var nodeFactory = relationalDependencies.NodeTypeProviderFactory;
+
+            nodeFactory.RegisterMethods(FromSqlExpressionNode.SupportedMethods, typeof(FromSqlExpressionNode));
+            nodeFactory.RegisterMethods(PivotExpressionNode.SupportedMethods, typeof(PivotExpressionNode));
         }
 
         /// <summary>

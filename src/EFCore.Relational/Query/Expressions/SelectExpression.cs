@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore.Query.Sql;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Utilities;
 using Remotion.Linq.Clauses;
+using Remotion.Linq.Clauses.Expressions;
 
 namespace Microsoft.EntityFrameworkCore.Query.Expressions
 {
@@ -338,6 +339,21 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         /// </returns>
         public override bool HandlesQuerySource(IQuerySource querySource)
         {
+Check.NotNull(querySource, nameof(querySource));
+
+               //var processedQuerySource = PreProcessQuerySource(querySource);
+
+              //throw new Exception("need this for binding - but why and how to do it correctly?  How are regular aggregates bound?");
+                      /*       //look at how a query source gets registered - why do we have to do all of this mess for aggregateColumn but not pivot column for the no join test?
+              //the issue we are having is that there is an extra level of indireciton in - sl => sl.Sum(s => s.Attendence) - the s doesnt direclty point at the rqs
+              //fixme - this should be in PreProcessQuerySource, but what do we key off of to know to pull the inner?  how do we know we are a pivot?
+              //or is this safe to do here?
+              var qs = ((querySource as FromClauseBase)?.FromExpression as QuerySourceReferenceExpression)?.ReferencedQuerySource;
+
+               return _tables.Any(te => te.QuerySource == processedQuerySource || te.HandlesQuerySource(processedQuerySource))
+                      || (qs != null && _tables.Any(te => te.QuerySource == qs || te.HandlesQuerySource(qs)))
+                      || base.HandlesQuerySource(querySource);
+  */
             Check.NotNull(querySource, nameof(querySource));
 
             var processedQuerySource = PreProcessQuerySource(querySource);
@@ -544,6 +560,17 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         ///     Removes any tables added to this SelectExpression.
         /// </summary>
         public virtual void ClearTables() => _tables.Clear();
+
+       /* /// <summary>
+        ///     Add a pivot operator
+        /// </summary>
+        public virtual void AddPivot(PivotExpression pivot)
+        {
+            Check.NotNull(pivot, nameof(pivot));
+
+            //todo - how do we deal with selecting columns?  Is there a difference if we do a select vs no select (straight to tolist)?
+            _tables.Add(pivot);
+        }*/
 
         /// <summary>
         ///     Generates an expression bound to this select expression for the supplied property.
