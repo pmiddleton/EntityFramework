@@ -38,5 +38,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         ///     A flag indicating if the property as capable of storing only fixed-length data, such as strings.
         /// </summary>
         bool IsFixedLength { get; }
+
+        /// <summary>
+        ///     A flag indicating if the property is a pivot result column.
+        /// </summary>
+        bool IsPivot { get; }
     }
 }

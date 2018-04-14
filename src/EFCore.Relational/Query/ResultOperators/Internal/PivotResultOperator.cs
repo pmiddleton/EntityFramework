@@ -1,100 +1,135 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using JetBrains.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using Remotion.Linq;
+using Remotion.Linq.Clauses;
+using Remotion.Linq.Clauses.Expressions;
+using Remotion.Linq.Clauses.ResultOperators;
+using Remotion.Linq.Clauses.StreamedData;
 
-namespace Microsoft.EntityFrameworkCore.Metadata.Internal
+namespace Microsoft.EntityFrameworkCore.Query.ResultOperators.Internal
 {
     /// <summary>
     ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    // Issue#11266 This type is being used by provider code. Do not break.
-    public class RelationalPropertyBuilderAnnotations : RelationalPropertyAnnotations
+    public class PivotResultOperator : SequenceFromSequenceResultOperatorBase, IQuerySource
     {
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public RelationalPropertyBuilderAnnotations(
-            [NotNull] InternalPropertyBuilder internalBuilder,
-            ConfigurationSource configurationSource)
-            : base(new RelationalAnnotationsBuilder(internalBuilder, configurationSource))
+        public string ItemName { get; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public Type ItemType { get; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public Expression PivotSelector { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public Expression Aggregate { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public Expression AggregateColumn { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public Expression ResultSelector { get; private set; }
+
+        /// <summary>
+        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        public PivotResultOperator(string itemName, Expression pivotSelector, Expression aggregate, Expression resultSelector)
         {
+            PivotSelector = pivotSelector;
+            ResultSelector = resultSelector;
+            ItemName = itemName;
+            ItemType = resultSelector.Type;
+
+            //todo - I don't like any of this - there must be a better way?
+            Aggregate = ((UnaryExpression)aggregate).Operand;
+            var aggQueryModel = ((SubQueryExpression)Aggregate).QueryModel;
+
+            var fromExp = aggQueryModel.MainFromClause.FromExpression;
+
+            if (fromExp is NewExpression newExp)
+            {
+                AggregateColumn = newExp.Arguments.Single(a => ((MemberExpression)a).Member.Name == ((MemberExpression)aggQueryModel.SelectClause.Selector).Member.Name);
+            }
+            else
+            {
+                AggregateColumn = (MemberExpression)aggQueryModel.SelectClause.Selector;
+            }
+
+            //todo - figure out if we can cut down on this logic - it is needed if the main query is dbcontext
+            if(AggregateColumn is MemberExpression memExp && memExp.Expression is QuerySourceReferenceExpression qsre && 
+                qsre.ReferencedQuerySource is MainFromClause mfc && mfc.FromExpression is QuerySourceReferenceExpression mfcQsre)
+            {
+                AggregateColumn = Expression.Property(mfcQsre, memExp.Member.Name);
+            }
         }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected new virtual RelationalAnnotationsBuilder Annotations => (RelationalAnnotationsBuilder)base.Annotations;
+        public override IStreamedDataInfo GetOutputDataInfo(IStreamedDataInfo inputInfo)
+        {
+            return new StreamedSequenceInfo(typeof(IQueryable<>).MakeGenericType(ItemType), new QuerySourceReferenceExpression(this));
+        }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override bool ShouldThrowOnConflict => false;
+        public override ResultOperatorBase Clone(CloneContext cloneContext) =>
+            new PivotResultOperator(ItemName, PivotSelector, Aggregate, ResultSelector);
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        protected override bool ShouldThrowOnInvalidConfiguration => Annotations.ConfigurationSource == ConfigurationSource.Explicit;
+        public override void TransformExpressions(Func<Expression, Expression> transformation)
+        {
+            PivotSelector = transformation(PivotSelector);
+            Aggregate = transformation(Aggregate);
+            ResultSelector = transformation(ResultSelector);
+        }
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual bool HasColumnName([CanBeNull] string value) => SetColumnName(value);
+        public override StreamedSequence ExecuteInMemory<T>(StreamedSequence input) => input;
 
         /// <summary>
         ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual bool CanSetColumnName([CanBeNull] string value)
-            => Annotations.CanSetAnnotation(RelationalAnnotationNames.ColumnName, value);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public virtual bool HasColumnType([CanBeNull] string value) => SetColumnType(value);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public virtual bool HasDefaultValueSql([CanBeNull] string value)
-            => SetDefaultValueSql(value);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public virtual bool HasComputedColumnSql([CanBeNull] string value)
-            => SetComputedColumnSql(value);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public virtual bool HasDefaultValue([CanBeNull] object value)
-            => SetDefaultValue(value);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-#pragma warning disable 109
-        public new virtual bool IsFixedLength(bool fixedLength)
-#pragma warning restore 109
-            => SetFixedLength(fixedLength);
-
-        /// <summary>
-        ///     This API supports the Entity Framework Core infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public new virtual bool IsPivot(bool pivot)
-            => SetPivot(pivot);
+        public override string ToString()
+        {
+            return "Pivot";
+        }
     }
 }

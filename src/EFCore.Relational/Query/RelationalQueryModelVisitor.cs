@@ -869,8 +869,11 @@ namespace Microsoft.EntityFrameworkCore.Query
                     var groupByNotRequiringPushdown = subSelectExpression.GroupBy.Count > 0
                                                       && subQueryModel.ResultOperators.LastOrDefault() is GroupResultOperator;
 
+                    var pivotNotRequiringPushdown = subQueryModel.ResultOperators.LastOrDefault() is PivotResultOperator;
+
                     if (!subSelectExpression.IsIdentityQuery()
-                        && !groupByNotRequiringPushdown)
+                        && !groupByNotRequiringPushdown
+                        && !pivotNotRequiringPushdown)
                     {
                         subSelectExpression.PushDownSubquery().QuerySource = querySource;
                     }
@@ -2316,6 +2319,22 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
 
             Expression = CreateInjectParametersExpression(Expression, subQueryModelVisitor._injectedParameters);
+        }
+
+
+        /// <summary>
+        ///     Applies tracking behavior to the query.
+        /// </summary>
+        /// <typeparam name="TResult"> The type of results returned by the query. </typeparam>
+        /// <param name="queryModel"> The query. </param>
+        protected override void TrackEntitiesInResults<TResult>([NotNull] QueryModel queryModel)
+        {
+            Check.NotNull(queryModel, nameof(queryModel));
+
+            if (queryModel.ResultOperators.All(ro => ro.GetType() != typeof(PivotResultOperator)))
+            {
+                base.TrackEntitiesInResults<TResult>(queryModel);
+            }
         }
     }
 }

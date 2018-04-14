@@ -105,6 +105,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
         {
             Check.NotNull(querySource, nameof(querySource));
 
+            //fixme - this should be in PreProcessQuerySource, but what do we key off of to know to pull the inner?  how do we know we are a pivot?
+            //or is this safe to do here?
+           // var qs = ((querySource as FromClauseBase)?.FromExpression as QuerySourceReferenceExpression)?.ReferencedQuerySource;
+           //     || (qs != null && _tables.Any(te => te.QuerySource == qs || te.HandlesQuerySource(qs)))
+
             // TODO: DRY this up with include pipeline trying to find innerQSRE in similar cases
             var innerQsre = (querySource as FromClauseBase)?.FromExpression as QuerySourceReferenceExpression;
             if (innerQsre?.Type.IsGrouping() == true)
@@ -121,6 +126,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Expressions
                     return innerQuerySource;
                 }
             }
+           /* else if (innerQsre != null)
+            {
+                //todo - need a better test here - only need to do this if we are a pivot but no real way to know that here
+                return innerQsre.ReferencedQuerySource;
+            }*/
 
             var newQuerySource = (querySource as AdditionalFromClause)?.TryGetFlattenedGroupJoinClause() ?? querySource;
 

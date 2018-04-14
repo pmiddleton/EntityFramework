@@ -223,7 +223,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 }
             }
 
-            var shaper = CreateShaper(elementType, entityType, selectExpression);
+            var shaper = ShaperFactory.CreateShaper(_materializerFactory, _querySource, QueryModelVisitor, elementType, entityType, selectExpression);
 
             DiscriminateProjectionQuery(entityType, selectExpression, _querySource);
 
@@ -236,6 +236,7 @@ namespace Microsoft.EntityFrameworkCore.Query.ExpressionVisitors
                 Expression.Constant(shaper));
         }
 
+        
         private Shaper CreateShaper(Type elementType, IEntityType entityType, SelectExpression selectExpression)
         {
             Shaper shaper;

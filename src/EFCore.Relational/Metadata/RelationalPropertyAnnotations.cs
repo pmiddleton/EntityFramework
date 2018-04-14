@@ -499,5 +499,31 @@ namespace Microsoft.EntityFrameworkCore.Metadata
             => Annotations.SetAnnotation(
                 RelationalAnnotationNames.IsFixedLength,
                 fixedLength);
+
+
+        /// <summary>
+        ///     A flag indicating if the property is a pivot result column
+        /// </summary>
+        public virtual bool IsPivot
+        {
+            get
+            {
+                var pivot = Annotations.Metadata[RelationalAnnotationNames.IsPivot];
+                return pivot != null && (bool)pivot;
+            }
+
+            set => SetPivot(value);
+        }
+
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="pivot">todo</param>
+        /// <returns>todo</returns>
+        protected virtual bool SetPivot(bool pivot)
+            => Annotations.SetAnnotation(
+                RelationalAnnotationNames.IsPivot,
+                pivot);
     }
 }

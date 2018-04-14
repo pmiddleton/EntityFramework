@@ -55,7 +55,10 @@ namespace Microsoft.EntityFrameworkCore.Query
         private readonly IEntityResultFindingExpressionVisitorFactory _entityResultFindingExpressionVisitorFactory;
         private readonly ITaskBlockingExpressionVisitor _taskBlockingExpressionVisitor;
         private readonly IMemberAccessBindingExpressionVisitorFactory _memberAccessBindingExpressionVisitorFactory;
-        private readonly IProjectionExpressionVisitorFactory _projectionExpressionVisitorFactory;
+        /// <summary>
+        /// fuckyou
+        /// </summary>
+        protected readonly IProjectionExpressionVisitorFactory _projectionExpressionVisitorFactory;
         private readonly IEntityQueryableExpressionVisitorFactory _entityQueryableExpressionVisitorFactory;
         private readonly IQueryAnnotationExtractor _queryAnnotationExtractor;
         private readonly IResultOperatorHandler _resultOperatorHandler;

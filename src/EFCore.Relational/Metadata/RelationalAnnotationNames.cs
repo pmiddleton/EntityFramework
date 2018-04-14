@@ -103,5 +103,10 @@ namespace Microsoft.EntityFrameworkCore.Metadata
         ///     A flag indicating whether the property is constrained to fixed length values.
         /// </summary>
         public const string IsFixedLength = Prefix + "IsFixedLength";
+
+        /// <summary>
+        ///     A flag indicating whether the property is a pivot result column
+        /// </summary>
+        public const string IsPivot = Prefix + "IsPivot";
     }
 }

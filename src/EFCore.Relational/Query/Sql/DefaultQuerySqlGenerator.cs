@@ -223,7 +223,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
             if (selectExpression.Alias != null)
             {
                 _relationalCommandBuilder.AppendLine("(");
-
+                 
                 subQueryIndent = _relationalCommandBuilder.Indent();
             }
 
@@ -1612,6 +1612,30 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
 
             _typeMapping = parentTypeMapping;
         }
+
+        /// <summary>
+        ///     Visits a PivotExpression
+        /// </summary>
+        /// <param name="pivotExpression"> The PivotExpression. </param>
+        /// <returns> An Exprssion. </returns>
+        public virtual Expression VisitPivotExpression(PivotExpression pivotExpression)
+        {
+            _relationalCommandBuilder.Append("PIVOT(");
+
+            Visit(pivotExpression.Aggregate);
+            _relationalCommandBuilder.Append(" for ");
+            Visit(pivotExpression.PivotColumn);
+            _relationalCommandBuilder.Append(" in (");
+
+            _relationalCommandBuilder.Append(pivotExpression.ResultColumns.Select(c => $"[{c.Name}]").Join(","));
+
+            _relationalCommandBuilder.Append("))");
+            _relationalCommandBuilder.Append(AliasSeparator)
+                .Append(SqlGenerator.DelimitIdentifier(pivotExpression.Alias));
+
+            return pivotExpression;
+        }
+        
 
         /// <summary>
         ///     Visit a SQL ExplicitCastExpression.

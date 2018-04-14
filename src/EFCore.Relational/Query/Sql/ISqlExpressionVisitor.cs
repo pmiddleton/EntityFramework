@@ -182,5 +182,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Sql
         ///     An Expression.
         /// </returns>
         Expression VisitColumnReference([NotNull] ColumnReferenceExpression columnReferenceExpression);
+
+        /// <summary>
+        ///     Visit a PivotExpression.
+        /// </summary>
+        /// <param name="pivotExpression"> The PivotExpression </param>
+        /// <returns>
+        ///     An Expression.
+        /// </returns>
+        Expression VisitPivotExpression([NotNull] PivotExpression pivotExpression);
     }
 }
