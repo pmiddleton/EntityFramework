@@ -61,6 +61,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                 case ProjectionExpression projectionExpression:
                     return VisitProjection(projectionExpression);
 
+                case QuerableSqlFunctionExpression queryableFunctionExpression:
+                    return VisitQuerableSqlFunctionExpression(queryableFunctionExpression);
+
                 case RowNumberExpression rowNumberExpression:
                     return VisitRowNumber(rowNumberExpression);
 
@@ -113,15 +116,16 @@ namespace Microsoft.EntityFrameworkCore.Query
         protected abstract Expression VisitOrdering([NotNull] OrderingExpression orderingExpression);
         protected abstract Expression VisitOuterApply([NotNull] OuterApplyExpression outerApplyExpression);
         protected abstract Expression VisitProjection([NotNull] ProjectionExpression projectionExpression);
+        protected abstract Expression VisitQuerableSqlFunctionExpression([NotNull] QuerableSqlFunctionExpression queryableFunctionExpression);
         protected abstract Expression VisitRowNumber([NotNull] RowNumberExpression rowNumberExpression);
-        protected abstract Expression VisitScalarSubquery([NotNull] ScalarSubqueryExpression scalarSubqueryExpression);
         protected abstract Expression VisitSelect([NotNull] SelectExpression selectExpression);
         protected abstract Expression VisitSqlBinary([NotNull] SqlBinaryExpression sqlBinaryExpression);
         protected abstract Expression VisitSqlConstant([NotNull] SqlConstantExpression sqlConstantExpression);
         protected abstract Expression VisitSqlFragment([NotNull] SqlFragmentExpression sqlFragmentExpression);
         protected abstract Expression VisitSqlFunction([NotNull] SqlFunctionExpression sqlFunctionExpression);
         protected abstract Expression VisitSqlParameter([NotNull] SqlParameterExpression sqlParameterExpression);
-        protected abstract Expression VisitSqlUnary([NotNull] SqlUnaryExpression sqlUnaryExpression);
+        protected abstract Expression VisitSqlUnary([NotNull] SqlUnaryExpression sqlCastExpression);
+        protected abstract Expression VisitSubSelect([NotNull] ScalarSubqueryExpression scalarSubqueryExpression);
         protected abstract Expression VisitTable([NotNull] TableExpression tableExpression);
         protected abstract Expression VisitUnion([NotNull] UnionExpression unionExpression);
     }

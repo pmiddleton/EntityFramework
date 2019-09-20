@@ -314,6 +314,10 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.Query.Internal
             return ApplyConversion(newFunction, condition);
         }
 
+        //todo ???
+        protected override Expression VisitQuerableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
+            => queryableFunctionExpression;
+
         protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
         {
             Check.NotNull(sqlParameterExpression, nameof(sqlParameterExpression));

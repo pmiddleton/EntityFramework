@@ -45,6 +45,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Conventions
 
             foreach (var dbFunction in modelBuilder.Metadata.GetDbFunctions())
             {
+                //todo - can a TVF have a return type that is not an entityType?  If so we need to find it's mapping here.  You can't in Sql Server, but what about other DBMS?
                 var typeMapping = !string.IsNullOrEmpty(dbFunction.StoreType)
                     ? _relationalTypeMappingSource.FindMapping(dbFunction.StoreType)
                     : _relationalTypeMappingSource.FindMapping(dbFunction.MethodInfo.ReturnType);

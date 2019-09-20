@@ -69,6 +69,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 generateContextAccessors: true);
         }
 
+		protected QueryCompilationContext QueryCompilationContext => _queryCompilationContext;
+
         public virtual Expression Expand([NotNull] Expression query)
         {
             var result = Visit(query);
@@ -134,6 +136,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             return base.VisitConstant(constantExpression);
         }
 
+        protected NavigationExpansionExpression CreateNavigationExpansionExpression(Expression sourceExpression, IEntityType entityType)
         protected override Expression VisitExtension(Expression extensionExpression)
         {
             Check.NotNull(extensionExpression, nameof(extensionExpression));
@@ -522,6 +525,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 }
 
                 throw new InvalidOperationException(CoreStrings.QueryFailed(methodCallExpression.Print(), GetType().Name));
+                
             }
 
             if (method.IsGenericMethod
@@ -554,6 +558,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 return ApplyQueryFilter(source);
             }
 
+           /*() if (IsValidMethodQuerySource(methodCallExpression.Method, out var queryableEntityType))
+            {
+                return CreateNavigationExpansionExpression(methodCallExpression, queryableEntityType);
+            }*/
+            
             return ProcessUnknownMethod(methodCallExpression);
         }
 

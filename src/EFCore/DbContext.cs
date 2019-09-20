@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -1655,6 +1656,32 @@ namespace Microsoft.EntityFrameworkCore
         ///     </para>
         /// </summary>
         IServiceProvider IInfrastructure<IServiceProvider>.Instance => InternalServiceProvider;
+
+        /// <summary>
+        /// Creates a query expression, which represents a function call, against the query store.
+        /// </summary>
+        /// <typeparam name="TResult"> The result type of the query expression </typeparam>
+        /// <param name="expression"> The query expression to create. </param>
+        /// <returns> An IQueryable representing the query. </returns>
+        protected virtual IQueryable<TResult> CreateQuery<TResult>([NotNull] Expression<Func<IQueryable<TResult>>> expression)
+        {
+            /*Check.NotNull(expression, nameof(expression));
+
+            var dbFuncFac = InternalServiceProvider.GetRequiredService<IDbFunctionSourceFactory>();
+
+            if (!(expression.Body is MethodCallExpression))
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.ExpressionBodyMustBeMethodCallExpression());
+            }
+
+            var resultsQuery = dbFuncFac.GenerateDbFunctionSource((MethodCallExpression)expression.Body, Model);
+
+            //what if I make DbContextDependencies protected and then make CreateQuery an extension method in relational?
+            //instead of DbFunctionSource can we just unwrap the method call from the lambda pass in expression and forward that on?  Can the new query pipeline deal with that?
+            //if not what about a SqlFunctionExpression?*/
+            return DbContextDependencies.QueryProvider.CreateQuery<TResult>(expression.Body);
+        }
 
         #region Hidden System.Object members
 

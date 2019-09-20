@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -173,6 +174,8 @@ namespace Microsoft.EntityFrameworkCore.Metadata
 
         public static MethodInfo MethodHmi = typeof(TestMethods).GetTypeInfo().GetDeclaredMethod(nameof(TestMethods.MethodH));
 
+        public static MethodInfo MethodJmi = typeof(TestMethods).GetTypeInfo().GetDeclaredMethod(nameof(TestMethods.MethodJ));
+
         public class TestMethods
         {
             public static int Foo => 1;
@@ -208,6 +211,11 @@ namespace Microsoft.EntityFrameworkCore.Metadata
             }
 
             public static int MethodI()
+            {
+                throw new Exception();
+            }
+
+            public static IQueryable<TestMethods> MethodJ()
             {
                 throw new Exception();
             }
@@ -602,6 +610,19 @@ namespace Microsoft.EntityFrameworkCore.Metadata
             Assert.Equal(typeof(int), dbFunc.Parameters[1].ClrType);
         }
 
+        /*
+        Can these be non-static in the new query pipeline?
+            [ConditionalFact]
+        public virtual void Queryable_method_must_be_static()
+        {
+            var modelBuilder = GetModelBuilder();
+
+            var expectedMessage = RelationalStrings.DbFunctionQueryableNotStatic("TestMethods.MethodI");
+
+            Assert.Equal(expectedMessage, Assert.Throws<ArgumentException>(() => modelBuilder.HasDbFunction(MethodImi)).Message);
+        }*/
+
+        //todo - add more queryable function tests.  Invalid types in IQueryable, etc
         [ConditionalFact]
         public void DbParameters_StoreType()
         {

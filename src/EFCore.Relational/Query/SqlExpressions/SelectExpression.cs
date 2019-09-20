@@ -79,6 +79,13 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         {
         }
 
+        internal SelectExpression(IEntityType entityType, SqlFunctionExpression expression)
+            : this(
+                entityType, new QuerableSqlFunctionExpression(expression,
+                    entityType.GetTableName().ToLower().Substring(0, 1)))
+        {
+        }
+
         private SelectExpression(IEntityType entityType, TableExpressionBase tableExpression)
             : base(null)
         {

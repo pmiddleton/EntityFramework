@@ -270,6 +270,17 @@ namespace Microsoft.EntityFrameworkCore.Query
             return sqlFunctionExpression;
         }
 
+        protected override Expression VisitQuerableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
+        {
+            Visit(queryableFunctionExpression.SqlFunctionExpression);
+
+            _relationalCommandBuilder
+                .Append(AliasSeparator)
+                .Append(_sqlGenerationHelper.DelimitIdentifier(queryableFunctionExpression.Alias));
+
+            return queryableFunctionExpression;
+        }
+
         protected override Expression VisitColumn(ColumnExpression columnExpression)
         {
             Check.NotNull(columnExpression, nameof(columnExpression));

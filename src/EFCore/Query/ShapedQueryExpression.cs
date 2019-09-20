@@ -38,7 +38,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         public override Type Type => ResultCardinality == ResultCardinality.Enumerable
-            ? typeof(IQueryable<>).MakeGenericType(ShaperExpression.Type)
+            ? typeof(IQueryable<>).MakeGenericType(ShaperExpression.Type)   
             : ShaperExpression.Type;
 
         public sealed override ExpressionType NodeType => ExpressionType.Extension;

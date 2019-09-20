@@ -75,6 +75,19 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                         methodInfo.DisplayName(), methodInfo.ReturnType.ShortDisplayName()));
             }
 
+            if (methodInfo.ReturnType.IsGenericType
+                && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
+            {
+                IsIQueryable = true;
+
+                //todo - if the generic argument is not usuable as an entitytype should we throw here?  IE IQueryable<int>
+                //the built in entitytype will throw is the type is not a class
+                if (model.FindEntityType(methodInfo.ReturnType.GetGenericArguments()[0]) == null)
+                {
+                    model.AddEntityType(methodInfo.ReturnType.GetGenericArguments()[0]).IsKeyless = true;
+                }
+            }
+
             MethodInfo = methodInfo;
 
             _model = model;
@@ -309,6 +322,14 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
             get => _translation;
             set => SetTranslation(value, ConfigurationSource.Explicit);
         }
+
+        /// <summary>
+        ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
+        ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
+        ///     any release. You should only use it directly in your code with extreme caution and knowing that
+        ///     doing so can result in application failures when updating to a new Entity Framework Core release.
+        /// </summary>
+        public virtual bool IsIQueryable { get; }
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

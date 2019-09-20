@@ -9,6 +9,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
@@ -192,7 +193,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Check.NotNull(node, nameof(node));
 
                 if (node is SqlExpression sqlExpression
-                    && !(node is SqlFragmentExpression))
+                    && !(node is SqlFragmentExpression)
+                    && !(node is SqlFunctionExpression sqlFunctionExpression
+                        && sqlFunctionExpression.Type.IsQueryableType()))
                 {
                     if (sqlExpression.TypeMapping == null)
                     {

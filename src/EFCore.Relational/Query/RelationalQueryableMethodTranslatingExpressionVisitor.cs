@@ -75,11 +75,31 @@ namespace Microsoft.EntityFrameworkCore.Query
                 return CreateShapedQueryExpression(queryable.ElementType, sql, methodCallExpression.Arguments[2]);
             }
 
+            //todo - is method a qurable in the model - if so translate to sqlfunction here, or do we need to create a shapedqueryexpression?
+            //we have to parse the parameters to the method call
+            var dbFunction = this._model.FindDbFunction(methodCallExpression.Method);
+            if (dbFunction != null && dbFunction.IsIQueryable && this._subquery == false)
+            {
+                //todo - how to deal with parsing parameters?
+                return CreateShapedQueryExpression(methodCallExpression);
+            }
+
             return base.VisitMethodCall(methodCallExpression);
         }
 
         protected override QueryableMethodTranslatingExpressionVisitor CreateSubqueryVisitor()
             => new RelationalQueryableMethodTranslatingExpressionVisitor(this);
+
+        protected ShapedQueryExpression CreateShapedQueryExpression(MethodCallExpression methodCallExpression)
+        {
+            var sqlFuncExpression = _sqlTranslator.Translate(methodCallExpression) as SqlFunctionExpression;
+
+            var elementType = methodCallExpression.Method.ReturnType.GetGenericArguments()[0];
+            var entityType =_model.FindEntityType(elementType);
+            var queryExpression = _sqlExpressionFactory.Select(entityType, sqlFuncExpression);
+
+            return CreateShapedQueryExpression(entityType, queryExpression);
+        }
 
         protected override ShapedQueryExpression CreateShapedQueryExpression(Type elementType)
         {
