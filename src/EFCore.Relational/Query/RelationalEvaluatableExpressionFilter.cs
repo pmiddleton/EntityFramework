@@ -58,6 +58,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(expression, nameof(expression));
             Check.NotNull(model, nameof(model));
 
+            //todo - if we have a method that takes an expression<func<?>> can we pull the generic param and see if there is a method that takes just ? registered
+            //this will prevent us from having to double register dbFunctions (with and without expression) used for nesting
             if (expression is MethodCallExpression methodCallExpression
                 && model.FindDbFunction(methodCallExpression.Method) != null)
             {

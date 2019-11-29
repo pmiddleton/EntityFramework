@@ -98,7 +98,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                             methodInfo.ReturnType.ShortDisplayName()));
                 }
 
-                foreach (var parameter in dbFunction.Parameters)
+               /* foreach (var parameter in dbFunction.Parameters)
                 {
                     if (parameter.TypeMapping == null)
                     {
@@ -108,7 +108,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                                 methodInfo.DisplayName(),
                                 parameter.ClrType.ShortDisplayName()));
                     }
-                }
+                }*/
             }
         }
 

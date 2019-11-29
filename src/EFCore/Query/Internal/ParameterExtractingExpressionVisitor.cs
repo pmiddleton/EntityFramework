@@ -596,7 +596,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                         {
                             _evaluatableExpressions[methodCallExpression.Arguments[i]] = false;
                         }
-                        else if (!_inLambda)
+                        else if (!_inLambda && _evaluatableExpressionFilter.IsEvaluatableExpression(methodCallExpression, _model))
                         {
                             // Force parameterization when not in lambda
                             _evaluatableExpressions[methodCallExpression.Arguments[i]] = true;
