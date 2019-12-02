@@ -596,7 +596,6 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             return null;
         }
-
         protected override Expression VisitConstant(ConstantExpression constantExpression)
         {
             Check.NotNull(constantExpression, nameof(constantExpression));
@@ -609,6 +608,13 @@ namespace Microsoft.EntityFrameworkCore.Query
             Check.NotNull(parameterExpression, nameof(parameterExpression));
 
             return new SqlParameterExpression(parameterExpression, null);
+
+
+        protected override Expression VisitLambda<T>(Expression<T> node)
+        {
+			Check.NotNull(node, nameof(node));
+
+            return node?.Body != null ? Visit(node.Body) : null;
         }
 
         protected override Expression VisitExtension(Expression extensionExpression)
@@ -690,6 +696,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                     }
 
                     break;
+
+                case ExpressionType.Quote:
+                    return operand;
             }
 
             return null;

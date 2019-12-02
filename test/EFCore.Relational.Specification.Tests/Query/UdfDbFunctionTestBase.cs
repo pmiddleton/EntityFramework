@@ -1278,7 +1278,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             using (var context = CreateContext())
             {
                 var orders = (from r in context.GetCustomerOrderCountByYear(() => context.AddValues(-2, 3))
-                           //   orderby r.Count descending
+                              orderby r.Count descending
                               select r).ToList();
 
                 Assert.Equal(2, orders.Count);

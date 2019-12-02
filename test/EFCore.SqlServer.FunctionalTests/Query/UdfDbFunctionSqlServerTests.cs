@@ -480,9 +480,9 @@ ORDER BY [o].[Count] DESC");
         {
             base.TVF_Stand_Alone_Nested();
 
-            AssertSql(@"SELECT [r].[Count], [r].[CustomerId], [r].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](-2, 3)) AS [r]
-ORDER BY [r].[Count] DESC");
+            AssertSql(@"SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](-2, 3)) AS [o]
+ORDER BY [o].[Count] DESC");
         }
         
         public override void TVF_CrossApply_Correlated_Select_Anonymous()
@@ -889,6 +889,13 @@ WHERE [c].[Id] = @__custId_1");
 	                                                    return 
                                                     end");
 
+                context.Database.ExecuteSqlRaw(
+                    @"create function [dbo].[AddValues] (@a int, @b int)
+                                                    returns int
+                                                    as
+                                                    begin
+                                                        return @a + @b;
+                                                    end");
                 context.SaveChanges();
             }
         }

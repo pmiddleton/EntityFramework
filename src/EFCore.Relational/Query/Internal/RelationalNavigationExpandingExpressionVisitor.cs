@@ -29,7 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         }
         
 
-        protected override bool IsValidMethodQuerySource(MethodInfo method, out IEntityType entityType)
+        /*protected override bool IsValidMethodQuerySource(MethodInfo method, out IEntityType entityType)
         {
             var dbFunction = QueryCompilationContext.Model.FindDbFunction(method);
 
@@ -41,6 +41,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
             entityType = null;
             return false;
-        }
+        }*/
     }
 }
