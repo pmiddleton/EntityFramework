@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -366,7 +367,27 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
         public static DbFunction FindDbFunction(
             [NotNull] IModel model,
             [NotNull] MethodInfo methodInfo)
-            => model[BuildAnnotationName(methodInfo)] as DbFunction;
+        {
+            var dbFunction = model[BuildAnnotationName(methodInfo)] as DbFunction;
+
+            if(dbFunction == null
+                && methodInfo.GetParameters().Any(p => p.ParameterType.IsGenericType && p.ParameterType.GetGenericTypeDefinition() == typeof(Expression<>)))
+            {
+                var parameters = methodInfo.GetParameters().Select(p => p.ParameterType.IsGenericType
+                                        && p.ParameterType.GetGenericTypeDefinition() == typeof(Expression<>)
+                                        && p.ParameterType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(Func<>)
+                                    ? p.ParameterType.GetGenericArguments()[0].GetGenericArguments()[0]
+                                    : p.ParameterType).ToArray();
+
+                var nonExpressionMethod = methodInfo.DeclaringType.GetMethod(methodInfo.Name, parameters);
+
+                dbFunction =  nonExpressionMethod != null
+                                ? model[BuildAnnotationName(nonExpressionMethod)] as DbFunction
+                                : null;
+            }
+
+            return dbFunction;
+        }
 
         /// <summary>
         ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

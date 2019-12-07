@@ -100,6 +100,8 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
 
                /* foreach (var parameter in dbFunction.Parameters)
                 {
+                    //check return parameter
+                    //params can be of Expression<Func<>>
                     if (parameter.TypeMapping == null)
                     {
                         throw new InvalidOperationException(
