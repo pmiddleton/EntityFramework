@@ -47,26 +47,27 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// </summary>
         protected virtual RelationalEvaluatableExpressionFilterDependencies RelationalDependencies { get; }
 
-        /// <summary>
-        ///     Checks whether the given expression can be evaluated.
-        /// </summary>
-        /// <param name="expression"> The expression. </param>
-        /// <param name="model"> The model. </param>
-        /// <returns> True if the expression can be evaluated; false otherwise. </returns>
         public override bool IsEvaluatableExpression(Expression expression, IModel model)
         {
             Check.NotNull(expression, nameof(expression));
             Check.NotNull(model, nameof(model));
 
-            //todo - if we have a method that takes an expression<func<?>> can we pull the generic param and see if there is a method that takes just ? registered
-            //this will prevent us from having to double register dbFunctions (with and without expression) used for nesting
-            if (expression is MethodCallExpression methodCallExpression
+            /*if (expression is MethodCallExpression methodCallExpression
                 && model.FindDbFunction(methodCallExpression.Method) != null)
             {
                 return false;
+            }*/
+
+            if (expression is MethodCallExpression methodCallExpression)
+            {
+                return model.FindDbFunction(methodCallExpression.Method)?.IsIQueryable ?? true;
             }
 
             return base.IsEvaluatableExpression(expression, model);
         }
+
+        public override bool IsQueryableFunction(Expression expression, IModel model) => 
+            expression is MethodCallExpression methodCallExpression
+               && model.FindDbFunction(methodCallExpression.Method)?.IsIQueryable == true;
     }
 }

@@ -1261,7 +1261,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             using (var context = CreateContext())
             {
                 var orders = (from c in context.GetCustomerOrderCountByYear(1)
-                              orderby c.Count descending
+                            //  orderby c.Count descending
                               select c).ToList();
 
                 Assert.Equal(2, orders.Count);
@@ -1326,12 +1326,13 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
-                var results1 = (from c in context.Customers
+             /*   var results2 = (from c in context.Customers
                                select new
                                {
                                    c.Id,
-                                   Prods = c.Orders.ToList()
-                               }).ToList();
+                                   Prods = context.Products.ToList()
+                               }).ToList();*/
+
 
                 var results = (from c in context.Customers
                                select new
@@ -1340,11 +1341,10 @@ namespace Microsoft.EntityFrameworkCore.Query
                                    Prods = context.GetTopTwoSellingProducts().ToList(),
                                }).ToList();
 
-                Assert.Equal(4, results.Count);
+                Assert.Equal(3, results.Count);
                 Assert.Equal(2, results[0].Prods.Count);
                 Assert.Equal(2, results[1].Prods.Count);
                 Assert.Equal(2, results[2].Prods.Count);
-                Assert.Equal(2, results[3].Prods.Count);
             }
         }
       

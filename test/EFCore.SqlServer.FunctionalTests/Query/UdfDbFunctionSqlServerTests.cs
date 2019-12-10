@@ -472,8 +472,8 @@ ORDER BY [t].[ProductId]");
             AssertSql(@"@__customerId_0='1'
 
 SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]
-ORDER BY [o].[Count] DESC");
+FROM [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]");
+            //ORDER BY [o].[Count] DESC");
         }
        
         public override void TVF_Stand_Alone_Nested()
@@ -500,11 +500,11 @@ ORDER BY [c].[Id], [o].[Year]");
         {
             base.TVF_Select_Direct_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
+            AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [t]",
 
-                    @"SELECT [t].[AmountSold], [t].[ProductId]
-FROM [dbo].[GetTopTwoSellingProducts]() AS [t]");
+@"SELECT [c].[Id]
+FROM [Customers] AS [c]");
         }
         
         public override void TVF_Select_Correlated_Direct_In_Anonymous()
