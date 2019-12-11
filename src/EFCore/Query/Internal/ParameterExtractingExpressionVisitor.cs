@@ -479,10 +479,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 _evaluatableExpressions = new Dictionary<Expression, bool>();
                 _allowedParameters.Clear();
 
-                if(_evaluatableExpressionFilter.IsQueryableFunction(expression, _model) == false)
-                {
+               // if(_evaluatableExpressionFilter.IsQueryableFunction(expression, _model) == false)
+               // {
                     Visit(expression);
-                }
+                //}
 
                 return _evaluatableExpressions;
             }
@@ -556,6 +556,13 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
             protected override Expression VisitMethodCall(MethodCallExpression methodCallExpression)
             {
+                //can just set = to the expression?
+                if (_evaluatableExpressionFilter.IsQueryableFunction(methodCallExpression, _model)
+                        && !_inLambda)
+                {
+                    _evaluatable = false;
+                }
+
                 Visit(methodCallExpression.Object);
                 var parameterInfos = methodCallExpression.Method.GetParameters();
                 for (var i = 0; i < methodCallExpression.Arguments.Count; i++)

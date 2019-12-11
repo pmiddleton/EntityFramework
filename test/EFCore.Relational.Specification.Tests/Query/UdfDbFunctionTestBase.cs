@@ -277,8 +277,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                     LastName = "Four"
                 };
 
-                ((UDFSqlContext)context).Customers.AddRange(customer1, customer2, customer3);
+                ((UDFSqlContext)context).Customers.AddRange(customer1, customer2, customer3, customer4);
                 ((UDFSqlContext)context).Orders.AddRange(order11, order12, order13, order21, order22, order31);
+                ((UDFSqlContext)context).Products.AddRange(product1, product2, product3, product4, product5);
             }
         }
 
@@ -295,7 +296,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var len = context.Customers.Count(c => UDFSqlContext.IsDateStatic(c.FirstName) == false);
 
-            Assert.Equal(3, len);
+            Assert.Equal(4, len);
         }
 
         [ConditionalFact]
@@ -332,7 +333,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var custs = context.Customers.Select(c => UDFSqlContext.CustomerOrderCountStatic(customerId)).ToList();
 
-            Assert.Equal(3, custs.Count);
+            Assert.Equal(4, custs.Count);
         }
 
         [ConditionalFact]
@@ -540,8 +541,8 @@ namespace Microsoft.EntityFrameworkCore.Query
                            orderby c.Id
                            select UDFSqlContext.AddOneStatic(c.Id)).ToList();
 
-            Assert.Equal(3, results.Count);
-            Assert.True(results.SequenceEqual(Enumerable.Range(2, 3)));
+            Assert.Equal(4, results.Count);
+            Assert.True(results.SequenceEqual(Enumerable.Range(2, 4)));
         }
 
         [ConditionalFact]
@@ -725,7 +726,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var len = context.Customers.Count(c => context.IsDateInstance(c.FirstName) == false);
 
-            Assert.Equal(3, len);
+            Assert.Equal(4, len);
         }
 
         [ConditionalFact]
@@ -760,7 +761,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             var custs = context.Customers.Select(c => context.CustomerOrderCountInstance(customerId)).ToList();
 
-            Assert.Equal(3, custs.Count);
+            Assert.Equal(4, custs.Count);
         }
 
         [ConditionalFact]
@@ -967,8 +968,8 @@ namespace Microsoft.EntityFrameworkCore.Query
                            orderby c.Id
                            select context.AddOneInstance(c.Id)).ToList();
 
-            Assert.Equal(3, results.Count);
-            Assert.True(results.SequenceEqual(Enumerable.Range(2, 3)));
+            Assert.Equal(4, results.Count);
+            Assert.True(results.SequenceEqual(Enumerable.Range(2, 4)));
         }
 
         [ConditionalFact]
@@ -1193,7 +1194,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         #region Table Valued Tests
 
         [ConditionalFact]
-        public virtual void TVF_Stand_Alone()
+        public virtual void QF_Stand_Alone()
         {
             using (var context = CreateContext())
             {
@@ -1239,7 +1240,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
      /*   [Fact]
-        public virtual void TVF_Stand_Alone_With_Translation()
+        public virtual void QF_Stand_Alone_With_Translation()
         {
             using (var context = CreateContext())
             {
@@ -1256,12 +1257,12 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
         */
         [Fact]
-        public virtual void TVF_Stand_Alone_Parameter()
+        public virtual void QF_Stand_Alone_Parameter()
         {
             using (var context = CreateContext())
             {
                 var orders = (from c in context.GetCustomerOrderCountByYear(1)
-                            //  orderby c.Count descending
+                              orderby c.Count descending
                               select c).ToList();
 
                 Assert.Equal(2, orders.Count);
@@ -1273,7 +1274,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Stand_Alone_Nested()
+        public virtual void QF_Stand_Alone_Nested()
         {
             using (var context = CreateContext())
             {
@@ -1290,7 +1291,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_CrossApply_Correlated_Select_Anonymous()
+        public virtual void QF_CrossApply_Correlated_Select_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1322,7 +1323,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
         
         [Fact]
-        public virtual void TVF_Select_Direct_In_Anonymous()
+        public virtual void QF_Select_Direct_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1341,15 +1342,16 @@ namespace Microsoft.EntityFrameworkCore.Query
                                    Prods = context.GetTopTwoSellingProducts().ToList(),
                                }).ToList();
 
-                Assert.Equal(3, results.Count);
+                Assert.Equal(4, results.Count);
                 Assert.Equal(2, results[0].Prods.Count);
                 Assert.Equal(2, results[1].Prods.Count);
                 Assert.Equal(2, results[2].Prods.Count);
+                Assert.Equal(2, results[3].Prods.Count);
             }
         }
       
         [Fact]
-        public virtual void TVF_Select_Correlated_Direct_In_Anonymous()
+        public virtual void QF_Select_Correlated_Direct_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1373,7 +1375,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
+        public virtual void QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1392,7 +1394,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Select_Correlated_Subquery_In_Anonymous()
+        public virtual void QF_Select_Correlated_Subquery_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1416,7 +1418,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Select_Correlated_Subquery_In_Anonymous_Nested()
+        public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
             using (var context = CreateContext())
             {
@@ -1448,7 +1450,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Select_NonCorrelated_Subquery_In_Anonymous()
+        public virtual void QF_Select_NonCorrelated_Subquery_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1468,7 +1470,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
+        public virtual void QF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
         {
             using (var context = CreateContext())
             {
@@ -1490,7 +1492,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Correlated_Select_In_Anonymous()
+        public virtual void QF_Correlated_Select_In_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1520,7 +1522,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_CrossApply_Correlated_Select_Result()
+        public virtual void QF_CrossApply_Correlated_Select_Result()
         {
             using (var context = CreateContext())
             {
@@ -1544,7 +1546,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_CrossJoin_Not_Correlated()
+        public virtual void QF_CrossJoin_Not_Correlated()
         {
             using (var context = CreateContext())
             {
@@ -1568,7 +1570,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_CrossJoin_Parameter()
+        public virtual void QF_CrossJoin_Parameter()
         {
             using (var context = CreateContext())
             {
@@ -1594,7 +1596,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Join()
+        public virtual void QF_Join()
         {
             using (var context = CreateContext())
             {
@@ -1618,7 +1620,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_LeftJoin_Select_Anonymous()
+        public virtual void QF_LeftJoin_Select_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1653,7 +1655,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_LeftJoin_Select_Result()
+        public virtual void QF_LeftJoin_Select_Result()
         {
             using (var context = CreateContext())
             {
@@ -1678,7 +1680,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_OuterApply_Correlated_Select_TVF()
+        public virtual void QF_OuterApply_Correlated_Select_TVF()
         {
             using (var context = CreateContext())
             {
@@ -1708,7 +1710,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_OuterApply_Correlated_Select_DbSet()
+        public virtual void QF_OuterApply_Correlated_Select_DbSet()
         {
             using (var context = CreateContext())
             {
@@ -1733,7 +1735,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_OuterApply_Correlated_Select_Anonymous()
+        public virtual void QF_OuterApply_Correlated_Select_Anonymous()
         {
             using (var context = CreateContext())
             {
@@ -1773,7 +1775,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
         [Fact]
-        public virtual void TVF_Nested()
+        public virtual void QF_Nested()
         {
             using (var context = CreateContext())
             {
@@ -1800,7 +1802,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
 
         [Fact]
-        public virtual void TVF_Correlated_Nested_Func_Call()
+        public virtual void QF_Correlated_Nested_Func_Call()
         {
             var custId = 2;
 
@@ -1824,7 +1826,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
 
        /* [Fact]
-        public virtual void TVF_Correlated_Nested_Func_Call_With_Navigation()
+        public virtual void QF_Correlated_Nested_Func_Call_With_Navigation()
         {
 
             //need some call where the TVF takes a variable and uses sub props

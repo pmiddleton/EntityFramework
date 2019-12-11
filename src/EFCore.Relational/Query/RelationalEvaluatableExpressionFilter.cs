@@ -60,10 +60,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             if (expression is MethodCallExpression methodCallExpression)
             {
-                var dbFunction = model.FindDbFunction(methodCallExpression.Method);
-
-                if (dbFunction != null)
-                    return dbFunction.IsIQueryable;
+                return model.FindDbFunction(methodCallExpression.Method)?.IsIQueryable ?? true;
             }
 
             return base.IsEvaluatableExpression(expression, model);

@@ -446,9 +446,9 @@ WHERE 3 = [dbo].[CustomerOrderCount](ABS([c].[Id]))");
 
         #region Queryable Function Tests
 
-        public override void TVF_Stand_Alone()
+        public override void QF_Stand_Alone()
         {
-            base.TVF_Stand_Alone();
+            base.QF_Stand_Alone();
 
             AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
@@ -456,38 +456,38 @@ ORDER BY [t].[ProductId]");
         }
 
       /*  [Fact]
-        public override void TVF_Stand_Alone_With_Translation()
+        public override void QF_Stand_Alone_With_Translation()
         {
-            base.TVF_Stand_Alone_With_Translation();
+            base.QF_Stand_Alone_With_Translation();
 
             AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
 ORDER BY [t].[ProductId]");
         }*/
 
-        public override void TVF_Stand_Alone_Parameter()
+        public override void QF_Stand_Alone_Parameter()
         {
-            base.TVF_Stand_Alone_Parameter();
+            base.QF_Stand_Alone_Parameter();
 
             AssertSql(@"@__customerId_0='1'
 
 SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]");
-            //ORDER BY [o].[Count] DESC");
+FROM [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]
+ORDER BY [o].[Count] DESC");
         }
        
-        public override void TVF_Stand_Alone_Nested()
+        public override void QF_Stand_Alone_Nested()
         {
-            base.TVF_Stand_Alone_Nested();
+            base.QF_Stand_Alone_Nested();
 
             AssertSql(@"SELECT [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](-2, 3)) AS [o]
 ORDER BY [o].[Count] DESC");
         }
         
-        public override void TVF_CrossApply_Correlated_Select_Anonymous()
+        public override void QF_CrossApply_Correlated_Select_Anonymous()
         {
-            base.TVF_CrossApply_Correlated_Select_Anonymous();
+            base.QF_CrossApply_Correlated_Select_Anonymous();
 
             AssertSql(@"SELECT [c].[Id], [c].[LastName], [o].[Year], [o].[Count]
 FROM [Customers] AS [c]
@@ -496,9 +496,9 @@ ORDER BY [c].[Id], [o].[Year]");
         }
         
 
-        public override void TVF_Select_Direct_In_Anonymous()
+        public override void QF_Select_Direct_In_Anonymous()
         {
-            base.TVF_Select_Direct_In_Anonymous();
+            base.QF_Select_Direct_In_Anonymous();
 
             AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]",
@@ -507,9 +507,9 @@ FROM [dbo].[GetTopTwoSellingProducts]() AS [t]",
 FROM [Customers] AS [c]");
         }
         
-        public override void TVF_Select_Correlated_Direct_In_Anonymous()
+        public override void QF_Select_Correlated_Direct_In_Anonymous()
         {
-            base.TVF_Select_Correlated_Direct_In_Anonymous();
+            base.QF_Select_Correlated_Direct_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]",
@@ -535,9 +535,9 @@ SELECT [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]");
         }
 
-        public override void TVF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
+        public override void QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
         {
-            base.TVF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous();
+            base.QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]
@@ -549,9 +549,9 @@ SELECT [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](@_outer_Id, 1)) AS [o]");
         }
 
-        public override void TVF_Select_Correlated_Subquery_In_Anonymous()
+        public override void QF_Select_Correlated_Subquery_In_Anonymous()
         {
-            base.TVF_Select_Correlated_Subquery_In_Anonymous();
+            base.QF_Select_Correlated_Subquery_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]",
@@ -581,9 +581,9 @@ FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
 WHERE [o].[Year] = 2000");
         }
 
-        public override void TVF_Select_Correlated_Subquery_In_Anonymous_Nested()
+        public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
-            base.TVF_Select_Correlated_Subquery_In_Anonymous_Nested();
+            base.QF_Select_Correlated_Subquery_In_Anonymous_Nested();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]",
@@ -601,9 +601,9 @@ WHERE @_outer_Year = 2001");
            // Assert.Equal(13, Fixture.TestSqlLoggerFactory.SqlStatements.Count);
         }
 
-        public override void TVF_Select_NonCorrelated_Subquery_In_Anonymous()
+        public override void QF_Select_NonCorrelated_Subquery_In_Anonymous()
         {
-            base.TVF_Select_NonCorrelated_Subquery_In_Anonymous();
+            base.QF_Select_NonCorrelated_Subquery_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]",
@@ -613,9 +613,9 @@ FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
 WHERE [p].[AmountSold] = 27");
         }
 
-        public override void TVF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
+        public override void QF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
         {
-            base.TVF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter();
+            base.QF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter();
 
             AssertSql(@"SELECT [c].[Id]
 FROM [Customers] AS [c]",
@@ -627,9 +627,9 @@ FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
 WHERE [p].[AmountSold] = @__amount_1");
         }
 
-        public override void TVF_Correlated_Select_In_Anonymous()
+        public override void QF_Correlated_Select_In_Anonymous()
         {
-            base.TVF_Correlated_Select_In_Anonymous();
+            base.QF_Correlated_Select_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id], [c].[LastName]
 FROM [Customers] AS [c]
@@ -657,73 +657,76 @@ FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]"
 );
         }
 
-        public override void TVF_CrossApply_Correlated_Select_Result()
+        public override void QF_CrossApply_Correlated_Select_Result()
         {
-            base.TVF_CrossApply_Correlated_Select_Result();
+            base.QF_CrossApply_Correlated_Select_Result();
 
-            AssertSql(@"SELECT [r].[Count], [r].[CustomerId], [r].[Year]
+            AssertSql(@"SELECT [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [Customers] AS [c]
-CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [r]
-ORDER BY [r].[Count] DESC, [r].[Year] DESC");
+CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [o].[Count] DESC, [o].[Year] DESC");
         }
 
-        public override void TVF_CrossJoin_Not_Correlated()
+        public override void QF_CrossJoin_Not_Correlated()
         {
-            base.TVF_CrossJoin_Not_Correlated();
+            base.QF_CrossJoin_Not_Correlated();
 
-            AssertSql(@"SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
+            AssertSql(@"@__customerId_0='2'
+
+SELECT [c].[Id], [c].[LastName], [o].[Year], [o].[Count]
 FROM [Customers] AS [c]
-CROSS JOIN [dbo].[GetCustomerOrderCountByYear](2) AS [r]
+CROSS JOIN [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]
 WHERE [c].[Id] = 2
-ORDER BY [r].[Count]");
+ORDER BY [o].[Count]");
         }
 
-        public override void TVF_CrossJoin_Parameter()
+        public override void QF_CrossJoin_Parameter()
         {
-            base.TVF_CrossJoin_Parameter();
+            base.QF_CrossJoin_Parameter();
 
-            AssertSql(@"@__custId_1='2'
+            AssertSql(@"@__customerId_0='2'
+@__custId_1='2'
 
-SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
+SELECT [c].[Id], [c].[LastName], [o].[Year], [o].[Count]
 FROM [Customers] AS [c]
-CROSS JOIN [dbo].[GetCustomerOrderCountByYear](@__custId_1) AS [r]
+CROSS JOIN [dbo].[GetCustomerOrderCountByYear](@__customerId_0) AS [o]
 WHERE [c].[Id] = @__custId_1
-ORDER BY [r].[Count]");
+ORDER BY [o].[Count]");
         }
 
-        public override void TVF_Join()
+        public override void QF_Join()
         {
-            base.TVF_Join();
+            base.QF_Join();
 
-            AssertSql(@"SELECT [p].[Id], [p].[Name], [r].[AmountSold]
+            AssertSql(@"SELECT [p].[Id], [p].[Name], [t].[AmountSold]
 FROM [Products] AS [p]
-INNER JOIN [dbo].[GetTopTwoSellingProducts]() AS [r] ON [p].[Id] = [r].[ProductId]
+INNER JOIN [dbo].[GetTopTwoSellingProducts]() AS [t] ON [p].[Id] = [t].[ProductId]
 ORDER BY [p].[Id]");
         }
 
-        public override void TVF_LeftJoin_Select_Anonymous()
+        public override void QF_LeftJoin_Select_Anonymous()
         {
-            base.TVF_LeftJoin_Select_Anonymous();
+            base.QF_LeftJoin_Select_Anonymous();
 
-            AssertSql(@"SELECT [p].[Id], [p].[Name], [r].[AmountSold]
+            AssertSql(@"SELECT [p].[Id], [p].[Name], [t].[AmountSold]
 FROM [Products] AS [p]
-LEFT JOIN [dbo].[GetTopTwoSellingProducts]() AS [r] ON [p].[Id] = [r].[ProductId]
+LEFT JOIN [dbo].[GetTopTwoSellingProducts]() AS [t] ON [p].[Id] = [t].[ProductId]
 ORDER BY [p].[Id] DESC");
         }
 
-        public override void TVF_LeftJoin_Select_Result()
+        public override void QF_LeftJoin_Select_Result()
         {
-            base.TVF_LeftJoin_Select_Result();
+            base.QF_LeftJoin_Select_Result();
 
-            AssertSql(@"SELECT [r].[AmountSold], [r].[ProductId]
+            AssertSql(@"SELECT [r].[AmountSold], [t].[ProductId]
 FROM [Products] AS [p]
-LEFT JOIN [dbo].[GetTopTwoSellingProducts]() AS [r] ON [p].[Id] = [r].[ProductId]
+LEFT JOIN [dbo].[GetTopTwoSellingProducts]() AS [t] ON [p].[Id] = [t].[ProductId]
 ORDER BY [p].[Id] DESC");
         }
 
-        public override void TVF_OuterApply_Correlated_Select_TVF()
+        public override void QF_OuterApply_Correlated_Select_TVF()
         {
-            base.TVF_OuterApply_Correlated_Select_TVF();
+            base.QF_OuterApply_Correlated_Select_TVF();
 
             AssertSql(@"SELECT [g].[Count], [g].[CustomerId], [g].[Year]
 FROM [Customers] AS [c]
@@ -731,48 +734,48 @@ OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
 ORDER BY [c].[Id], [g].[Year]");
         }
 
-        public override void TVF_OuterApply_Correlated_Select_DbSet()
+        public override void QF_OuterApply_Correlated_Select_DbSet()
         {
-            base.TVF_OuterApply_Correlated_Select_DbSet();
+            base.QF_OuterApply_Correlated_Select_DbSet();
 
             AssertSql(@"SELECT [c].[Id], [c].[FirstName], [c].[LastName]
 FROM [Customers] AS [c]
-OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
-ORDER BY [c].[Id], [g].[Year]");
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [c].[Id], [o].[Year]");
         }
 
-        public override void TVF_OuterApply_Correlated_Select_Anonymous()
+        public override void QF_OuterApply_Correlated_Select_Anonymous()
         {
-            base.TVF_OuterApply_Correlated_Select_Anonymous();
+            base.QF_OuterApply_Correlated_Select_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id], [c].[LastName], [g].[Year], [g].[Count]
+            AssertSql(@"SELECT [c].[Id], [c].[LastName], [o].[Year], [o].[Count]
 FROM [Customers] AS [c]
-OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
-ORDER BY [c].[Id], [g].[Year]");
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [c].[Id], [o].[Year]");
         }
 
-        public override void TVF_Nested()
+        public override void QF_Nested()
         {
-            base.TVF_Nested();
+            base.QF_Nested();
 
             AssertSql(@"@__custId_1='2'
 
-SELECT [c].[Id], [c].[LastName], [r].[Year], [r].[Count]
+SELECT [c].[Id], [c].[LastName], [o].[Year], [o].[Count]
 FROM [Customers] AS [c]
-CROSS JOIN [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](1, 1)) AS [r]
+CROSS JOIN [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](1, 1)) AS [o]
 WHERE [c].[Id] = @__custId_1
-ORDER BY [r].[Year]");
+ORDER BY [o].[Year]");
         }
 
-        public override void TVF_Correlated_Nested_Func_Call()
+        public override void QF_Correlated_Nested_Func_Call()
         {
-            base.TVF_Correlated_Nested_Func_Call();
+            base.QF_Correlated_Nested_Func_Call();
 
             AssertSql(@"@__custId_1='2'
 
-SELECT [c].[Id], [r].[Count], [r].[Year]
+SELECT [c].[Id], [o].[Count], [o].[Year]
 FROM [Customers] AS [c]
-CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues]([c].[Id], 1)) AS [r]
+CROSS APPLY [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues]([c].[Id], 1)) AS [o]
 WHERE [c].[Id] = @__custId_1");
         }
 
