@@ -186,6 +186,29 @@ namespace Microsoft.EntityFrameworkCore.Query
                     "SUM", new[] { sqlExpression }, inputType, sqlExpression.TypeMapping);
         }
 
+        public virtual SqlFunctionExpression TranslateMethodCall(MethodCallExpression methodCallExpression)
+        {
+            // MethodCall translators
+            if (TranslationFailed(methodCallExpression.Object, Visit(methodCallExpression.Object), out var sqlObject))
+            {
+                return null;
+            }
+
+            var arguments = new SqlExpression[methodCallExpression.Arguments.Count];
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                var argument = methodCallExpression.Arguments[i];
+                if (TranslationFailed(argument, Visit(argument), out var sqlArgument))
+                {
+                    return null;
+                }
+
+                arguments[i] = sqlArgument;
+            }
+
+            return Dependencies.MethodCallTranslatorProvider.Translate(_model, sqlObject, methodCallExpression.Method, arguments) as SqlFunctionExpression;
+        }
+
         private sealed class SqlTypeMappingVerifyingExpressionVisitor : ExpressionVisitor
         {
             protected override Expression VisitExtension(Expression node)
@@ -416,24 +439,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
 
             // MethodCall translators
-            if (TranslationFailed(methodCallExpression.Object, Visit(methodCallExpression.Object), out var sqlObject))
-            {
-                return null;
-            }
-
-            var arguments = new SqlExpression[methodCallExpression.Arguments.Count];
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                var argument = methodCallExpression.Arguments[i];
-                if (TranslationFailed(argument, Visit(argument), out var sqlArgument))
-                {
-                    return null;
-                }
-
-                arguments[i] = sqlArgument;
-            }
-
-            return Dependencies.MethodCallTranslatorProvider.Translate(_model, sqlObject, methodCallExpression.Method, arguments);
+            return TranslateMethodCall(methodCallExpression);
         }
 
         private static Expression TryRemoveImplicitConvert(Expression expression)

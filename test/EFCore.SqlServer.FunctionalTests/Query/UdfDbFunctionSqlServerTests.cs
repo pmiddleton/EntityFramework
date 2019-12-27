@@ -509,76 +509,39 @@ FROM [Customers] AS [c]");
         
         public override void QF_Select_Correlated_Direct_In_Anonymous()
         {
+            //not materializing correctly.  collection is not correct.  missing record for index 0 and null in result for index 3
             base.QF_Select_Correlated_Direct_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
-
-                    @"@_outer_Id='1'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='2'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='3'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='4'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]");
+            AssertSql(@"SELECT [c].[Id], [o].[Count], [o].[CustomerId], [o].[Year]
+FROM [Customers] AS [c]
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [c].[Id]");
         }
 
         public override void QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
         {
             base.QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id]
+            AssertSql(@"SELECT [c].[Id], [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [Customers] AS [c]
-WHERE [c].[Id] = 1",
-
-                    @"@_outer_Id='1'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues](@_outer_Id, 1)) AS [o]");
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([dbo].[AddValues]([c].[Id], 1)) AS [o]
+WHERE [c].[Id] = 1
+ORDER BY [c].[Id]");
         }
 
         public override void QF_Select_Correlated_Subquery_In_Anonymous()
         {
             base.QF_Select_Correlated_Subquery_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
-
-                @"@_outer_Id='1'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
-WHERE [o].[Year] = 2000",
-
-                @"@_outer_Id='2'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
-WHERE [o].[Year] = 2000",
-
-                @"@_outer_Id='3'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
-WHERE [o].[Year] = 2000",
-
-                @"@_outer_Id='4'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]
-WHERE [o].[Year] = 2000");
+            AssertSql(@"SELECT [c].[Id], [t].[Count], [t].[CustomerId], [t].[Year]
+FROM [Customers] AS [c]
+OUTER APPLY (
+    SELECT [o].[Count], [o].[CustomerId], [o].[Year]
+    FROM [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+    WHERE [o].[Year] = 2000
+) AS [t]
+ORDER BY [c].[Id]
+");
         }
 
         public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
@@ -605,26 +568,31 @@ WHERE @_outer_Year = 2001");
         {
             base.QF_Select_NonCorrelated_Subquery_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
-
-                    @"SELECT [p].[ProductId]
-FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
-WHERE [p].[AmountSold] = 27");
+            AssertSql(@"SELECT [c].[Id], [t0].[ProductId]
+FROM [Customers] AS [c]
+OUTER APPLY (
+    SELECT [t].[ProductId]
+    FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
+    WHERE [t].[AmountSold] = 27
+) AS [t0]
+ORDER BY [c].[Id]");
         }
 
         public override void QF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter()
         {
             base.QF_Select_NonCorrelated_Subquery_In_Anonymous_Parameter();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
+            AssertSql(
+                @"@__amount_0='27' (Nullable = true)
 
-                    @"@__amount_1='27'
-
-SELECT [p].[ProductId]
-FROM [dbo].[GetTopTwoSellingProducts]() AS [p]
-WHERE [p].[AmountSold] = @__amount_1");
+SELECT [c].[Id], [t0].[ProductId]
+FROM [Customers] AS [c]
+OUTER APPLY (
+    SELECT [t].[ProductId]
+    FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
+    WHERE [t].[AmountSold] = @__amount_0
+) AS [t0]
+ORDER BY [c].[Id]");
         }
 
         public override void QF_Correlated_Select_In_Anonymous()

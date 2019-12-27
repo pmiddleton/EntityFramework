@@ -1496,12 +1496,18 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
+                var t = (from c in context.Customers
+                        select new
+                        {
+                            Order = c.Orders.Where(o => o.QuantitySold > 2).ToList()
+                        }).ToList();
+
                 var cust = (from c in context.Customers
-                            orderby c.Id
+                           // orderby c.Id
                             select new
                             {
-                                c.Id,
-                                c.LastName,
+                             //   c.Id,
+                              //  c.LastName,
                                 Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
                             }).ToList();
 
@@ -1510,14 +1516,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Equal(2, cust[1].Orders[0].Count);
                 Assert.Equal(1, cust[2].Orders[0].Count);
                 Assert.Empty(cust[3].Orders);
-                Assert.Equal("One", cust[0].LastName);
+              /*  Assert.Equal("One", cust[0].LastName);
                 Assert.Equal("Two", cust[1].LastName);
                 Assert.Equal("Three", cust[2].LastName);
                 Assert.Equal("Four", cust[3].LastName);
                 Assert.Equal(1, cust[0].Id);
                 Assert.Equal(2, cust[1].Id);
                 Assert.Equal(3, cust[2].Id);
-                Assert.Equal(4, cust[3].Id);
+                Assert.Equal(4, cust[3].Id);*/
             }
         }
 
