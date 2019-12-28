@@ -48,6 +48,8 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
         private readonly Parameters _parameters = new Parameters();
 
+        protected QueryCompilationContext QueryCompilationContext => _queryCompilationContext;
+
         public NavigationExpandingExpressionVisitor(
             [NotNull] QueryCompilationContext queryCompilationContext,
             [NotNull] IEvaluatableExpressionFilter evaluatableExpressionFilter)
@@ -68,8 +70,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 parameterize: false,
                 generateContextAccessors: true);
         }
-
-		protected QueryCompilationContext QueryCompilationContext => _queryCompilationContext;
 
         public virtual Expression Expand([NotNull] Expression query)
         {
@@ -136,7 +136,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             return base.VisitConstant(constantExpression);
         }
 
-        protected NavigationExpansionExpression CreateNavigationExpansionExpression(Expression sourceExpression, IEntityType entityType)
         protected override Expression VisitExtension(Expression extensionExpression)
         {
             Check.NotNull(extensionExpression, nameof(extensionExpression));
@@ -461,10 +460,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                                 methodCallExpression.Arguments[1].UnwrapLambdaFromQuote(),
                                 thenBy: true);
 
-                        case nameof(Queryable.Reverse)
-                            when genericMethod == QueryableMethods.Reverse:
-                            return ProcessReverse(source);
-
                         case nameof(Queryable.Select)
                             when genericMethod == QueryableMethods.Select:
                             return ProcessSelect(
@@ -525,7 +520,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 }
 
                 throw new InvalidOperationException(CoreStrings.QueryFailed(methodCallExpression.Print(), GetType().Name));
-                
             }
 
             if (method.IsGenericMethod
@@ -558,11 +552,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 return ApplyQueryFilter(source);
             }
 
-           /*() if (IsValidMethodQuerySource(methodCallExpression.Method, out var queryableEntityType))
-            {
-                return CreateNavigationExpansionExpression(methodCallExpression, queryableEntityType);
-            }*/
-            
             return ProcessUnknownMethod(methodCallExpression);
         }
 
@@ -996,16 +985,6 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             return source;
         }
 
-        private Expression ProcessReverse(NavigationExpansionExpression source)
-        {
-            source.UpdateSource(
-                Expression.Call(
-                    QueryableMethods.Reverse.MakeGenericMethod(source.SourceElementType),
-                    source.Source));
-
-            return source;
-        }
-
         private Expression ProcessSelect(NavigationExpansionExpression source, LambdaExpression selector)
         {
             // This is to apply aggregate operator on GroupBy right away rather than deferring
@@ -1407,7 +1386,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             }
         }
 
-        private NavigationExpansionExpression CreateNavigationExpansionExpression(Expression sourceExpression, IEntityType entityType)
+        protected NavigationExpansionExpression CreateNavigationExpansionExpression(Expression sourceExpression, IEntityType entityType)
         {
             var entityReference = new EntityReference(entityType);
             PopulateEagerLoadedNavigations(entityReference.IncludePaths);

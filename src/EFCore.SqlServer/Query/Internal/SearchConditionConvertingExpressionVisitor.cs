@@ -315,8 +315,12 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.Query.Internal
         }
 
         //todo ???
-        protected override Expression VisitQuerableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
-            => queryableFunctionExpression;
+        protected override Expression VisitQueryableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
+        {
+            Check.NotNull(queryableFunctionExpression, nameof(queryableFunctionExpression));
+
+            return queryableFunctionExpression;
+        }
 
         protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
         {

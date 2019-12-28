@@ -20,12 +20,9 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         {
             var dbFunction = QueryCompilationContext.Model.FindDbFunction(methodCallExpression.Method);
 
-            if (dbFunction?.IsIQueryable == true)
-            {
-                return CreateNavigationExpansionExpression(methodCallExpression, QueryCompilationContext.Model.FindEntityType(dbFunction.MethodInfo.ReturnType.GetGenericArguments()[0]));
-            }
-
-            return base.VisitMethodCall(methodCallExpression);
+            return dbFunction?.IsIQueryable == true
+                ? CreateNavigationExpansionExpression(methodCallExpression, QueryCompilationContext.Model.FindEntityType(dbFunction.MethodInfo.ReturnType.GetGenericArguments()[0]))
+                : base.VisitMethodCall(methodCallExpression);
         }
         
 

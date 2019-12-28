@@ -270,7 +270,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             return sqlFunctionExpression;
         }
 
-        protected override Expression VisitQuerableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
+        protected override Expression VisitQueryableSqlFunctionExpression(QuerableSqlFunctionExpression queryableFunctionExpression)
         {
             Visit(queryableFunctionExpression.SqlFunctionExpression);
 
