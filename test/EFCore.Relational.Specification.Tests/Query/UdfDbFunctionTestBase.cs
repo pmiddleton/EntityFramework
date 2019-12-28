@@ -1327,11 +1327,11 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
-             /*   var results2 = (from c in context.Customers
+              /*  var results2 = (from c in context.Customers
                                select new
                                {
-                                   c.Id,
-                                   Prods = context.Products.ToList()
+                                 //  c.Id,
+                                   Orders = c.Orders
                                }).ToList();*/
 
 
@@ -1672,12 +1672,9 @@ namespace Microsoft.EntityFrameworkCore.Query
                                 select j).ToList();
 
                 Assert.Equal(5, products.Count);
-                Assert.Null(products[0].ProductId);
-                Assert.Null(products[0].AmountSold);
-                Assert.Null(products[1].ProductId);
-                Assert.Null(products[1].AmountSold);
-                Assert.Null(products[2].ProductId);
-                Assert.Null(products[2].AmountSold);
+                Assert.Null(products[0]);
+                Assert.Null(products[1]);
+                Assert.Null(products[2]);
                 Assert.Equal(2, products[3].ProductId);
                 Assert.Equal(50, products[3].AmountSold);
                 Assert.Equal(1, products[4].ProductId);
@@ -1701,17 +1698,17 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Equal(1, orders[1].Count);
                 Assert.Equal(2, orders[2].Count);
                 Assert.Equal(1, orders[3].Count);
-                Assert.Null(orders[4].Count);
+                Assert.Null(orders[4]);
                 Assert.Equal(2000, orders[0].Year);
                 Assert.Equal(2001, orders[1].Year);
                 Assert.Equal(2000, orders[2].Year);
                 Assert.Equal(2001, orders[3].Year);
-                Assert.Null(orders[4].Year);
+                Assert.Null(orders[4]);
                 Assert.Equal(1, orders[0].CustomerId);
                 Assert.Equal(1, orders[1].CustomerId);
                 Assert.Equal(2, orders[2].CustomerId);
                 Assert.Equal(3, orders[3].CustomerId);
-                Assert.Null(orders[4].CustomerId);
+                Assert.Null(orders[4]);
             }
         }
 

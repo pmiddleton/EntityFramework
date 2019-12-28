@@ -499,7 +499,7 @@ ORDER BY [c].[Id], [o].[Year]");
         public override void QF_Select_Direct_In_Anonymous()
         {
             base.QF_Select_Direct_In_Anonymous();
-
+            
             AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]",
 
@@ -686,7 +686,7 @@ ORDER BY [p].[Id] DESC");
         {
             base.QF_LeftJoin_Select_Result();
 
-            AssertSql(@"SELECT [r].[AmountSold], [t].[ProductId]
+            AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [Products] AS [p]
 LEFT JOIN [dbo].[GetTopTwoSellingProducts]() AS [t] ON [p].[Id] = [t].[ProductId]
 ORDER BY [p].[Id] DESC");
@@ -696,10 +696,10 @@ ORDER BY [p].[Id] DESC");
         {
             base.QF_OuterApply_Correlated_Select_TVF();
 
-            AssertSql(@"SELECT [g].[Count], [g].[CustomerId], [g].[Year]
+            AssertSql(@"SELECT [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [Customers] AS [c]
-OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [g]
-ORDER BY [c].[Id], [g].[Year]");
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [c].[Id], [o].[Year]");
         }
 
         public override void QF_OuterApply_Correlated_Select_DbSet()
