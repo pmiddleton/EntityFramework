@@ -29,6 +29,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public List<Order> Orders { get; set; }
+            public List<Address> Addresses { get; set; }
         }
 
         public class Order
@@ -37,6 +38,10 @@ namespace Microsoft.EntityFrameworkCore.Query
             public string Name { get; set; }
             public int QuantitySold { get; set; }
             public DateTime OrderDate { get; set; }
+
+            public int CustomerId { get; set; }
+            public int ProductId { get; set; }
+
             public Customer Customer { get; set; }
             public Product Product { get; set; }
         }
@@ -47,6 +52,17 @@ namespace Microsoft.EntityFrameworkCore.Query
             public string Name { get; set; }
         }
 
+        public class Address
+        {
+            public int Id { get; set; }
+            public string Street { get; set; }
+            public string City { get; set; }
+            public string State { get; set; }
+
+            public int CustomerId { get; set; }
+            public Customer Customer { get; set; }
+        }
+
         protected class UDFSqlContext : PoolableDbContext
         {
             #region DbSets
@@ -54,7 +70,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             public DbSet<Customer> Customers { get; set; }
             public DbSet<Order> Orders { get; set; }
             public DbSet<Product> Products { get; set; }
-
+            public DbSet<Address> Addresses { get; set; }
+            
             #endregion
 
             #region Function Stubs
@@ -154,6 +171,11 @@ namespace Microsoft.EntityFrameworkCore.Query
                 return CreateQuery(() => GetTopTwoSellingProducts());
             }
 
+            public IQueryable<TopSellingProduct> GetTopSellingProductsForCustomer(int customerId)
+            {
+                return CreateQuery(() => GetTopSellingProductsForCustomer(customerId));
+            }
+
             public IQueryable<TopSellingProduct> GetTopTwoSellingProductsCustomTranslation()
             {
                 throw new NotImplementedException();
@@ -161,6 +183,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
 
             #endregion
+
             #endregion
 
             public UDFSqlContext(DbContextOptions options)
@@ -219,6 +242,8 @@ namespace Microsoft.EntityFrameworkCore.Query
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear), new[] { typeof(int) }));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear), new[] { typeof(Expression<Func<int>>) }));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProducts)));
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopSellingProductsForCustomer)));
+
                // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
                //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
             }
@@ -250,36 +275,50 @@ namespace Microsoft.EntityFrameworkCore.Query
                 var order22 = new Order { Name = "Order22", QuantitySold = 23, OrderDate = new DateTime(2000, 5, 20), Product = product1 };
                 var order31 = new Order { Name = "Order31", QuantitySold = 42, OrderDate = new DateTime(2001, 6, 21), Product = product2 };
 
+                var address11 = new Address { Street = "1600 Pennsylvania Avenue", City = "Washington", State = "DC" };
+                var address12 = new Address { Street = "742 Evergreen Terrace", City = "SpringField", State = "" };
+                var address21 = new Address { Street = "Apartment 5A, 129 West 81st Street", City = "New York", State = "NY" };
+                var address31 = new Address { Street = "425 Grove Street, Apt 20", City = "New York", State = "NY" };
+                var address32 = new Address { Street = "342 GravelPit Terrace", City = "BedRock", State = "" };
+                var address41 = new Address { Street = "4222 Clinton Way", City = "Los Angles", State = "CA" };
+                var address42 = new Address { Street = "1060 West Addison Street", City = "Chicago", State = "IL" };
+                var address43 = new Address { Street = "112 ½ Beacon Street", City = "Boston", State = "MA" };
+                
                 var customer1 = new Customer
                 {
                     FirstName = "Customer",
                     LastName = "One",
-                    Orders = new List<Order> { order11, order12, order13 }
+                    Orders = new List<Order> { order11, order12, order13 },
+                    Addresses = new List<Address> { address11, address12 }
                 };
 
                 var customer2 = new Customer
                 {
                     FirstName = "Customer",
                     LastName = "Two",
-                    Orders = new List<Order> { order21, order22 }
+                    Orders = new List<Order> { order21, order22 },
+                    Addresses = new List<Address> { address21 }
                 };
 
                 var customer3 = new Customer
                 {
                     FirstName = "Customer",
                     LastName = "Three",
-                    Orders = new List<Order> { order31 }
+                    Orders = new List<Order> { order31 },
+                    Addresses = new List<Address> { address31, address32 }
                 };
 
                 var customer4 = new Customer
                 {
                     FirstName = "Customer",
-                    LastName = "Four"
+                    LastName = "Four",
+                    Addresses = new List<Address> { address41, address42, address43 }
                 };
 
                 ((UDFSqlContext)context).Customers.AddRange(customer1, customer2, customer3, customer4);
                 ((UDFSqlContext)context).Orders.AddRange(order11, order12, order13, order21, order22, order31);
                 ((UDFSqlContext)context).Products.AddRange(product1, product2, product3, product4, product5);
+                ((UDFSqlContext)context).Addresses.AddRange(address11, address12, address21, address31, address32, address41, address42, address43);
             }
         }
 
@@ -1327,14 +1366,6 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
-              /*  var results2 = (from c in context.Customers
-                               select new
-                               {
-                                 //  c.Id,
-                                   Orders = c.Orders
-                               }).ToList();*/
-
-
                 var results = (from c in context.Customers
                                select new
                                {
@@ -1422,6 +1453,15 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
+                var results2 = (from c in context.Customers
+                                select new
+                                {
+                                    c.Id,
+                                    Orders = c.Orders.Select(o => o.Name).ToList(),
+                                    Addresses = c.Addresses.Select(a => a.Street).ToList()
+                                }).ToList();
+
+
                 var results = (from c in context.Customers
                                select new
                                {
@@ -1496,18 +1536,12 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
-                var t = (from c in context.Customers
-                        select new
-                        {
-                            Order = c.Orders.Where(o => o.QuantitySold > 2).ToList()
-                        }).ToList();
-
                 var cust = (from c in context.Customers
-                           // orderby c.Id
+                            orderby c.Id
                             select new
                             {
-                             //   c.Id,
-                              //  c.LastName,
+                                c.Id,
+                                c.LastName,
                                 Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
                             }).ToList();
 
@@ -1516,14 +1550,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Equal(2, cust[1].Orders[0].Count);
                 Assert.Equal(1, cust[2].Orders[0].Count);
                 Assert.Empty(cust[3].Orders);
-              /*  Assert.Equal("One", cust[0].LastName);
+                Assert.Equal("One", cust[0].LastName);
                 Assert.Equal("Two", cust[1].LastName);
                 Assert.Equal("Three", cust[2].LastName);
                 Assert.Equal("Four", cust[3].LastName);
                 Assert.Equal(1, cust[0].Id);
                 Assert.Equal(2, cust[1].Id);
                 Assert.Equal(3, cust[2].Id);
-                Assert.Equal(4, cust[3].Id);*/
+                Assert.Equal(4, cust[3].Id);
             }
         }
 

@@ -934,7 +934,10 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
             var parentIdentifier = GetIdentifierAccessor(_identifier);
             var outerIdentifier = GetIdentifierAccessor(_identifier.Concat(_childIdentifiers));
             innerSelectExpression.ApplyProjection();
-            var selfIdentifier = innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);
+
+            var selfIdentifier = innerSelectExpression.Tables.Any(t => t is QuerableSqlFunctionExpression)
+                                    ? parentIdentifier
+                                    : innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);
 
             if (collectionIndex == 0)
             {

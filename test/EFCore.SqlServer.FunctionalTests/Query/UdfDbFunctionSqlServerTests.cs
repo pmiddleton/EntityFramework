@@ -509,7 +509,6 @@ FROM [Customers] AS [c]");
         
         public override void QF_Select_Correlated_Direct_In_Anonymous()
         {
-            //not materializing correctly.  collection is not correct.  missing record for index 0 and null in result for index 3
             base.QF_Select_Correlated_Direct_In_Anonymous();
 
             AssertSql(@"SELECT [c].[Id], [o].[Count], [o].[CustomerId], [o].[Year]
@@ -540,12 +539,12 @@ OUTER APPLY (
     FROM [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
     WHERE [o].[Year] = 2000
 ) AS [t]
-ORDER BY [c].[Id]
-");
+ORDER BY [c].[Id]");
         }
 
         public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
+            todo - find a view in a collection select, or create one
             base.QF_Select_Correlated_Subquery_In_Anonymous_Nested();
 
             AssertSql(@"SELECT [c].[Id]
@@ -599,30 +598,10 @@ ORDER BY [c].[Id]");
         {
             base.QF_Correlated_Select_In_Anonymous();
 
-            AssertSql(@"SELECT [c].[Id], [c].[LastName]
+            AssertSql(@"SELECT [c].[Id], [c].[LastName], [o].[Count], [o].[CustomerId], [o].[Year]
 FROM [Customers] AS [c]
-ORDER BY [c].[Id]",
-
-                @"@_outer_Id='1'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='2'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='3'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]",
-
-                    @"@_outer_Id='4'
-
-SELECT [o].[Count], [o].[CustomerId], [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](@_outer_Id) AS [o]"
-);
+OUTER APPLY [dbo].[GetCustomerOrderCountByYear]([c].[Id]) AS [o]
+ORDER BY [c].[Id]");
         }
 
         public override void QF_CrossApply_Correlated_Select_Result()
@@ -857,6 +836,25 @@ WHERE [c].[Id] = @__custId_1");
 	                                                    from orders
 	                                                    group by ProductID
 	                                                    order by totalSold desc
+	                                                    return 
+                                                    end");
+
+                context.Database.ExecuteSqlRaw(
+                    @"create function [dbo].GetTopSellingProductsForCustomer(@customerId int)
+                                                    returns @products table
+                                                    (
+	                                                    ProductId int not null,
+	                                                    AmountSold int
+                                                    )
+                                                    as
+                                                    begin
+	
+	                                                    insert into @products
+	                                                    select ProductID, sum(quantitySold) as totalSold
+	                                                    from orders o
+                                                        where o.customerId = @customerId
+                                                        group by ProductID
+	                                                    
 	                                                    return 
                                                     end");
 
