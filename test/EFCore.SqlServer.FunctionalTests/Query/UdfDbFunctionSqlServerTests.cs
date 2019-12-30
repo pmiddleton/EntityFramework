@@ -544,7 +544,8 @@ ORDER BY [c].[Id]");
 
         public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
-            todo - find a view in a collection select, or create one
+           // todo - find a view in a collection select, or create one
+           //     todo - create a unit test with the 2 funcs to see if our approach works
             base.QF_Select_Correlated_Subquery_In_Anonymous_Nested();
 
             AssertSql(@"SELECT [c].[Id]
@@ -865,6 +866,11 @@ WHERE [c].[Id] = @__custId_1");
                                                     begin
                                                         return @a + @b;
                                                     end");
+
+
+                context.Database.ExecuteSqlRaw(
+                    @"create view [dbo].[vOrderQuery] as select * from orders");
+                
                 context.SaveChanges();
             }
         }

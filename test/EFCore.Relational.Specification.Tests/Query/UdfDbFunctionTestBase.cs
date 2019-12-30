@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
@@ -46,6 +47,14 @@ namespace Microsoft.EntityFrameworkCore.Query
             public Product Product { get; set; }
         }
 
+        public class OrderQuery
+        {
+            public int CustomerId { get; set; }
+            public string Name { get; set; }
+            public int QuantitySold { get; set; }
+            public DateTime OrderDate { get; set; }
+        }
+        
         public class Product
         {
             public int Id { get; set; } 
@@ -71,7 +80,8 @@ namespace Microsoft.EntityFrameworkCore.Query
             public DbSet<Order> Orders { get; set; }
             public DbSet<Product> Products { get; set; }
             public DbSet<Address> Addresses { get; set; }
-            
+            public DbSet<OrderQuery> OrderQuery { get; set; }
+
             #endregion
 
             #region Function Stubs
@@ -244,8 +254,11 @@ namespace Microsoft.EntityFrameworkCore.Query
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProducts)));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopSellingProductsForCustomer)));
 
-               // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
-               //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
+                //modelBuilder.Entity<ProductQuery>().HasNoKey().ToView("Alphabetical list of products");
+                modelBuilder.Entity<OrderQuery>().HasNoKey().ToView("vOrderQuery");
+
+                // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
+                //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
             }
         }
 
@@ -1453,6 +1466,15 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
+                var oResult =  (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   Addresses = c.Addresses.Select(a => a.Street).ToList(),
+                                   Orders = context.OrderQuery.Where(o => o.CustomerId == c.Id).Select(o => o.Name).ToList()
+                               }).ToList();
+
+
                 var results2 = (from c in context.Customers
                                 select new
                                 {

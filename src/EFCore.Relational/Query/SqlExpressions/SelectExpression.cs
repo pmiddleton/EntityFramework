@@ -1019,6 +1019,11 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
                         : (Expression)projectionBindingExpression);
             }
 
+            if (updatedExpressions.Count == 0)
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+
             return NewArrayInit(
                 typeof(object),
                 updatedExpressions);
