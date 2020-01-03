@@ -935,9 +935,11 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
             var outerIdentifier = GetIdentifierAccessor(_identifier.Concat(_childIdentifiers));
             innerSelectExpression.ApplyProjection();
 
-            var selfIdentifier = innerSelectExpression.Tables.Any(t => t is QuerableSqlFunctionExpression)
+            /*var selfIdentifier = innerSelectExpression.Tables.Any(t => t is QuerableSqlFunctionExpression)
                                     ? parentIdentifier
-                                    : innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);
+                                    : innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);*/
+
+            var selfIdentifier = innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);
 
             if (collectionIndex == 0)
             {
@@ -1017,11 +1019,6 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
                     projectionBindingExpression.Type.IsValueType
                         ? Convert(projectionBindingExpression, typeof(object))
                         : (Expression)projectionBindingExpression);
-            }
-
-            if (updatedExpressions.Count == 0)
-            {
-                System.Diagnostics.Debugger.Break();
             }
 
             return NewArrayInit(

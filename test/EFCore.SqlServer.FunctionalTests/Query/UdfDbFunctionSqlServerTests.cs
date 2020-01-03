@@ -833,8 +833,8 @@ WHERE [c].[Id] = @__custId_1");
                                                     begin
 	
 	                                                    insert into @products
-	                                                    select top 2 ProductID, sum(quantitySold) as totalSold
-	                                                    from orders
+	                                                    select top 2 ProductID, sum(Quantity) as totalSold
+	                                                    from lineItem
 	                                                    group by ProductID
 	                                                    order by totalSold desc
 	                                                    return 
@@ -851,13 +851,35 @@ WHERE [c].[Id] = @__custId_1");
                                                     begin
 	
 	                                                    insert into @products
-	                                                    select ProductID, sum(quantitySold) as totalSold
-	                                                    from orders o
+	                                                    select ProductID, sum(Quantity) as totalSold
+	                                                    from lineItem li
+                                                        join orders o on o.id = li.orderId
                                                         where o.customerId = @customerId
                                                         group by ProductID
 	                                                    
 	                                                    return 
                                                     end");
+
+                context.Database.ExecuteSqlRaw(
+                    @"create function [dbo].GetOrdersWithMultipleProducts(@customerId int)
+                                                    returns @orders table
+                                                    (
+	                                                    OrderId int not null,
+	                                                    OrderDate dateTime2
+                                                    )
+                                                    as
+                                                    begin
+	                                                    
+	                                                    insert into @orders
+	                                                    select o.id, OrderDate
+	                                                    from orders o
+	                                                    join lineItem li on o.id = li.orderId
+                                                        where o.customerId = @customerId
+                                                        group by o.id, OrderDate
+	                                                    having count(productId) > 1                                         
+	                                                    return 
+                                                    end
+                                                    ");
 
                 context.Database.ExecuteSqlRaw(
                     @"create function [dbo].[AddValues] (@a int, @b int)

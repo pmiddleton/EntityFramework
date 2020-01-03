@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
@@ -37,24 +36,25 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public int QuantitySold { get; set; }
             public DateTime OrderDate { get; set; }
 
             public int CustomerId { get; set; }
-            public int ProductId { get; set; }
 
             public Customer Customer { get; set; }
+            public List<LineItem> Items { get; set; }
+        }
+
+        public class LineItem
+        {
+            public int Id { get; set; }
+            public int OrderId { get; set; }
+            public int ProductId { get; set; }
+            public int Quantity { get; set; }
+
+            public Order Order { get; set; }
             public Product Product { get; set; }
         }
 
-        public class OrderQuery
-        {
-            public int CustomerId { get; set; }
-            public string Name { get; set; }
-            public int QuantitySold { get; set; }
-            public DateTime OrderDate { get; set; }
-        }
-        
         public class Product
         {
             public int Id { get; set; } 
@@ -80,7 +80,6 @@ namespace Microsoft.EntityFrameworkCore.Query
             public DbSet<Order> Orders { get; set; }
             public DbSet<Product> Products { get; set; }
             public DbSet<Address> Addresses { get; set; }
-            public DbSet<OrderQuery> OrderQuery { get; set; }
 
             #endregion
 
@@ -254,9 +253,6 @@ namespace Microsoft.EntityFrameworkCore.Query
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProducts)));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopSellingProductsForCustomer)));
 
-                //modelBuilder.Entity<ProductQuery>().HasNoKey().ToView("Alphabetical list of products");
-                modelBuilder.Entity<OrderQuery>().HasNoKey().ToView("vOrderQuery");
-
                 // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
                 //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
             }
@@ -281,12 +277,55 @@ namespace Microsoft.EntityFrameworkCore.Query
                 var product4 = new Product { Name = "Product4" };
                 var product5 = new Product { Name = "Product5" };
 
-                var order11 = new Order { Name = "Order11", QuantitySold = 4, OrderDate = new DateTime(2000, 1, 20), Product = product1 };
-                var order12 = new Order { Name = "Order12", QuantitySold = 8, OrderDate = new DateTime(2000, 2, 21), Product = product2 };
-                var order13 = new Order { Name = "Order13", QuantitySold = 15, OrderDate = new DateTime(2001, 3, 20), Product = product3 };
-                var order21 = new Order { Name = "Order21", QuantitySold = 16, OrderDate = new DateTime(2000, 4, 21), Product = product4 };
-                var order22 = new Order { Name = "Order22", QuantitySold = 23, OrderDate = new DateTime(2000, 5, 20), Product = product1 };
-                var order31 = new Order { Name = "Order31", QuantitySold = 42, OrderDate = new DateTime(2001, 6, 21), Product = product2 };
+                var order11 = new Order
+                {
+                    Name = "Order11", OrderDate = new DateTime(2000, 1, 20),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 5, Product = product1},
+                        new LineItem { Quantity = 15, Product = product3}
+                    }
+                };
+                
+                var order12 = new Order { Name = "Order12", OrderDate = new DateTime(2000, 2, 21),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 1, Product = product1},
+                        new LineItem { Quantity = 6, Product = product2},
+                        new LineItem { Quantity = 200, Product = product3}
+                    }
+                };
+
+                var order13 = new Order { Name = "Order13", OrderDate = new DateTime(2001, 3, 20),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 50, Product = product4},
+                    }
+                };
+
+                var order21 = new Order { Name = "Order21", OrderDate = new DateTime(2000, 4, 21),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 1, Product = product1},
+                        new LineItem { Quantity = 34, Product = product4},
+                        new LineItem { Quantity = 100, Product = product5}
+                    }
+                };
+
+                var order22 = new Order { Name = "Order22", OrderDate = new DateTime(2000, 5, 20),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 34, Product = product3},
+                        new LineItem { Quantity = 100, Product = product4}
+                    }
+                };
+
+                var order31 = new Order { Name = "Order31", OrderDate = new DateTime(2001, 6, 21),
+                    Items = new List<LineItem>
+                    {
+                        new LineItem { Quantity = 5, Product = product5}
+                    }
+                };
 
                 var address11 = new Address { Street = "1600 Pennsylvania Avenue", City = "Washington", State = "DC" };
                 var address12 = new Address { Street = "742 Evergreen Terrace", City = "SpringField", State = "" };
@@ -328,10 +367,10 @@ namespace Microsoft.EntityFrameworkCore.Query
                     Addresses = new List<Address> { address41, address42, address43 }
                 };
 
-                ((UDFSqlContext)context).Customers.AddRange(customer1, customer2, customer3, customer4);
-                ((UDFSqlContext)context).Orders.AddRange(order11, order12, order13, order21, order22, order31);
                 ((UDFSqlContext)context).Products.AddRange(product1, product2, product3, product4, product5);
                 ((UDFSqlContext)context).Addresses.AddRange(address11, address12, address21, address31, address32, address41, address42, address43);
+                ((UDFSqlContext)context).Customers.AddRange(customer1, customer2, customer3, customer4);
+                ((UDFSqlContext)context).Orders.AddRange(order11, order12, order13, order21, order22, order31);
             }
         }
 
@@ -1257,10 +1296,10 @@ namespace Microsoft.EntityFrameworkCore.Query
                                 select t).ToList();
 
                 Assert.Equal(2, products.Count);
-                Assert.Equal(1, products[0].ProductId);
-                Assert.Equal(27, products[0].AmountSold);
-                Assert.Equal(2, products[1].ProductId);
-                Assert.Equal(50, products[1].AmountSold);
+                Assert.Equal(3, products[0].ProductId);
+                Assert.Equal(249, products[0].AmountSold);
+                Assert.Equal(4, products[1].ProductId);
+                Assert.Equal(184, products[1].AmountSold);
 
                 
 
@@ -1397,13 +1436,15 @@ namespace Microsoft.EntityFrameworkCore.Query
         [Fact]
         public virtual void QF_Select_Correlated_Direct_In_Anonymous()
         {
-            using (var context = CreateContext())
+            throw new Exception("anon fix");
+
+            /*using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
                                select new
                                {
                                    c.Id,
-                                   OrderCountYear = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                                   OrderCountYear = context.GetOrdersWithMultipleProducts(c.Id).ToList()
                                }).ToList();
 
                 Assert.Equal(4, results.Count);
@@ -1415,13 +1456,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results[1].OrderCountYear);
                 Assert.Single(results[2].OrderCountYear);
                 Assert.Empty(results[3].OrderCountYear);
-            }
+            }*/
         }
 
         [Fact]
         public virtual void QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
         {
-            using (var context = CreateContext())
+            throw new Exception("anon fix");
+        /*    using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
                                where c.Id == 1
@@ -1434,13 +1476,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results);
                 Assert.Equal(1, results[0].Id);
                 Assert.Single(results[0].OrderCountYear);
-            }
+            }*/
         }
 
         [Fact]
         public virtual void QF_Select_Correlated_Subquery_In_Anonymous()
         {
-            using (var context = CreateContext())
+            throw new Exception("anon fix");
+         /*   using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
                                select new
@@ -1458,13 +1501,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results[1].OrderCountYear);
                 Assert.Empty(results[2].OrderCountYear);
                 Assert.Empty(results[3].OrderCountYear);
-            }
+            }*/
         }
 
         [Fact]
         public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
-            using (var context = CreateContext())
+            throw new Exception("anon fix");
+         /*   using (var context = CreateContext())
             {
                 var oResult =  (from c in context.Customers
                                select new
@@ -1508,7 +1552,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results[3].OrderCountYear);
                 Assert.Equal(2, results[3].OrderCountYear[0].Prods.Count);
                 Assert.Empty(results[3].OrderCountYear[0].OrderCountYearNested);
-            }
+            }*/
         }
 
         [Fact]
@@ -1555,10 +1599,11 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         [Fact]
         public virtual void QF_Correlated_Select_In_Anonymous()
-        {
-            using (var context = CreateContext())
+        { throw new Exception("anon fix");
+            /* using (var context = CreateContext())
             {
-                var cust = (from c in context.Customers
+               
+               var cust = (from c in context.Customers
                             orderby c.Id
                             select new
                             {
@@ -1580,7 +1625,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Equal(2, cust[1].Id);
                 Assert.Equal(3, cust[2].Id);
                 Assert.Equal(4, cust[3].Id);
-            }
+            }*/
         }
 
         [Fact]
@@ -1672,12 +1717,12 @@ namespace Microsoft.EntityFrameworkCore.Query
                                 }).OrderBy(p => p.Id).ToList();
 
                 Assert.Equal(2, products.Count);
-                Assert.Equal(1, products[0].Id);
-                Assert.Equal("Product1", products[0].Name);
-                Assert.Equal(27, products[0].AmountSold);
-                Assert.Equal(2, products[1].Id);
-                Assert.Equal("Product2", products[1].Name);
-                Assert.Equal(50, products[1].AmountSold);
+                Assert.Equal(3, products[0].Id);
+                Assert.Equal("Product3", products[0].Name);
+                Assert.Equal(249, products[0].AmountSold);
+                Assert.Equal(4, products[1].Id);
+                Assert.Equal("Product4", products[1].Name);
+                Assert.Equal(184, products[1].AmountSold);
             }
         }
 
@@ -1699,20 +1744,24 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 Assert.Equal(5, products.Count);
                 Assert.Equal(5, products[0].Id);
-                Assert.Null(products[0].AmountSold);
                 Assert.Equal("Product5", products[0].Name);
+                Assert.Null(products[0].AmountSold);
+                
                 Assert.Equal(4, products[1].Id);
-                Assert.Null(products[1].AmountSold);
                 Assert.Equal("Product4", products[1].Name);
+                Assert.Equal(184, products[1].AmountSold);
+
                 Assert.Equal(3, products[2].Id);
-                Assert.Null(products[2].AmountSold);
                 Assert.Equal("Product3", products[2].Name);
+                Assert.Equal(249, products[2].AmountSold);
+
                 Assert.Equal(2, products[3].Id);
-                Assert.Equal(50, products[3].AmountSold);
                 Assert.Equal("Product2", products[3].Name);
+                Assert.Null(products[3].AmountSold);
+                
                 Assert.Equal(1, products[4].Id);
-                Assert.Equal(27, products[4].AmountSold);
                 Assert.Equal("Product1", products[4].Name);
+                Assert.Null(products[4].AmountSold);
             }
         }
 
@@ -1729,12 +1778,12 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 Assert.Equal(5, products.Count);
                 Assert.Null(products[0]);
-                Assert.Null(products[1]);
-                Assert.Null(products[2]);
-                Assert.Equal(2, products[3].ProductId);
-                Assert.Equal(50, products[3].AmountSold);
-                Assert.Equal(1, products[4].ProductId);
-                Assert.Equal(27, products[4].AmountSold);
+                Assert.Equal(4, products[1].ProductId);
+                Assert.Equal(184, products[1].AmountSold);
+                Assert.Equal(3, products[2].ProductId);
+                Assert.Equal(249, products[2].AmountSold);
+                Assert.Null(products[3]);
+                Assert.Null(products[4]);
             }
         }
 
