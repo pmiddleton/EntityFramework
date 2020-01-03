@@ -76,17 +76,18 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
                         methodInfo.DisplayName(), methodInfo.ReturnType.ShortDisplayName()));
             }
 
+            //force end user to register the return type?
             if (methodInfo.ReturnType.IsGenericType
                 && methodInfo.ReturnType.GetGenericTypeDefinition() == typeof(IQueryable<>))
             {
                 IsIQueryable = true;
 
-                //todo - if the generic argument is not usuable as an entitytype should we throw here?  IE IQueryable<int>
+             /*   //todo - if the generic argument is not usuable as an entitytype should we throw here?  IE IQueryable<int>
                 //the built in entitytype will throw is the type is not a class
                 if (model.FindEntityType(methodInfo.ReturnType.GetGenericArguments()[0]) == null)
                 {
                     model.AddEntityType(methodInfo.ReturnType.GetGenericArguments()[0]).IsKeyless = true;
-                }
+                }*/
             }
 
             MethodInfo = methodInfo;

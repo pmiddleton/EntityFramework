@@ -159,6 +159,13 @@ namespace Microsoft.EntityFrameworkCore.Query
                 public int? Year { get; set; }
             }
 
+            public class MultProductOrders
+            {
+                public int OrderId { get; set; }
+                public int CustomerId { get; set; }
+                public DateTime OrderDate { get; set; }
+        }
+
             public IQueryable<OrderByYear> GetCustomerOrderCountByYear(int customerId)
             {
                 return CreateQuery(() => GetCustomerOrderCountByYear(customerId));
@@ -190,6 +197,12 @@ namespace Microsoft.EntityFrameworkCore.Query
                 throw new NotImplementedException();
                 //  return CreateQuery(() => GetTopTwoSellingProductsCustomTranslation());
             }
+
+            public IQueryable<MultProductOrders> GetOrdersWithMultipleProducts(int customerId)
+            {
+                return CreateQuery(() => GetOrdersWithMultipleProducts(customerId));
+            }
+            
 
             #endregion
 
@@ -247,11 +260,18 @@ namespace Microsoft.EntityFrameworkCore.Query
                 modelBuilder.HasDbFunction(methodInfo2)
                     .HasTranslation(args => SqlFunctionExpression.Create("len", args, methodInfo2.ReturnType, null));
 
+                modelBuilder.Entity<MultProductOrders>().HasKey(mpo => mpo.OrderId);
+                modelBuilder.Entity<OrderByYear>().HasNoKey();
+                modelBuilder.Entity<TopSellingProduct>().HasNoKey();
+
                 //Table
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear), new[] { typeof(int) }));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerOrderCountByYear), new[] { typeof(Expression<Func<int>>) }));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProducts)));
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopSellingProductsForCustomer)));
+
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetOrdersWithMultipleProducts)));
+                
 
                 // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
                 //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
@@ -1434,62 +1454,38 @@ namespace Microsoft.EntityFrameworkCore.Query
         }
       
         [Fact]
-        public virtual void QF_Select_Correlated_Direct_In_Anonymous()
-        {
-            throw new Exception("anon fix");
-
-            /*using (var context = CreateContext())
-            {
-                var results = (from c in context.Customers
-                               select new
-                               {
-                                   c.Id,
-                                   OrderCountYear = context.GetOrdersWithMultipleProducts(c.Id).ToList()
-                               }).ToList();
-
-                Assert.Equal(4, results.Count);
-                Assert.Equal(1, results[0].Id);
-                Assert.Equal(2, results[1].Id);
-                Assert.Equal(3, results[2].Id);
-                Assert.Equal(4, results[3].Id);
-                Assert.Equal(2, results[0].OrderCountYear.Count);
-                Assert.Single(results[1].OrderCountYear);
-                Assert.Single(results[2].OrderCountYear);
-                Assert.Empty(results[3].OrderCountYear);
-            }*/
-        }
-
-        [Fact]
         public virtual void QF_Select_Correlated_Direct_With_Function_Query_Parameter_Correlated_In_Anonymous()
         {
-            throw new Exception("anon fix");
-        /*    using (var context = CreateContext())
+            using (var context = CreateContext())
             {
-                var results = (from c in context.Customers
+                var cust = (from c in context.Customers
                                where c.Id == 1
                                select new
                                {
                                    c.Id,
-                                   OrderCountYear = context.GetCustomerOrderCountByYear(context.AddValues(c.Id, 1)).ToList()
+                                   Orders = context.GetOrdersWithMultipleProducts(context.AddValues(c.Id, 1)).ToList()
                                }).ToList();
 
-                Assert.Single(results);
-                Assert.Equal(1, results[0].Id);
-                Assert.Single(results[0].OrderCountYear);
-            }*/
+                Assert.Single(cust);
+
+                Assert.Equal(1, cust[0].Id);
+                Assert.Equal(4, cust[0].Orders[0].OrderId);
+                Assert.Equal(5, cust[0].Orders[1].OrderId);
+                Assert.Equal(new DateTime(2000, 4, 21), cust[0].Orders[0].OrderDate);
+                Assert.Equal(new DateTime(2000, 5, 20), cust[0].Orders[1].OrderDate);
+            }
         }
 
         [Fact]
         public virtual void QF_Select_Correlated_Subquery_In_Anonymous()
         {
-            throw new Exception("anon fix");
-         /*   using (var context = CreateContext())
+            using (var context = CreateContext())
             {
                 var results = (from c in context.Customers
                                select new
                                {
                                    c.Id,
-                                   OrderCountYear = context.GetCustomerOrderCountByYear(c.Id).Where(o => o.Year == 2000).ToList()
+                                   OrderCountYear = context.GetOrdersWithMultipleProducts(c.Id).Where(o => o.OrderDate.Day == 21).ToList()
                                }).ToList();
 
                 Assert.Equal(4, results.Count);
@@ -1501,7 +1497,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results[1].OrderCountYear);
                 Assert.Empty(results[2].OrderCountYear);
                 Assert.Empty(results[3].OrderCountYear);
-            }*/
+            }
         }
 
         [Fact]
@@ -1599,33 +1595,40 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         [Fact]
         public virtual void QF_Correlated_Select_In_Anonymous()
-        { throw new Exception("anon fix");
-            /* using (var context = CreateContext())
+        { 
+            using (var context = CreateContext())
             {
-               
                var cust = (from c in context.Customers
                             orderby c.Id
                             select new
                             {
                                 c.Id,
                                 c.LastName,
-                                Orders = context.GetCustomerOrderCountByYear(c.Id).ToList()
+                                Orders = context.GetOrdersWithMultipleProducts(c.Id).ToList()
                             }).ToList();
 
                 Assert.Equal(4, cust.Count);
-                Assert.Equal(2, cust[0].Orders[0].Count);
-                Assert.Equal(2, cust[1].Orders[0].Count);
-                Assert.Equal(1, cust[2].Orders[0].Count);
-                Assert.Empty(cust[3].Orders);
-                Assert.Equal("One", cust[0].LastName);
-                Assert.Equal("Two", cust[1].LastName);
-                Assert.Equal("Three", cust[2].LastName);
-                Assert.Equal("Four", cust[3].LastName);
+
                 Assert.Equal(1, cust[0].Id);
+                Assert.Equal(2, cust[0].Orders.Count);
+                Assert.Equal(1, cust[0].Orders[0].OrderId);
+                Assert.Equal(2, cust[0].Orders[1].OrderId);
+                Assert.Equal(new DateTime(2000, 1, 20), cust[0].Orders[0].OrderDate);
+                Assert.Equal(new DateTime(2000, 2, 21), cust[0].Orders[1].OrderDate);
+
                 Assert.Equal(2, cust[1].Id);
+                Assert.Equal(2, cust[1].Orders.Count);
+                Assert.Equal(4, cust[1].Orders[0].OrderId);
+                Assert.Equal(5, cust[1].Orders[1].OrderId);
+                Assert.Equal(new DateTime(2000, 4, 21), cust[1].Orders[0].OrderDate);
+                Assert.Equal(new DateTime(2000, 5, 20), cust[1].Orders[1].OrderDate);
+
                 Assert.Equal(3, cust[2].Id);
+                Assert.Empty(cust[2].Orders);
+
                 Assert.Equal(4, cust[3].Id);
-            }*/
+                Assert.Empty(cust[3].Orders);
+            }
         }
 
         [Fact]

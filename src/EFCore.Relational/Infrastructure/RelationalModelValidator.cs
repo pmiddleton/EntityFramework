@@ -80,7 +80,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                         RelationalStrings.DbFunctionNameEmpty(methodInfo.DisplayName()));
                 }
 
-                if (dbFunction.IsIQueryable)
+             /*    if (dbFunction.IsIQueryable)
                 {
                     if(model.FindEntityType(dbFunction.MethodInfo.ReturnType.GetGenericArguments()[0]) == null)
                     { 
@@ -98,7 +98,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                             methodInfo.ReturnType.ShortDisplayName()));
                 }
 
-               /* foreach (var parameter in dbFunction.Parameters)
+               foreach (var parameter in dbFunction.Parameters)
                 {
                     //check return parameter
                     //params can be of Expression<Func<>>
