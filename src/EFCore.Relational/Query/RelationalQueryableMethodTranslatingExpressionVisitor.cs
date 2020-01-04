@@ -94,8 +94,9 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
                //var sqlFuncExpression = _sqlTranslator.Translate(methodCallExpression) as SqlFunctionExpression;
 
-            var sqlFuncExpression = _sqlTranslator.TranslateMethodCall(methodCallExpression);
+            var sqlFuncExpression = _sqlTranslator.TranslateMethodCall(methodCallExpression) as SqlFunctionExpression;
 
+            //todo error check sqlFuncExpression
             var elementType = methodCallExpression.Method.ReturnType.GetGenericArguments()[0];
             var entityType =_model.FindEntityType(elementType);
             var queryExpression = _sqlExpressionFactory.Select(entityType, sqlFuncExpression);

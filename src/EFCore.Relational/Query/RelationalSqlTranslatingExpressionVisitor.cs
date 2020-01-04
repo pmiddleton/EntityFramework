@@ -186,7 +186,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                     "SUM", new[] { sqlExpression }, inputType, sqlExpression.TypeMapping);
         }
 
-        public virtual SqlFunctionExpression TranslateMethodCall(MethodCallExpression methodCallExpression)
+        public virtual Expression TranslateMethodCall(MethodCallExpression methodCallExpression)
         {
             // MethodCall translators
             if (TranslationFailed(methodCallExpression.Object, Visit(methodCallExpression.Object), out var sqlObject))
@@ -206,7 +206,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 arguments[i] = sqlArgument;
             }
 
-            return Dependencies.MethodCallTranslatorProvider.Translate(_model, sqlObject, methodCallExpression.Method, arguments) as SqlFunctionExpression;
+            return Dependencies.MethodCallTranslatorProvider.Translate(_model, sqlObject, methodCallExpression.Method, arguments);
         }
 
         private sealed class SqlTypeMappingVerifyingExpressionVisitor : ExpressionVisitor
