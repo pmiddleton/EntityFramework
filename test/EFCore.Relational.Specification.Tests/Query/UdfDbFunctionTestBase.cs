@@ -1500,37 +1500,40 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
         }
 
+
+        [Fact]
+        public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested2()
+        {
+            throw new Exception("subquery that has a related item and does a cross join - possible?");
+            /* var result = from ord in db.Orders
+             join osub in (from o in db.Orders
+		            where o.region = "Canada"
+		            select o)
+                on ord.orderId equals osub.orderId 
+	      select new {ord.custId, ord.orderDate};*/
+
+            /*
+             * from p in be.Posts.Include("Posts").Include("Comments")
+select new PostData
+{
+    Post = p,
+    NextLinkData = (from n in be.Posts where n.PostedDate > p.PostedDate orderby n.PostedDate ascending select new PostLinkData { Title = n.Title, LinkTitle = n.LinkTitle }).Take(1).FirstOrDefault(),
+    PreviousLinkData = (from prev in be.Posts where prev.PostedDate < p.PostedDate orderby prev.PostedDate descending select new PostLinkData { Title = prev.Title, LinkTitle = prev.LinkTitle }).Take(1).FirstOrDefault(),
+};*/
+        }
+
         [Fact]
         public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
-            throw new Exception("anon fix");
-         /*   using (var context = CreateContext())
+            using (var context = CreateContext())
             {
-                var oResult =  (from c in context.Customers
-                               select new
-                               {
-                                   c.Id,
-                                   Addresses = c.Addresses.Select(a => a.Street).ToList(),
-                                   Orders = context.OrderQuery.Where(o => o.CustomerId == c.Id).Select(o => o.Name).ToList()
-                               }).ToList();
-
-
-                var results2 = (from c in context.Customers
-                                select new
-                                {
-                                    c.Id,
-                                    Orders = c.Orders.Select(o => o.Name).ToList(),
-                                    Addresses = c.Addresses.Select(a => a.Street).ToList()
-                                }).ToList();
-
-
                 var results = (from c in context.Customers
                                select new
                                {
                                    c.Id,
-                                   OrderCountYear = context.GetCustomerOrderCountByYear(1).Where(o => o.Year == 2000).Select(o => new
+                                   OrderCountYear = context.GetOrdersWithMultipleProducts(c.Id).Where(o => o.OrderDate.Day == 21).Select(o => new
                                    {
-                                       OrderCountYearNested = context.GetCustomerOrderCountByYear(2000).Where(o2 => o.Year == 2001).ToList(),
+                                       OrderCountYearNested = context.GetOrdersWithMultipleProducts(o.CustomerId).ToList(),
                                        Prods = context.GetTopTwoSellingProducts().ToList(),
                                    }).ToList()
                                }).ToList();
@@ -1548,7 +1551,13 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Single(results[3].OrderCountYear);
                 Assert.Equal(2, results[3].OrderCountYear[0].Prods.Count);
                 Assert.Empty(results[3].OrderCountYear[0].OrderCountYearNested);
-            }*/
+            }
+        }
+
+        [Fact]
+        public virtual void QF_Select_Correlated_Subquery_In_Anonymous_MultipleCollections()
+        {
+            throw new Exception("read tvf and addresses");
         }
 
         [Fact]
@@ -1560,14 +1569,14 @@ namespace Microsoft.EntityFrameworkCore.Query
                                select new
                                {
                                    c.Id,
-                                   Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 27).Select(p => p.ProductId).ToList(),
+                                   Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 249).Select(p => p.ProductId).ToList(),
                                }).ToList();
 
                 Assert.Equal(4, results.Count);
-                Assert.Single(results[0].Prods);
-                Assert.Single(results[1].Prods);
-                Assert.Single(results[2].Prods);
-                Assert.Single(results[3].Prods);
+                Assert.Equal(3, results[0].Prods[0]);
+                Assert.Equal(3, results[1].Prods[0]);
+                Assert.Equal(3, results[2].Prods[0]);
+                Assert.Equal(3, results[3].Prods[0]);
             }
         }
 
@@ -1944,11 +1953,11 @@ namespace Microsoft.EntityFrameworkCore.Query
             from r in contact.TVF(r.a.b)
         }
         */
-        #endregion
+            #endregion
 
-        #endregion
+            #endregion
 
-        private void AssertTranslationFailed(Action testCode)
+            private void AssertTranslationFailed(Action testCode)
             => Assert.Contains(
                 CoreStrings.TranslationFailed("").Substring(21),
                 Assert.Throws<InvalidOperationException>(testCode).Message);

@@ -563,7 +563,7 @@ FROM [Customers] AS [c]
 OUTER APPLY (
     SELECT [t].[ProductId]
     FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
-    WHERE [t].[AmountSold] = 27
+    WHERE [t].[AmountSold] = 249
 ) AS [t0]
 ORDER BY [c].[Id]");
         }
