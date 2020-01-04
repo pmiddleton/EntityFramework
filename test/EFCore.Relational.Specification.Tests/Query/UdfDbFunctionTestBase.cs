@@ -1301,7 +1301,6 @@ namespace Microsoft.EntityFrameworkCore.Query
             }*/
         #endregion
 
-
         #region Table Valued Tests
 
         [ConditionalFact]

@@ -215,7 +215,7 @@ WHERE 3 = [dbo].[CustomerOrderCount](ABS([c].[Id]))");
             AssertSql(
                 @"SELECT TOP(1) [dbo].[IdentityString]([c].[FirstName])
 FROM [Orders] AS [o]
-LEFT JOIN [Customers] AS [c] ON [o].[CustomerId] = [c].[Id]
+INNER JOIN [Customers] AS [c] ON [o].[CustomerId] = [c].[Id]
 ORDER BY [o].[Id]");
         }
 
