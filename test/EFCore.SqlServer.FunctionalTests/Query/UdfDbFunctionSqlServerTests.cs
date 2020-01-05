@@ -455,7 +455,6 @@ FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
 ORDER BY [t].[ProductId]");
         }
 
-      /*  [Fact]
         public override void QF_Stand_Alone_With_Translation()
         {
             base.QF_Stand_Alone_With_Translation();
@@ -463,7 +462,7 @@ ORDER BY [t].[ProductId]");
             AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
 FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
 ORDER BY [t].[ProductId]");
-        }*/
+        }
 
         public override void QF_Stand_Alone_Parameter()
         {
@@ -532,26 +531,54 @@ OUTER APPLY (
 ORDER BY [c].[Id], [t].[OrderId]");
         }
 
+        public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested_With_QF()
+        {
+            base.QF_Select_Correlated_Subquery_In_Anonymous_Nested_With_QF();
+
+            AssertSql(@"SELECT [o].[CustomerId], [o].[OrderDate]
+FROM [Orders] AS [o]
+INNER JOIN (
+    SELECT [c].[Id], [c].[FirstName], [c].[LastName], [m].[OrderId], [m].[CustomerId], [m].[OrderDate]
+    FROM [Customers] AS [c]
+    CROSS APPLY [dbo].[GetOrdersWithMultipleProducts]([c].[Id]) AS [m]
+) AS [t] ON [o].[Id] = [t].[OrderId]");
+        }
+
         public override void QF_Select_Correlated_Subquery_In_Anonymous_Nested()
         {
-           // todo - find a view in a collection select, or create one
-           //     todo - create a unit test with the 2 funcs to see if our approach works
             base.QF_Select_Correlated_Subquery_In_Anonymous_Nested();
 
-            AssertSql(@"SELECT [c].[Id]
-FROM [Customers] AS [c]",
+            AssertSql(@"SELECT [t].[AmountSold], [t].[ProductId]
+FROM [dbo].[GetTopTwoSellingProducts]() AS [t]",
 
-                    @"SELECT [o].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](1) AS [o]
-WHERE [o].[Year] = 2000",
+                    @"SELECT [c].[Id], [t].[OrderId], [t].[OrderId0], [t].[CustomerId], [t].[OrderDate]
+FROM [Customers] AS [c]
+OUTER APPLY (
+    SELECT [m].[OrderId], [m0].[OrderId] AS [OrderId0], [m0].[CustomerId], [m0].[OrderDate]
+    FROM [dbo].[GetOrdersWithMultipleProducts]([c].[Id]) AS [m]
+    OUTER APPLY [dbo].[GetOrdersWithMultipleProducts]([m].[CustomerId]) AS [m0]
+    WHERE DATEPART(day, [m].[OrderDate]) = 21
+) AS [t]
+ORDER BY [c].[Id], [t].[OrderId], [t].[OrderId0]");
+        }
 
-                    @"@_outer_Year='2000' (Nullable = true)
+        public override void QF_Select_Correlated_Subquery_In_Anonymous_MultipleCollections()
+        {
+            base.QF_Select_Correlated_Subquery_In_Anonymous_MultipleCollections();
 
-SELECT [o2].[Count], [o2].[CustomerId], [o2].[Year]
-FROM [dbo].[GetCustomerOrderCountByYear](2000) AS [o2]
-WHERE @_outer_Year = 2001");
-
-           // Assert.Equal(13, Fixture.TestSqlLoggerFactory.SqlStatements.Count);
+            AssertSql(@"SELECT [c].[Id], [t0].[ProductId], [t1].[Id], [t1].[City], [t1].[CustomerId], [t1].[State], [t1].[Street]
+FROM [Customers] AS [c]
+OUTER APPLY (
+    SELECT [t].[ProductId]
+    FROM [dbo].[GetTopTwoSellingProducts]() AS [t]
+    WHERE [t].[AmountSold] = 249
+) AS [t0]
+LEFT JOIN (
+    SELECT [a].[Id], [a].[City], [a].[CustomerId], [a].[State], [a].[Street]
+    FROM [Addresses] AS [a]
+    WHERE [a].[State] = N'NY'
+) AS [t1] ON [c].[Id] = [t1].[CustomerId]
+ORDER BY [c].[Id], [t1].[Id]");
         }
 
         public override void QF_Select_NonCorrelated_Subquery_In_Anonymous()

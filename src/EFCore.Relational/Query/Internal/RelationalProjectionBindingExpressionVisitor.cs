@@ -242,6 +242,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 return null;
             }
 
+            if (newExpression.Arguments.Any(arg => arg.Type.IsGenericType && arg.Type.GetGenericTypeDefinition() == typeof(IQueryable<>)))
+            {
+                throw new Exception("can't project IQueryable");
+            }
+
             var newArguments = new Expression[newExpression.Arguments.Count];
             for (var i = 0; i < newArguments.Length; i++)
             {

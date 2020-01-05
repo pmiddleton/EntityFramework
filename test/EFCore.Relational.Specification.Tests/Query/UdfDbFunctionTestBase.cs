@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.TestUtilities;
@@ -141,13 +142,11 @@ namespace Microsoft.EntityFrameworkCore.Query
             public int AddValues(int a, int b)
             {
                 throw new NotImplementedException();
-                //  return Execute(() => AddValues(a, b));
             }
 
             public int AddValues(Expression<Func<int>> a, int b)
             {
                 throw new NotImplementedException();
-                //  return Execute(() => AddValues(a, b));
             }
 
             #region Querable Functions
@@ -194,8 +193,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             public IQueryable<TopSellingProduct> GetTopTwoSellingProductsCustomTranslation()
             {
-                throw new NotImplementedException();
-                //  return CreateQuery(() => GetTopTwoSellingProductsCustomTranslation());
+                return CreateQuery(() => GetTopTwoSellingProductsCustomTranslation());
             }
 
             public IQueryable<MultProductOrders> GetOrdersWithMultipleProducts(int customerId)
@@ -272,9 +270,8 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetOrdersWithMultipleProducts)));
                 
-
-                // modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
-                //     .HasTranslation(args => new SqlFunctionExpression("GetTopTwoSellingProducts", typeof(TopSellingProduct), "dbo", args));
+                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
+                     .HasTranslation(args => SqlFunctionExpression.Create("dbo", "GetTopTwoSellingProducts", args, typeof(TopSellingProduct), null));
             }
         }
 
@@ -1230,86 +1227,40 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         #region QueryableFunction
 
-        #region BootStrap
-
-        /*    [Fact]
-            public virtual void BootstrapScalarNoParams()
+        [Fact]
+        public virtual void QF_Anonymous_Collection_No_PK_Throws()
+        {
+            using (var context = CreateContext())
             {
-                using (var context = CreateContext())
-                {
-                    var schame = context.SCHEMA_NAME();
-
-                    Assert.Equal("dbo", schame);
-                }
+                var products = (from c in context.Customers
+                                select new
+                                {
+                                    c.Id,
+                                    products = context.GetTopSellingProductsForCustomer(c.Id).ToList()
+                                }).ToList();
+              
             }
+        }
 
-            [Fact]
-            public virtual async Task BootstrapScalarNoParamsAsync()
+        [Fact]
+        public virtual void QF_Anonymous_Collection_No_IQueryable_In_Projection_Throws()
+        {
+            using (var context = CreateContext())
             {
-                using (var context = CreateContext())
-                {
-                    var schema = await context.SCHEMA_NAME_Async();
-
-                    Assert.Equal("dbo", schema);
-                }
+                var products = (from c in context.Customers
+                                select new
+                                {
+                                    c.Id,
+                                    orders = context.GetCustomerOrderCountByYear(c.Id)
+                                }).ToList();
             }
+        }
 
-
-            [Fact]
-            public virtual void BootstrapScalarParams()
-            {
-                using (var context = CreateContext())
-                {
-                    var value = context.AddValues(1, 2);
-
-                    Assert.Equal(3, value);
-                }
-            }
-
-            [Fact]
-            public virtual void BootstrapScalarFuncParams()
-            {
-                using (var context = CreateContext())
-                {
-                    var value = context.AddValues(() => context.AddValues(1, 2), 2);
-
-                    Assert.Equal(5, value);
-                }
-            }
-
-            [Fact]
-            public virtual void BootstrapScalarFuncParamsWithVariable()
-            {
-                using (var context = CreateContext())
-                {
-                    var x = 5;
-                    var value = context.AddValues(() => context.AddValues(x, 2), 2);
-
-                    Assert.Equal(9, value);
-                }
-            }
-
-            [Fact]
-            public virtual void BootstrapScalarFuncParamsConstant()
-            {
-                using (var context = CreateContext())
-                {
-                    var value = context.AddValues(() => 1, 2);
-
-                    Assert.Equal(3, value);
-                }
-            }*/
-        #endregion
-
-        #region Table Valued Tests
-
-        [ConditionalFact]
+        [Fact]
         public virtual void QF_Stand_Alone()
         {
             using (var context = CreateContext())
             {
-              //  var q = context.Customers.OrderBy(c => c.FirstName).ToList();
-
                 var products = (from t in context.GetTopTwoSellingProducts()
                                 orderby t.ProductId
                                 select t).ToList();
@@ -1319,37 +1270,10 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Assert.Equal(249, products[0].AmountSold);
                 Assert.Equal(4, products[1].ProductId);
                 Assert.Equal(184, products[1].AmountSold);
-
-                
-
-                /* var orders = (from c in context.Customers
-                                from o in context.Orders
-                                select new { cid = c.Id, oid = o.Id }).ToList();*/
-
-               // var products = (from t in context.GetTopTwoSellingProducts()
-                //                select t).ToList();
-
-                //              var c = context.Customers.ToList();
-                
-                /* var widgets = (from c in context.Customers
-                               from o in c.Orders
-                               select new { c, o }).ToList();*/
-
-                /* var orders = (from c in context.Customers
-                               from o in c.Orders
-                               select o).ToList();
-                               */
-
-
-                /*                 Assert.Equal(2, products.Count);
-                                 Assert.Equal(1, products[0].ProductId);
-                                 Assert.Equal(27, products[0].AmountSold);
-                                 Assert.Equal(2, products[1].ProductId);
-                                 Assert.Equal(50, products[1].AmountSold);*/
             }
         }
 
-     /*   [Fact]
+        [Fact]
         public virtual void QF_Stand_Alone_With_Translation()
         {
             using (var context = CreateContext())
@@ -1359,13 +1283,13 @@ namespace Microsoft.EntityFrameworkCore.Query
                                 select t).ToList();
 
                 Assert.Equal(2, products.Count);
-                Assert.Equal(1, products[0].ProductId);
-                Assert.Equal(27, products[0].AmountSold);
-                Assert.Equal(2, products[1].ProductId);
-                Assert.Equal(50, products[1].AmountSold);
+                Assert.Equal(3, products[0].ProductId);
+                Assert.Equal(249, products[0].AmountSold);
+                Assert.Equal(4, products[1].ProductId);
+                Assert.Equal(184, products[1].AmountSold);
             }
         }
-        */
+        
         [Fact]
         public virtual void QF_Stand_Alone_Parameter()
         {
@@ -1499,26 +1423,32 @@ namespace Microsoft.EntityFrameworkCore.Query
             }
         }
 
-
         [Fact]
-        public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested2()
+        public virtual void QF_Select_Correlated_Subquery_In_Anonymous_Nested_With_QF()
         {
-            throw new Exception("subquery that has a related item and does a cross join - possible?");
-            /* var result = from ord in db.Orders
-             join osub in (from o in db.Orders
-		            where o.region = "Canada"
-		            select o)
-                on ord.orderId equals osub.orderId 
-	      select new {ord.custId, ord.orderDate};*/
+            using (var context = CreateContext())
+            {
+                var results = (from o in context.Orders
+                                join osub in (from c in context.Customers
+                                            from a in context.GetOrdersWithMultipleProducts(c.Id)
+                                            select a.OrderId
+                                    ) on o.Id equals osub
+                                select new { o.CustomerId, o.OrderDate }).ToList();
 
-            /*
-             * from p in be.Posts.Include("Posts").Include("Comments")
-select new PostData
-{
-    Post = p,
-    NextLinkData = (from n in be.Posts where n.PostedDate > p.PostedDate orderby n.PostedDate ascending select new PostLinkData { Title = n.Title, LinkTitle = n.LinkTitle }).Take(1).FirstOrDefault(),
-    PreviousLinkData = (from prev in be.Posts where prev.PostedDate < p.PostedDate orderby prev.PostedDate descending select new PostLinkData { Title = prev.Title, LinkTitle = prev.LinkTitle }).Take(1).FirstOrDefault(),
-};*/
+                Assert.Equal(4, results.Count);
+
+                Assert.Equal(1, results[0].CustomerId);
+                Assert.Equal(new DateTime(2000, 1, 20), results[0].OrderDate);
+
+                Assert.Equal(1, results[1].CustomerId);
+                Assert.Equal(new DateTime(2000, 2, 21), results[1].OrderDate);
+
+                Assert.Equal(2, results[2].CustomerId);
+                Assert.Equal(new DateTime(2000, 4, 21), results[2].OrderDate);
+
+                Assert.Equal(2, results[3].CustomerId);
+                Assert.Equal(new DateTime(2000, 5, 20), results[3].OrderDate);
+            }
         }
 
         [Fact]
@@ -1538,25 +1468,45 @@ select new PostData
                                }).ToList();
 
                 Assert.Equal(4, results.Count);
+
                 Assert.Single(results[0].OrderCountYear);
                 Assert.Equal(2, results[0].OrderCountYear[0].Prods.Count);
-                Assert.Empty(results[0].OrderCountYear[0].OrderCountYearNested);
+                Assert.Equal(2, results[0].OrderCountYear[0].OrderCountYearNested.Count);
+
                 Assert.Single(results[1].OrderCountYear);
                 Assert.Equal(2, results[1].OrderCountYear[0].Prods.Count);
-                Assert.Empty(results[1].OrderCountYear[0].OrderCountYearNested);
-                Assert.Single(results[2].OrderCountYear);
-                Assert.Equal(2, results[2].OrderCountYear[0].Prods.Count);
-                Assert.Empty(results[2].OrderCountYear[0].OrderCountYearNested);
-                Assert.Single(results[3].OrderCountYear);
-                Assert.Equal(2, results[3].OrderCountYear[0].Prods.Count);
-                Assert.Empty(results[3].OrderCountYear[0].OrderCountYearNested);
+                Assert.Equal(2, results[1].OrderCountYear[0].OrderCountYearNested.Count);
+
+                Assert.Empty(results[2].OrderCountYear);
+
+                Assert.Empty(results[3].OrderCountYear);
             }
         }
 
         [Fact]
         public virtual void QF_Select_Correlated_Subquery_In_Anonymous_MultipleCollections()
         {
-            throw new Exception("read tvf and addresses");
+            using (var context = CreateContext())
+            {
+                var results = (from c in context.Customers
+                               select new
+                               {
+                                   c.Id,
+                                   Prods = context.GetTopTwoSellingProducts().Where(p => p.AmountSold == 249).Select(p => p.ProductId).ToList(),
+                                   Addresses = c.Addresses.Where(a => a.State == "NY").ToList()
+                               }).ToList();
+
+                Assert.Equal(4, results.Count);
+                Assert.Equal(3, results[0].Prods[0]);
+                Assert.Equal(3, results[1].Prods[0]);
+                Assert.Equal(3, results[2].Prods[0]);
+                Assert.Equal(3, results[3].Prods[0]);
+
+                Assert.Empty(results[0].Addresses);
+                Assert.Equal("Apartment 5A, 129 West 81st Street", results[1].Addresses[0].Street);
+                Assert.Equal("425 Grove Street, Apt 20", results[2].Addresses[0].Street);
+                Assert.Empty(results[3].Addresses);
+            }
         }
 
         [Fact]
@@ -1952,13 +1902,13 @@ select new PostData
             from r in contact.TVF(r.a.b)
         }
         */
-            #endregion
 
-            #endregion
+        #endregion
 
-            private void AssertTranslationFailed(Action testCode)
-            => Assert.Contains(
-                CoreStrings.TranslationFailed("").Substring(21),
-                Assert.Throws<InvalidOperationException>(testCode).Message);
+
+        private void AssertTranslationFailed(Action testCode)
+        => Assert.Contains(
+            CoreStrings.TranslationFailed("").Substring(21),
+            Assert.Throws<InvalidOperationException>(testCode).Message);
     }
 }

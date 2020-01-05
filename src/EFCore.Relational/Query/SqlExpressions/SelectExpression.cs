@@ -935,9 +935,11 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
             var outerIdentifier = GetIdentifierAccessor(_identifier.Concat(_childIdentifiers));
             innerSelectExpression.ApplyProjection();
 
-            /*var selfIdentifier = innerSelectExpression.Tables.Any(t => t is QuerableSqlFunctionExpression)
-                                    ? parentIdentifier
-                                    : innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);*/
+            if (innerSelectExpression._identifier.Count == 0
+                && innerSelectExpression.Tables.Any(t => t is QuerableSqlFunctionExpression && (t as QuerableSqlFunctionExpression).SqlFunctionExpression.Arguments.Count != 0))
+            {
+                throw new Exception("");
+            }
 
             var selfIdentifier = innerSelectExpression.GetIdentifierAccessor(innerSelectExpression._identifier);
 
