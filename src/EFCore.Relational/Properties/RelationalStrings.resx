@@ -435,6 +435,9 @@
   <data name="DbFunctionInvalidInstanceType" xml:space="preserve">
     <value>The DbFunction '{function}' defined on type '{type}' must be either a static method or an instance method defined on a DbContext subclass. Instance methods on other types are not supported.</value>
   </data>
+  <data name="DbFunctionCantProjectIQueryable" xml:space="preserve">
+    <value>Queryable Db Functions used in projections cannot return IQueryable.  IQueryable must be converted to a collection type such as List or Array.</value>
+  </data>
   <data name="ConflictingAmbientTransaction" xml:space="preserve">
     <value>An ambient transaction has been detected. The ambient transaction needs to be completed before beginning a transaction on this connection.</value>
   </data>

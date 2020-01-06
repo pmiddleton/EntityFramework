@@ -244,7 +244,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
             if (newExpression.Arguments.Any(arg => arg.Type.IsGenericType && arg.Type.GetGenericTypeDefinition() == typeof(IQueryable<>)))
             {
-                throw new Exception("can't project IQueryable");
+                throw new InvalidOperationException(RelationalStrings.DbFunctionCantProjectIQueryable());
             }
 
             var newArguments = new Expression[newExpression.Arguments.Count];

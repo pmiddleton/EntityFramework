@@ -1228,17 +1228,23 @@ namespace Microsoft.EntityFrameworkCore.Query
         #region QueryableFunction
 
         [Fact]
+        public virtual void QF_Anonymous_Collection_No_PK_Throws2()
+        {
+            throw new Exception("dont create tables for query result types");
+            throw new Exception("auto pickup query result types?");
+        }
+
+        [Fact]
         public virtual void QF_Anonymous_Collection_No_PK_Throws()
         {
             using (var context = CreateContext())
             {
-                var products = (from c in context.Customers
-                                select new
-                                {
-                                    c.Id,
-                                    products = context.GetTopSellingProductsForCustomer(c.Id).ToList()
-                                }).ToList();
-              
+                var query = from c in context.Customers
+                            select new { c.Id, products = context.GetTopSellingProductsForCustomer(c.Id).ToList() };
+
+                Assert.Contains(
+                    RelationalStrings.DbFunctionProjectedCollectionMustContainPK(),
+                    Assert.Throws<InvalidOperationException>(() => query.ToList()).Message);
             }
         }
 
@@ -1247,12 +1253,12 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             using (var context = CreateContext())
             {
-                var products = (from c in context.Customers
-                                select new
-                                {
-                                    c.Id,
-                                    orders = context.GetCustomerOrderCountByYear(c.Id)
-                                }).ToList();
+                var query = (from c in context.Customers
+                             select new { c.Id, orders = context.GetCustomerOrderCountByYear(c.Id) });
+
+                Assert.Contains(
+                    RelationalStrings.DbFunctionCantProjectIQueryable(),
+                    Assert.Throws<InvalidOperationException>(() => query.ToList()).Message);
             }
         }
 
