@@ -1228,13 +1228,6 @@ namespace Microsoft.EntityFrameworkCore.Query
         #region QueryableFunction
 
         [Fact]
-        public virtual void QF_Anonymous_Collection_No_PK_Throws2()
-        {
-            throw new Exception("dont create tables for query result types");
-            throw new Exception("auto pickup query result types?");
-        }
-
-        [Fact]
         public virtual void QF_Anonymous_Collection_No_PK_Throws()
         {
             using (var context = CreateContext())
@@ -1243,7 +1236,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                             select new { c.Id, products = context.GetTopSellingProductsForCustomer(c.Id).ToList() };
 
                 Assert.Contains(
-                    RelationalStrings.DbFunctionProjectedCollectionMustContainPK(),
+                    RelationalStrings.DbFunctionProjectedCollectionMustHavePK("GetTopSellingProductsForCustomer"),
                     Assert.Throws<InvalidOperationException>(() => query.ToList()).Message);
             }
         }

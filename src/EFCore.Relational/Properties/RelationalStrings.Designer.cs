@@ -495,6 +495,14 @@ namespace Microsoft.EntityFrameworkCore.Diagnostics
             => GetString("DbFunctionCantProjectIQueryable");
 
         /// <summary>
+        ///     Return type of a queryable function '{functionName}' which is used in a projected collection must define a primary key.
+        /// </summary>
+        public static string DbFunctionProjectedCollectionMustHavePK([CanBeNull] string functionName)
+            => string.Format(
+                GetString("DbFunctionProjectedCollectionMustHavePK", nameof(functionName)),
+                functionName);
+
+        /// <summary>
         ///     An ambient transaction has been detected. The ambient transaction needs to be completed before beginning a transaction on this connection.
         /// </summary>
         public static string ConflictingAmbientTransaction

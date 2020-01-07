@@ -80,7 +80,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                         RelationalStrings.DbFunctionNameEmpty(methodInfo.DisplayName()));
                 }
 
-             /*    if (dbFunction.IsIQueryable)
+                 if (dbFunction.IsIQueryable)
                 {
                     if(model.FindEntityType(dbFunction.MethodInfo.ReturnType.GetGenericArguments()[0]) == null)
                     { 
@@ -110,7 +110,7 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                                 methodInfo.DisplayName(),
                                 parameter.ClrType.ShortDisplayName()));
                     }
-                }*/
+                }
             }
         }
 
