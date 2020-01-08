@@ -186,8 +186,10 @@ namespace Microsoft.EntityFrameworkCore.Query
                     "SUM", new[] { sqlExpression }, inputType, sqlExpression.TypeMapping);
         }
 
-        public virtual Expression TranslateMethodCall(MethodCallExpression methodCallExpression)
+        public virtual Expression TranslateMethodCall([NotNull] MethodCallExpression methodCallExpression)
         {
+            Check.NotNull(methodCallExpression, nameof(methodCallExpression));
+
             // MethodCall translators
             if (TranslationFailed(methodCallExpression.Object, Visit(methodCallExpression.Object), out var sqlObject))
             {

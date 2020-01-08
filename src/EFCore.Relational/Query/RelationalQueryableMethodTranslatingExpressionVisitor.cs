@@ -90,7 +90,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         protected override QueryableMethodTranslatingExpressionVisitor CreateSubqueryVisitor()
             => new RelationalQueryableMethodTranslatingExpressionVisitor(this);
 
-        protected ShapedQueryExpression CreateShapedQueryExpression(MethodCallExpression methodCallExpression)
+        protected virtual ShapedQueryExpression CreateShapedQueryExpression([NotNull] MethodCallExpression methodCallExpression)
         {
             var sqlFuncExpression = _sqlTranslator.TranslateMethodCall(methodCallExpression) as SqlFunctionExpression;
 

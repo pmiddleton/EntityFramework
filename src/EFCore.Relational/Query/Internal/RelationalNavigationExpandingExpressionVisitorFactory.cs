@@ -5,7 +5,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 {
     public class RelationalNavigationExpandingExpressionVisitorFactory : INavigationExpandingExpressionVisitorFactory
     {
-        public NavigationExpandingExpressionVisitor Create(
+        public virtual NavigationExpandingExpressionVisitor Create(
             QueryCompilationContext queryCompilationContext, IEvaluatableExpressionFilter evaluatableExpressionFilter)
         {
             return new RelationalNavigationExpandingExpressionVisitor(queryCompilationContext, evaluatableExpressionFilter);

@@ -3,6 +3,7 @@
 
 using System;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Utilities;
 
 namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
 {
@@ -11,9 +12,11 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
     /// </summary>
     public class QuerableSqlFunctionExpression : TableExpressionBase
     {
-        public QuerableSqlFunctionExpression(SqlFunctionExpression expression, [CanBeNull] string alias)
+        public QuerableSqlFunctionExpression([NotNull] SqlFunctionExpression expression, [CanBeNull] string alias)
             : base(alias)
         {
+            Check.NotNull(expression, nameof(expression));
+
             SqlFunctionExpression = expression;
         }
 
