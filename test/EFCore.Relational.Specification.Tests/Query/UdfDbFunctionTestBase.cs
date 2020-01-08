@@ -270,7 +270,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetOrdersWithMultipleProducts)));
                 
-                 modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
+                modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetTopTwoSellingProductsCustomTranslation)))
                      .HasTranslation(args => SqlFunctionExpression.Create("dbo", "GetTopTwoSellingProducts", args, typeof(TopSellingProduct), null));
             }
         }
