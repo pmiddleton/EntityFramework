@@ -242,10 +242,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                 return null;
             }
 
-            if (newExpression.Arguments.Any(arg => arg.Type.IsGenericType && arg.Type.GetGenericTypeDefinition() == typeof(IQueryable<>)))
+            /*if (newExpression.Arguments.Any(arg => arg.Type.IsGenericType && arg.Type.GetGenericTypeDefinition() == typeof(IQueryable<>) && arg is MethodCallExpression))
             {
                 throw new InvalidOperationException(RelationalStrings.DbFunctionCantProjectIQueryable());
-            }
+            }*/
 
             var newArguments = new Expression[newExpression.Arguments.Count];
             for (var i = 0; i < newArguments.Length; i++)

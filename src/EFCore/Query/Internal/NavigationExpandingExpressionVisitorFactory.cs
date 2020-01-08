@@ -9,7 +9,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 {
     public class NavigationExpandingExpressionVisitorFactory : INavigationExpandingExpressionVisitorFactory
     {
-        public NavigationExpandingExpressionVisitor Create(
+        public virtual NavigationExpandingExpressionVisitor Create(
             QueryCompilationContext queryCompilationContext, IEvaluatableExpressionFilter evaluatableExpressionFilter)
         {
             return new NavigationExpandingExpressionVisitor(queryCompilationContext, evaluatableExpressionFilter);

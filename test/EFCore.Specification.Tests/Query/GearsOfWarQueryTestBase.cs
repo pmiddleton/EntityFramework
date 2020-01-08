@@ -1588,7 +1588,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Value: (EntityReference: Gear)
                 Expression: g), ""FullName"") != null && EF.Property<string>((NavigationTreeExpression
                 Value: (EntityReference: Gear)
-                Expression: g), ""FullName"") == EF.Property<string>(i, ""OwnerFullName""))))", "NavigationExpandingExpressionVisitor"),
+                Expression: g), ""FullName"") == EF.Property<string>(i, ""OwnerFullName""))))", "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 
@@ -1631,7 +1631,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 Value: (EntityReference: Gear)
                 Expression: g), ""FullName"") != null && EF.Property<string>((NavigationTreeExpression
                 Value: (EntityReference: Gear)
-                Expression: g), ""FullName"") == EF.Property<string>(i, ""OwnerFullName""))))", "NavigationExpandingExpressionVisitor"),
+                Expression: g), ""FullName"") == EF.Property<string>(i, ""OwnerFullName""))))", "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 

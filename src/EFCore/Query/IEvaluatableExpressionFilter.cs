@@ -34,6 +34,6 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <param name="expression"> The expression. </param>
         /// <param name="model"> The model. </param>
         /// <returns> True if the expression is a queryable function </returns>
-        bool IsQueryableFunction(Expression expression, IModel model);
+        bool IsQueryableFunction([NotNull] Expression expression, [NotNull] IModel model);
     }
 }

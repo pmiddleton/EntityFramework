@@ -106,7 +106,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             Assert.Equal(
                 CoreStrings.QueryFailed(
                     "c1 => int[] { 1, 2, 3, }",
-                    "NavigationExpandingExpressionVisitor"),
+                    "RelationalNavigationExpandingExpressionVisitor"),
                 Assert.Throws<InvalidOperationException>(
                     () => (from c1 in context.Customers
                            from i in new[] { 1, 2, 3 }
@@ -132,7 +132,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         outerKeySelector: e1 => e1.EmployeeID, 
         innerKeySelector: i => i, 
         resultSelector: (e1, i) => e1)",
-                    "NavigationExpandingExpressionVisitor"),
+                    "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         outerKeySelector: e1 => e1.EmployeeID, 
         innerKeySelector: i => i, 
         resultSelector: (e1, g) => e1)",
-                    "NavigationExpandingExpressionVisitor"),
+                    "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 

@@ -1996,7 +1996,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         public virtual async Task SelectMany_mixed(bool async)
         {
             Assert.Equal(
-                CoreStrings.QueryFailed("e1 => string[] { \"a\", \"b\", }", "NavigationExpandingExpressionVisitor"),
+                CoreStrings.QueryFailed("e1 => string[] { \"a\", \"b\", }", "RelationalNavigationExpandingExpressionVisitor"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     () => AssertQuery(
                         async,
@@ -2439,7 +2439,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                     @"DbSet<Employee>
     .Where(c => c.EmployeeID == 4294967295)
     .DefaultIfEmpty(__p_0)",
-                    "NavigationExpandingExpressionVisitor"),
+                    "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 
@@ -2458,7 +2458,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                     @"DbSet<Employee>
     .Where(c => c.EmployeeID == 4294967295)
     .DefaultIfEmpty(__p_0)",
-                    "NavigationExpandingExpressionVisitor"),
+                    "RelationalNavigationExpandingExpressionVisitor"),
                 message, ignoreLineEndingDifferences: true);
         }
 

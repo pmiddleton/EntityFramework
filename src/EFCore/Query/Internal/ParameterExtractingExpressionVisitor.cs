@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -44,11 +45,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
         public ParameterExtractingExpressionVisitor(
-            IEvaluatableExpressionFilter evaluatableExpressionFilter,
-            IParameterValues parameterValues,
-            Type contextType,
-            IModel model,
-            IDiagnosticsLogger<DbLoggerCategory.Query> logger,
+            [NotNull] IEvaluatableExpressionFilter evaluatableExpressionFilter,
+            [NotNull] IParameterValues parameterValues,
+            [NotNull] Type contextType,
+            [NotNull] IModel model,
+            [NotNull] IDiagnosticsLogger<DbLoggerCategory.Query> logger,
             bool parameterize,
             bool generateContextAccessors)
         {
@@ -70,7 +71,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
         ///     any release. You should only use it directly in your code with extreme caution and knowing that
         ///     doing so can result in application failures when updating to a new Entity Framework Core release.
         /// </summary>
-        public virtual Expression ExtractParameters(Expression expression)
+        public virtual Expression ExtractParameters([NotNull] Expression expression)
         {
             var oldEvaluatableExpressions = _evaluatableExpressions;
             _evaluatableExpressions = _evaluatableExpressionFindingExpressionVisitor.Find(expression);
@@ -336,7 +337,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             return parameter;
         }
 
-        private class ContextParameterReplacingExpressionVisitor : ExpressionVisitor
+        private sealed class ContextParameterReplacingExpressionVisitor : ExpressionVisitor
         {
             private readonly Type _contextType;
 
@@ -454,7 +455,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             }
         }
 
-        private class EvaluatableExpressionFindingExpressionVisitor : ExpressionVisitor
+        private sealed class EvaluatableExpressionFindingExpressionVisitor : ExpressionVisitor
         {
             private readonly IEvaluatableExpressionFilter _evaluatableExpressionFilter;
             private readonly ISet<ParameterExpression> _allowedParameters = new HashSet<ParameterExpression>();

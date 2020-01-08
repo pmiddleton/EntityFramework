@@ -48,7 +48,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
         private readonly Parameters _parameters = new Parameters();
 
-        protected QueryCompilationContext QueryCompilationContext => _queryCompilationContext;
+        protected virtual QueryCompilationContext QueryCompilationContext => _queryCompilationContext;
 
         public NavigationExpandingExpressionVisitor(
             [NotNull] QueryCompilationContext queryCompilationContext,
@@ -1386,7 +1386,7 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
             }
         }
 
-        protected NavigationExpansionExpression CreateNavigationExpansionExpression(Expression sourceExpression, IEntityType entityType)
+        protected virtual NavigationExpansionExpression CreateNavigationExpansionExpression([NotNull] Expression sourceExpression, [NotNull] IEntityType entityType)
         {
             var entityReference = new EntityReference(entityType);
             PopulateEagerLoadedNavigations(entityReference.IncludePaths);
