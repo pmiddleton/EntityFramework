@@ -3,8 +3,10 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -947,6 +949,86 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             throw new UnreachableException();
         }
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions))
+        {
+            //create object to deal with all of these else/if cases for windowing functions?
+
+            //how do we unwind the inverted call stack?
+            //this is the aggregate.  Do we need something better than WindowFunctionsExtensions - how will custom providers add specific aggs
+            if (arguments.Count > 1 && typeof(WindowFunctionsExtensions.IWindowFinal).IsAssignableFrom(arguments[0].Type))
+            {
+                //todo - how many args could there be?  might have to loop this.  hardcode for max for now
+                var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
+
+                //this is the call chain
+                //todo - won't always be a WindowPartitionExpression??
+                var wbe = (WindowBuilderExpression)Visit(arguments[0]);
+
+                //temp hack - need to do what the other aggregates do with the factory so method names can change
+                var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
+                    Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
+
+                return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions);
+            }
+            else if(method.Name == nameof(WindowFunctionsExtensions.Over))
+            {
+                return new WindowBuilderExpression();
+            }
+
+            //todo - deal with this
+            throw new Exception();
+        }
+        else if (method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy))
+        {
+            var partCols = (NewArrayExpression)arguments[0] ;
+            var translatedPartCols = new Expression[partCols.Expressions.Count];
+
+            for (var i = 0; i < partCols.Expressions.Count; i++)
+            {
+                translatedPartCols[i] = Visit(RemoveObjectConvert(partCols.Expressions[i]));
+            }
+
+            var partitionBy = _sqlExpressionFactory.PartitionBy(translatedPartCols.Cast<SqlExpression>());
+
+            var parent = Visit(methodCallExpression.Object);
+
+            if (parent is WindowBuilderExpression wbe)
+                wbe.PartitionExpression = partitionBy;
+
+            return parent!;
+        }
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderRoot))
+        {
+            var col = (SqlExpression)Visit(RemoveObjectConvert(arguments[0]));
+
+            //todo - orderby vs orderByDescending
+            var order = new OrderingExpression(col, true);
+
+            var parent = Visit(methodCallExpression.Object);
+
+            if(parent is WindowBuilderExpression wbe)
+                wbe.OrderingExpressions.Add(order);
+
+            //check null crap
+            return parent!;
+        }
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrder))
+        {
+            //todo - remove all typecasts and do the QueryCompilationContext.NotTranslatedExpression thing
+            var col = (SqlExpression)Visit(RemoveObjectConvert(arguments[0]));
+
+            //todo - thenby vs ThenByDescending
+            var order = new OrderingExpression(col, true);
+
+            var parent = Visit(methodCallExpression.Object);
+
+            //what do we do if this isn't true?  Exception?
+            if (parent is WindowBuilderExpression wbe)
+                wbe.OrderingExpressions.Add(order);
+
+            //check the null crap
+            return parent!;
+        }
         else
         {
             if (method.IsStatic
@@ -993,6 +1075,9 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
                 scalarArguments.Add(sqlArgument!);
             }
         }
+
+        //look for over and convert to overExpression - then call Visit on children manuall?
+        //or create a windowing function visitor and have it process the rest of the tree?  Can you do that?
 
         var translation = enumerableExpression != null
             ? TranslateAggregateMethod(enumerableExpression, method, scalarArguments)

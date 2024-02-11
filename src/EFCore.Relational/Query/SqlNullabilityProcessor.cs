@@ -448,6 +448,9 @@ public class SqlNullabilityProcessor
                 => VisitSqlUnary(sqlUnaryExpression, allowOptimizedExpansion, out nullable),
             JsonScalarExpression jsonScalarExpression
                 => VisitJsonScalar(jsonScalarExpression, allowOptimizedExpansion, out nullable),
+            WindowOverExpression windowOverExpression
+                => VisitWindowOverExpression(windowOverExpression, allowOptimizedExpansion, out nullable),
+
             _ => VisitCustomSqlExpression(sqlExpression, allowOptimizedExpansion, out nullable)
         };
 
@@ -1444,6 +1447,24 @@ public class SqlNullabilityProcessor
         nullable = jsonScalarExpression.IsNullable;
 
         return jsonScalarExpression;
+    }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="windowOverExpression">todo</param>
+    /// <param name="allowOptimizedExpansion">todo</param>
+    /// <param name="nullable">todo</param>
+    /// <returns>todo</returns>
+    protected virtual SqlExpression VisitWindowOverExpression(
+       WindowOverExpression windowOverExpression,
+       bool allowOptimizedExpansion,
+       out bool nullable)
+    {
+        //I have to research what this is supposed to do.  For now just say yes!
+        nullable = true;
+
+        return windowOverExpression;
     }
 
     /// <summary>

@@ -159,12 +159,14 @@ public class QueryCompilationContext
         var queryAndEventData = Logger.QueryCompilationStarting(Dependencies.Context, _expressionPrinter, query);
         query = queryAndEventData.Query;
 
+        var temp = query;
+
         query = _queryTranslationPreprocessorFactory.Create(this).Process(query);
         // Convert EntityQueryable to ShapedQueryExpression
         query = _queryableMethodTranslatingExpressionVisitorFactory.Create(this).Translate(query);
         query = _queryTranslationPostprocessorFactory.Create(this).Process(query);
 
-        // Inject actual entity materializer
+        // Inject actual entity materializerF
         // Inject tracking
         query = _shapedQueryCompilingExpressionVisitorFactory.Create(this).Visit(query);
 

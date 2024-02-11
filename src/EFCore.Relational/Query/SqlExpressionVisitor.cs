@@ -57,6 +57,7 @@ public abstract class SqlExpressionVisitor : ExpressionVisitor
             UpdateExpression updateExpression => VisitUpdate(updateExpression),
             JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
             ValuesExpression valuesExpression => VisitValues(valuesExpression),
+            WindowOverExpression overExpression => VisitOver(overExpression),
             _ => base.VisitExtension(extensionExpression),
         };
 
@@ -304,4 +305,11 @@ public abstract class SqlExpressionVisitor : ExpressionVisitor
     /// <param name="valuesExpression">The expression to visit.</param>
     /// <returns>The modified expression, if it or any subexpression was modified; otherwise, returns the original expression.</returns>
     protected abstract Expression VisitValues(ValuesExpression valuesExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="windowOverExpression">todo</param>
+    /// <returns>todo</returns>
+    protected abstract Expression VisitOver(WindowOverExpression windowOverExpression);
 }

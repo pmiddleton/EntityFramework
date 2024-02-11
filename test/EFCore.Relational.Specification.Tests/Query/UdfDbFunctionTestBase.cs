@@ -1119,6 +1119,15 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
                     where c.Id == 1
                     select new { c.LastName, OrderCount = context.CustomerOrderCountInstance(c.Id) }).Single();
 
+
+       /* var cust = (context.Customers.Select(c =>
+                    new
+                    {
+                        c.LastName,
+                        OrderCount = context.CustomerOrderCountInstance(c.Id)
+                    })).Single();*/
+
+
         Assert.Equal("One", cust.LastName);
         Assert.Equal(3, cust.OrderCount);
     }

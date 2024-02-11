@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -750,6 +753,25 @@ public class SqlExpressionFactory : ISqlExpressionFactory
         greatestExpression = Function(
             "GREATEST", expressions, nullable: true, Enumerable.Repeat(true, expressions.Count), resultType, resultTypeMapping);
         return true;
+    }
+
+    /// <inheritdoc />
+    public virtual WindowPartitionExpression PartitionBy(IEnumerable<SqlExpression> paritions)
+    {
+        var typeMappedArguments = new List<SqlExpression>();
+
+        foreach (var partition in paritions)
+        {
+            typeMappedArguments.Add(ApplyDefaultTypeMapping(partition));
+        }
+
+        return new WindowPartitionExpression(typeMappedArguments);
+    }
+
+    /// <inheritdoc />
+    public virtual WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, List<OrderingExpression> orderingExpressions)
+    {
+        return new WindowOverExpression(aggregateExpression, partitionExpression, orderingExpressions);
     }
 
     private IReadOnlyList<SqlExpression> FlattenLeastGreatest(string functionName, IReadOnlyList<SqlExpression> expressions)

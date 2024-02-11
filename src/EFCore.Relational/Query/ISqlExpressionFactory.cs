@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -509,4 +510,20 @@ public interface ISqlExpressionFactory
         IReadOnlyList<SqlExpression> expressions,
         Type resultType,
         [NotNullWhen(true)] out SqlExpression? greatestExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="paritions">todo</param>
+    /// <returns>todo</returns>
+    WindowPartitionExpression PartitionBy(IEnumerable<SqlExpression> paritions);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="aggregateExpression">todo</param>
+    /// <param name="partitionExpression">todo</param>
+    /// <param name="orderingExpressions">todo</param>
+    /// <returns>todo</returns>
+    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, List<OrderingExpression> orderingExpressions);
 }

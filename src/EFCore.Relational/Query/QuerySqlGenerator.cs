@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 
 namespace Microsoft.EntityFrameworkCore.Query;
@@ -1641,5 +1642,34 @@ public class QuerySqlGenerator : SqlExpressionVisitor
     {
         (precedence, isAssociative) = (default, default);
         return false;
+    }
+
+    /// <inheritdoc />
+    protected override Expression VisitOver(WindowOverExpression windowOverExpression)
+    {
+        VisitSqlFunction(windowOverExpression.AggregateExpression);
+
+        _relationalCommandBuilder.Append(" OVER (");
+
+        if(windowOverExpression.PartitionExpression != null)
+            VisitParitionBy(windowOverExpression.PartitionExpression);
+
+        if (windowOverExpression.OrderingExpressions.Count > 0)
+        {
+            _relationalCommandBuilder.Append(" ORDER BY ");
+
+            GenerateList(windowOverExpression.OrderingExpressions, e => Visit(e));
+        }
+
+        _relationalCommandBuilder.Append(" )");
+
+        return windowOverExpression;
+
+        void VisitParitionBy(WindowPartitionExpression partitionExpression)
+        {
+            _relationalCommandBuilder.Append(" PARTITION BY ");
+
+            GenerateList(partitionExpression.Partitions, e => Visit(e), sql => sql.Append(", "));
+        }
     }
 }
