@@ -53,6 +53,32 @@ public enum RowsFollowing
 /// <summary>
 /// todo
 /// </summary>
+public enum Exclude
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    NoOthers,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    CurrentRow,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    Group,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    Ties
+}
+
+/// <summary>
+/// todo
+/// </summary>
 public static class FrameExtensions
 {
     /// <summary>
@@ -79,6 +105,22 @@ public static class OverExtensions
     /// <returns>todo</returns>
     /// <exception cref="NotImplementedException">todo</exception>
     public static IOver Filter(this IFilterableOver frame, Func<bool> filter)
+        => throw new NotImplementedException();
+}
+
+/// <summary>
+/// todo
+/// </summary>
+public static class ExcludeableExtensions
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="exclude">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="NotImplementedException">todo</exception>
+    public static IWindowFinal Exclude(this IExcludable frame, Exclude exclude)
         => throw new NotImplementedException();
 }
 
@@ -241,6 +283,12 @@ public static class WindowFunctionsExtensions
     /// <summary>
     /// todo
     /// </summary>
+    public interface IExcludable : IWindowFinal
+    { }
+
+    /// <summary>
+    /// todo
+    /// </summary>
     public interface IFilterableOver : IOver
     { }
 
@@ -292,54 +340,54 @@ public static class WindowFunctionsExtensions
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
-        IWindowFinal Rows(int preceding);
+        IExcludable Rows(int preceding);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
-        IWindowFinal Rows(RowsPreceding preceding);
-
-        /// <summary>
-        /// todo
-        /// </summary>
-        /// <param name="preceding">todo</param>
-        /// <param name="following">todo</param>
-        IWindowFinal Rows(int preceding, int following);
+        IExcludable Rows(RowsPreceding preceding);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
         /// <param name="following">todo</param>
-        IWindowFinal Rows(RowsPreceding preceding, int following);
+        IExcludable Rows(int preceding, int following);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
         /// <param name="following">todo</param>
-        IWindowFinal Rows(int preceding, RowsFollowing following);
+        IExcludable Rows(RowsPreceding preceding, int following);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
         /// <param name="following">todo</param>
-        IWindowFinal Rows(RowsPreceding preceding, RowsFollowing following);
-
-        /// <summary>
-        /// todo
-        /// </summary>
-        /// <param name="preceding">todo</param>
-        IWindowFinal Range(RowsPreceding preceding);
+        IExcludable Rows(int preceding, RowsFollowing following);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="preceding">todo</param>
         /// <param name="following">todo</param>
-        IWindowFinal Range(RowsPreceding preceding, RowsFollowing following);
+        IExcludable Rows(RowsPreceding preceding, RowsFollowing following);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        IExcludable Range(RowsPreceding preceding);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IExcludable Range(RowsPreceding preceding, RowsFollowing following);
     }
 
     /// <summary>

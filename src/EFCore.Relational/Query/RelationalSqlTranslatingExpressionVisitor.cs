@@ -949,29 +949,38 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             throw new UnreachableException();
         }
-       /* else if(method.DeclaringType == typeof(FrameExtensions))
+        /* else if(method.DeclaringType == typeof(FrameExtensions))
+         {
+             if (!(Visit(arguments[0]) is WindowBuilderExpression wbe))
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             var preceding = Visit(arguments[1]) as SqlConstantExpression;
+
+             if (preceding == null)
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             var following = arguments.Count == 3 ? Visit(arguments[2]) as SqlConstantExpression : null;
+
+             if (following == null && arguments.Count == 3)
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
+                 ? WindowRowRangeExpression.RowRange.Row
+                 : WindowRowRangeExpression.RowRange.Range,
+                 preceding,
+                 following);
+
+             return wbe;
+         }*/
+        else if (method.DeclaringType == typeof(OverExtensions) && method.Name == nameof(OverExtensions.Filter))
         {
-            if (!(Visit(arguments[0]) is WindowBuilderExpression wbe))
-                return QueryCompilationContext.NotTranslatedExpression;
+            var ugh = arguments[1].UnwrapLambdaFromQuote();
+            
+            var temp = Visit(ugh.Body);
 
-            var preceding = Visit(arguments[1]) as SqlConstantExpression;
-
-            if (preceding == null)
-                return QueryCompilationContext.NotTranslatedExpression;
-
-            var following = arguments.Count == 3 ? Visit(arguments[2]) as SqlConstantExpression : null;
-
-            if (following == null && arguments.Count == 3)
-                return QueryCompilationContext.NotTranslatedExpression;
-
-            wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
-                ? WindowRowRangeExpression.RowRange.Row
-                : WindowRowRangeExpression.RowRange.Range,
-                preceding,
-                following);
-
-            return wbe;
-        }*/
+            //can I have the results of this and just shove it in a where clause?
+            throw new NotFiniteNumberException();
+        }
         else if(method.DeclaringType == typeof(WindowFunctionsExtensions) && method.Name == nameof(WindowFunctionsExtensions.Over))
         {
             return new WindowBuilderExpression(_sqlExpressionFactory);
