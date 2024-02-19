@@ -949,85 +949,115 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             throw new UnreachableException();
         }
-        else if (method.DeclaringType == typeof(WindowFunctionsExtensions))
+       /* else if(method.DeclaringType == typeof(FrameExtensions))
+        {
+            if (!(Visit(arguments[0]) is WindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var preceding = Visit(arguments[1]) as SqlConstantExpression;
+
+            if (preceding == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var following = arguments.Count == 3 ? Visit(arguments[2]) as SqlConstantExpression : null;
+
+            if (following == null && arguments.Count == 3)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
+                ? WindowRowRangeExpression.RowRange.Row
+                : WindowRowRangeExpression.RowRange.Range,
+                preceding,
+                following);
+
+            return wbe;
+        }*/
+        else if(method.DeclaringType == typeof(WindowFunctionsExtensions) && method.Name == nameof(WindowFunctionsExtensions.Over))
+        {
+            return new WindowBuilderExpression(_sqlExpressionFactory);
+        }
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions)
+                    && arguments.Count > 1
+                    && typeof(WindowFunctionsExtensions.IWindowFinal).IsAssignableFrom(arguments[0].Type))
         {
             //create object to deal with all of these else/if cases for windowing functions?
-
-            //how do we unwind the inverted call stack?
             //this is the aggregate.  Do we need something better than WindowFunctionsExtensions - how will custom providers add specific aggs
-            if (arguments.Count > 1 && typeof(WindowFunctionsExtensions.IWindowFinal).IsAssignableFrom(arguments[0].Type))
-            {
-                //todo - how many args could there be?  might have to loop this.  hardcode for max for now
-                var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
+            //todo - how many args could there be?  might have to loop this.  hardcode for max for now
 
-                //this is the call chain
-                //todo - won't always be a WindowPartitionExpression??
-                var wbe = (WindowBuilderExpression)Visit(arguments[0]);
+            var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
 
-                //temp hack - need to do what the other aggregates do with the factory so method names can change
-                var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
-                    Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
+            //this is the call chain
+            //todo - won't always be a WindowPartitionExpression??
+            var wbe = (WindowBuilderExpression)Visit(arguments[0]);
 
-                return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions);
-            }
-            else if(method.Name == nameof(WindowFunctionsExtensions.Over))
-            {
-                return new WindowBuilderExpression();
-            }
+            //temp hack - need to do what the other aggregates do with the factory so method names can change
+            var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
+                Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
 
-            //todo - deal with this
-            throw new Exception();
+            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.RowRangeExpression);
         }
-        else if (method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy))
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOver)
+                    && method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy)
+                    && methodCallExpression.Arguments[1] is NewArrayExpression)
         {
-            var partCols = (NewArrayExpression)arguments[0] ;
-            var translatedPartCols = new Expression[partCols.Expressions.Count];
+            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
 
-            for (var i = 0; i < partCols.Expressions.Count; i++)
+            var partitions = (NewArrayExpression)arguments[0] ;
+            var translatedPartitions = new SqlExpression[partitions.Expressions.Count];
+
+            for (var i = 0; i < partitions.Expressions.Count; i++)
             {
-                translatedPartCols[i] = Visit(RemoveObjectConvert(partCols.Expressions[i]));
+                if (TranslationFailed(partitions.Expressions[i], Visit(partitions.Expressions[i]), out var translatedValue))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                translatedPartitions[i] = translatedValue!;
             }
 
-            var partitionBy = _sqlExpressionFactory.PartitionBy(translatedPartCols.Cast<SqlExpression>());
+            wbe.AddPartitionBy(translatedPartitions);
 
-            var parent = Visit(methodCallExpression.Object);
-
-            if (parent is WindowBuilderExpression wbe)
-                wbe.PartitionExpression = partitionBy;
-
-            return parent!;
+            return wbe!;
         }
-        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderRoot))
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderRoot)
+            || method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderThen))
         {
-            var col = (SqlExpression)Visit(RemoveObjectConvert(arguments[0]));
+            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
 
-            //todo - orderby vs orderByDescending
-            var order = new OrderingExpression(col, true);
+            if (TranslationFailed(arguments[0], Visit(RemoveObjectConvert(arguments[0])), out var sqlOject))
+            {
+                return QueryCompilationContext.NotTranslatedExpression;
+            }
 
-            var parent = Visit(methodCallExpression.Object);
+            wbe.AddOrdering(sqlOject!, method.Name == nameof(WindowFunctionsExtensions.IOrderRoot.OrderBy)
+                                        || method.Name == nameof(WindowFunctionsExtensions.IOrderThen.ThenBy));
 
-            if(parent is WindowBuilderExpression wbe)
-                wbe.OrderingExpressions.Add(order);
-
-            //check null crap
-            return parent!;
+            return wbe!;
         }
-        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrder))
+        else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IFrame))
         {
-            //todo - remove all typecasts and do the QueryCompilationContext.NotTranslatedExpression thing
-            var col = (SqlExpression)Visit(RemoveObjectConvert(arguments[0]));
+            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
 
-            //todo - thenby vs ThenByDescending
-            var order = new OrderingExpression(col, true);
+            var preceding = Visit(arguments[0]) as SqlConstantExpression;
 
-            var parent = Visit(methodCallExpression.Object);
+            if(preceding == null)
+                return QueryCompilationContext.NotTranslatedExpression;
 
-            //what do we do if this isn't true?  Exception?
-            if (parent is WindowBuilderExpression wbe)
-                wbe.OrderingExpressions.Add(order);
+            var following = arguments.Count == 2 ? Visit(arguments[1]) as SqlConstantExpression : null;
 
-            //check the null crap
-            return parent!;
+            if(following == null && arguments.Count == 2)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
+                ? WindowRowRangeExpression.RowRange.Row
+                : WindowRowRangeExpression.RowRange.Range,
+                preceding,
+                following);
+
+            return wbe;
         }
         else
         {

@@ -13,9 +13,25 @@ namespace Microsoft.EntityFrameworkCore.Query
 {
     internal class WindowBuilderExpression : Expression
     {
-        public List<OrderingExpression> OrderingExpressions { get; } = new List<OrderingExpression>();
-        public WindowPartitionExpression? PartitionExpression { get; set; }
+        private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
-        //todo - Rows and Range
+        private readonly List<OrderingExpression> _orderingExpressions = new List<OrderingExpression>();
+        private WindowPartitionExpression? _partitionExpression;
+        private WindowRowRangeExpression? _rowRangeExpression;
+
+        public WindowBuilderExpression(ISqlExpressionFactory sqlExpressionFactory)
+        {
+            _sqlExpressionFactory = sqlExpressionFactory;
+        }
+
+        public IReadOnlyList<OrderingExpression> OrderingExpressions => _orderingExpressions;
+        public WindowPartitionExpression? PartitionExpression => _partitionExpression;
+        public WindowRowRangeExpression? RowRangeExpression => _rowRangeExpression;
+
+        public void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
+        public void AddPartitionBy(SqlExpression[] partitions) => _partitionExpression = _sqlExpressionFactory.PartitionBy(partitions);
+
+        public void AddRowOrRange(WindowRowRangeExpression.RowRange rowOrRange, SqlExpression? preceding, SqlExpression? following)
+            => _rowRangeExpression = new WindowRowRangeExpression(rowOrRange, preceding, following);
     }
 }

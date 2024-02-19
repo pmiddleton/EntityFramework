@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.Query.WindowFunctionsExtensions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -15,12 +16,78 @@ namespace Microsoft.EntityFrameworkCore.Query;
 public interface IWindowFunctionAggregate<T>
 { }
 
+//todo - is this the correct namespace for this?
+
+/// <summary>
+/// todo
+/// </summary>
+public enum RowsPreceding
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    CurrentRow,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    UnboundedPreceding
+}
+
+/// <summary>
+/// todo
+/// </summary>
+public enum RowsFollowing
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    CurrentRow,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    UnboundedFollowing
+}
+
+/// <summary>
+/// todo
+/// </summary>
+public static class FrameExtensions
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    /// <returns>todo</returns>
+    public static IWindowFinal Range(this IFrame frame, int preceding, int following)
+        => throw new NotImplementedException();
+}
+
+/// <summary>
+/// todo
+/// </summary>
+public static class OverExtensions
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="NotImplementedException">todo</exception>
+    public static IOver Filter(this IFilterableOver frame, Func<bool> filter)
+        => throw new NotImplementedException();
+}
+
 /// <summary>
 /// todo
 /// </summary>
 public static class WindowFunctionsExtensions
 {
-    /// <summary>
+   /* /// <summary>
     /// todo
     /// </summary>
     /// <typeparam name="TSource">todo</typeparam>
@@ -85,7 +152,7 @@ public static class WindowFunctionsExtensions
     /// </summary>
     /// <typeparam name="TResult">todo</typeparam>
     /// <typeparam name="TPartition">todo</typeparam>
-    /// <typeparam name="TSource">todo</typeparam>
+    /// <typeparam name="TSource">todo</typeparam>ows
     /// <typeparam name="TOrder">todo</typeparam>
     /// <param name="source">todo</param>
     /// <param name="aggregate">todo</param>
@@ -146,7 +213,7 @@ public static class WindowFunctionsExtensions
     public static IWindowFunctionAggregate<int> RowNumber()
     {
         throw new Exception();
-    }
+    }*/
 
 
 
@@ -174,6 +241,12 @@ public static class WindowFunctionsExtensions
     /// <summary>
     /// todo
     /// </summary>
+    public interface IFilterableOver : IOver
+    { }
+
+    /// <summary>
+    /// todo
+    /// </summary>
     public interface IOver : IOrderRoot
     {
         /// <summary>
@@ -190,6 +263,7 @@ public static class WindowFunctionsExtensions
     {
     }
 
+
     /// <summary>
     /// todo
     /// </summary>
@@ -199,34 +273,93 @@ public static class WindowFunctionsExtensions
         /// todo
         /// </summary>
         /// <returns>todo</returns>
-        IOrder OrderBy(object orderBy);
+        IOrderThen OrderBy(object orderBy);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="orderBy">todo</param>
         /// <returns>todo</returns>
-        IOrder OrderByDescending(object orderBy);
+        IOrderThen OrderByDescending(object orderBy);
     }
 
     /// <summary>
     /// todo
     /// </summary>
-    public interface IOrder : IWindowFinal
+    public interface IFrame
+    {
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        IWindowFinal Rows(int preceding);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        IWindowFinal Rows(RowsPreceding preceding);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IWindowFinal Rows(int preceding, int following);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IWindowFinal Rows(RowsPreceding preceding, int following);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IWindowFinal Rows(int preceding, RowsFollowing following);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IWindowFinal Rows(RowsPreceding preceding, RowsFollowing following);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        IWindowFinal Range(RowsPreceding preceding);
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="preceding">todo</param>
+        /// <param name="following">todo</param>
+        IWindowFinal Range(RowsPreceding preceding, RowsFollowing following);
+    }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public interface IOrderThen : IFrame, IWindowFinal
     {
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="orderBy">todo</param>
         /// <returns>todo</returns>
-        IOrder ThenBy(object orderBy);
+        IOrderThen ThenBy(object orderBy);
 
         /// <summary>
         /// todo
         /// </summary>
         /// <param name="orderBy">todo</param>
         /// <returns>todo</returns>
-        IOrder ThenByDescending(object orderBy);
+        IOrderThen ThenByDescending(object orderBy);
     }
 
     /// <summary>
@@ -234,7 +367,7 @@ public static class WindowFunctionsExtensions
     /// </summary>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static IOver Over()
+    public static IFilterableOver Over()
     {
         throw new Exception();
     }

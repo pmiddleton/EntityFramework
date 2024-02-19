@@ -1661,6 +1661,10 @@ public class QuerySqlGenerator : SqlExpressionVisitor
             GenerateList(windowOverExpression.OrderingExpressions, e => Visit(e));
         }
 
+        //todo - how to deal with 
+        if (windowOverExpression.RowRangeExpression != null)
+            VisitRowRange(windowOverExpression.RowRangeExpression);
+
         _relationalCommandBuilder.Append(" )");
 
         return windowOverExpression;
@@ -1671,5 +1675,11 @@ public class QuerySqlGenerator : SqlExpressionVisitor
 
             GenerateList(partitionExpression.Partitions, e => Visit(e), sql => sql.Append(", "));
         }
+
+        void VisitRowRange(WindowRowRangeExpression rowRangeExpression)
+        {
+
+        }
     }
+
 }

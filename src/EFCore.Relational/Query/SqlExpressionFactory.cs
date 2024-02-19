@@ -769,9 +769,17 @@ public class SqlExpressionFactory : ISqlExpressionFactory
     }
 
     /// <inheritdoc />
-    public virtual WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, List<OrderingExpression> orderingExpressions)
+    public virtual WindowRowRangeExpression RowRange(WindowRowRangeExpression.RowRange rowOrRanage, SqlExpression? preceding, SqlExpression? following)
     {
-        return new WindowOverExpression(aggregateExpression, partitionExpression, orderingExpressions);
+        //do I need ApplyDefaultTypeMapping here given these should be consts?
+        return new WindowRowRangeExpression(rowOrRanage, ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+    }
+
+    /// <inheritdoc />
+    public virtual WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
+        IReadOnlyList<OrderingExpression> orderingExpressions, WindowRowRangeExpression? rowOrRangeExpression)
+    {
+        return new WindowOverExpression(aggregateExpression, partitionExpression, orderingExpressions, rowOrRangeExpression);
     }
 
     private IReadOnlyList<SqlExpression> FlattenLeastGreatest(string functionName, IReadOnlyList<SqlExpression> expressions)

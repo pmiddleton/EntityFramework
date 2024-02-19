@@ -43,11 +43,16 @@ public abstract class NorthwindOverQueryRelationalTestBase<TFixture> : QueryTest
                 //MaxDiscount5 = WindowFunctionsExtensions.Over5Debug(od, b => b.OrderBy(s => s.Discount))
 
 
-               // MaxDiscount6 = WindowFunctionsExtensions.Over().PartitionBy(od.ProductID, od.OrderID).Max(od.Discount),
+                //MaxDiscount6 = WindowFunctionsExtensions.Over().PartitionBy(od.ProductID, od.OrderID).Max(od.Discount),
 
-                MaxDiscount7 = WindowFunctionsExtensions.Over().PartitionBy(od.ProductID, od.OrderID).OrderBy(od.OrderID).ThenBy(od.ProductID).ThenBy(od.UnitPrice).Max(od.Discount),
+                //MaxDiscount7 = WindowFunctionsExtensions.Over().PartitionBy(od.ProductID, od.OrderID).OrderBy(od.OrderID).ThenBy(od.ProductID).ThenBy(od.UnitPrice).Max(od.Discount),
 
-           //     MaxDiscount8 = WindowFunctionsExtensions.Over().OrderBy(od.OrderID).Max(od.Discount),
+                //     MaxDiscount8 = WindowFunctionsExtensions.Over().OrderBy(od.OrderID).Max(od.Discount),
+
+                //MaxDiscount9 = WindowFunctionsExtensions.Over().OrderBy(od.OrderID).Rows(RowsPreceding.CurrentRow, 6).Max(od.Discount),
+
+                MaxDiscount10 = WindowFunctionsExtensions.Over().Filter(() => od.Discount == 5).OrderBy(od.OrderID).Rows(5).Max(od.Discount),
+
             }));
 
 

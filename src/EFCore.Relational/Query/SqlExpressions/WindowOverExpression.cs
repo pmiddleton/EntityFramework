@@ -28,7 +28,12 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <summary>
         /// todo
         /// </summary>
-        public List<OrderingExpression> OrderingExpressions { get; init; }
+        public IReadOnlyList<OrderingExpression> OrderingExpressions { get; init; }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        public WindowRowRangeExpression? RowRangeExpression { get; init; }
 
         /// <summary>
         /// todo
@@ -36,20 +41,24 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <param name="aggregateExpression">todo</param>
         /// <param name="partitionExpression">todo</param>
         /// <param name="orderingExpressions">todo</param>
-        public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, List<OrderingExpression> orderingExpressions)
+        /// <param name="windowRowRangeExpression">todo</param>
+        public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
+            IReadOnlyList<OrderingExpression> orderingExpressions, WindowRowRangeExpression? windowRowRangeExpression)
             : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
         {
             PartitionExpression = partitionExpression;
             AggregateExpression = aggregateExpression;
             OrderingExpressions = orderingExpressions;
+            RowRangeExpression = windowRowRangeExpression;
         }
 
         /// <inheritdoc />
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
             var aggregate = (SqlFunctionExpression)visitor.Visit(AggregateExpression);
-            var partition = PartitionExpression != null ? (WindowPartitionExpression?)visitor.Visit(PartitionExpression) : null;
+            var partition = PartitionExpression != null ? visitor.Visit(PartitionExpression) as WindowPartitionExpression : null;
             var orderBys = new List<OrderingExpression>();
+            var rowRange = visitor.Visit(RowRangeExpression) as WindowRowRangeExpression;
 
             var changed = false;
 
@@ -60,8 +69,8 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
                 changed |= newOrder != orderingExpression;
             }
 
-            return partition != PartitionExpression || aggregate != AggregateExpression || changed
-                ? new WindowOverExpression(aggregate, partition, orderBys)
+            return partition != PartitionExpression || aggregate != AggregateExpression || rowRange != RowRangeExpression || changed
+                ? new WindowOverExpression(aggregate, partition, orderBys, rowRange)
                 : this;
         }
 
