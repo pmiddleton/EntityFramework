@@ -1003,11 +1003,11 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
             var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
                 Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
 
-            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.RowRangeExpression);
+            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
         }
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOver)
                     && method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy)
-                    && methodCallExpression.Arguments[1] is NewArrayExpression)
+                    && methodCallExpression.Arguments[0] is NewArrayExpression)
         {
             if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
                 return QueryCompilationContext.NotTranslatedExpression;
@@ -1060,11 +1060,8 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
             if(following == null && arguments.Count == 2)
                 return QueryCompilationContext.NotTranslatedExpression;
 
-            wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
-                ? WindowRowRangeExpression.RowRange.Row
-                : WindowRowRangeExpression.RowRange.Range,
-                preceding,
-                following);
+            //todo - should I key off the the string rows here?  What about when someone has to override to add Groups?
+            wbe.AddFrame(method, preceding, following);
 
             return wbe;
         }

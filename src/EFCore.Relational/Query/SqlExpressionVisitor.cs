@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -58,6 +59,8 @@ public abstract class SqlExpressionVisitor : ExpressionVisitor
             JsonScalarExpression jsonScalarExpression => VisitJsonScalar(jsonScalarExpression),
             ValuesExpression valuesExpression => VisitValues(valuesExpression),
             WindowOverExpression overExpression => VisitOver(overExpression),
+            WindowPartitionExpression partitionExpression => VisitWindowPartition(partitionExpression),
+            WindowFrameExpression windowFrameExpression => VisitWindowFrame(windowFrameExpression),
             _ => base.VisitExtension(extensionExpression),
         };
 
@@ -312,4 +315,18 @@ public abstract class SqlExpressionVisitor : ExpressionVisitor
     /// <param name="windowOverExpression">todo</param>
     /// <returns>todo</returns>
     protected abstract Expression VisitOver(WindowOverExpression windowOverExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="windowFrameExpression">todo</param>
+    /// <returns>todo</returns>
+    protected abstract Expression VisitWindowFrame(WindowFrameExpression windowFrameExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="windowPartitionExpression">todo</param>
+    /// <returns>todo</returns>
+    protected abstract Expression VisitWindowPartition(WindowPartitionExpression windowPartitionExpression);
 }

@@ -526,14 +526,14 @@ public interface ISqlExpressionFactory
     /// <param name="orderingExpressions">todo</param>
     /// <param name="rowOrRangeExpression">todo</param>
     /// <returns>todo</returns>
-    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowRowRangeExpression? rowOrRangeExpression);
+    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression);
 
     /// <summary>
     /// todo
     /// </summary>
-    /// <param name="rowOrRanage">todo</param>
+    /// <param name="method">todo</param>
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    WindowRowRangeExpression RowRange(WindowRowRangeExpression.RowRange rowOrRanage, SqlExpression? preceding, SqlExpression? following);
+    WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following);
 }

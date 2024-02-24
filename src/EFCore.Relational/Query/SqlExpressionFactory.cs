@@ -769,15 +769,19 @@ public class SqlExpressionFactory : ISqlExpressionFactory
     }
 
     /// <inheritdoc />
-    public virtual WindowRowRangeExpression RowRange(WindowRowRangeExpression.RowRange rowOrRanage, SqlExpression? preceding, SqlExpression? following)
+    public virtual WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following)
     {
-        //do I need ApplyDefaultTypeMapping here given these should be consts?
-        return new WindowRowRangeExpression(rowOrRanage, ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+        if (string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0)
+            return new WindowFrameRowExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+        else if (string.Compare(method.Name, "range", StringComparison.OrdinalIgnoreCase) == 0)
+            return new WindowFrameRangeExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+        else
+            throw new Exception("unsupported frame method");
     }
 
     /// <inheritdoc />
     public virtual WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
-        IReadOnlyList<OrderingExpression> orderingExpressions, WindowRowRangeExpression? rowOrRangeExpression)
+        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression)
     {
         return new WindowOverExpression(aggregateExpression, partitionExpression, orderingExpressions, rowOrRangeExpression);
     }

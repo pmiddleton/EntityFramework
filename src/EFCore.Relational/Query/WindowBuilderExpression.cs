@@ -17,7 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         private readonly List<OrderingExpression> _orderingExpressions = new List<OrderingExpression>();
         private WindowPartitionExpression? _partitionExpression;
-        private WindowRowRangeExpression? _rowRangeExpression;
+        private WindowFrameExpression? _frameExpression;
 
         public WindowBuilderExpression(ISqlExpressionFactory sqlExpressionFactory)
         {
@@ -26,12 +26,10 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         public IReadOnlyList<OrderingExpression> OrderingExpressions => _orderingExpressions;
         public WindowPartitionExpression? PartitionExpression => _partitionExpression;
-        public WindowRowRangeExpression? RowRangeExpression => _rowRangeExpression;
+        public WindowFrameExpression? FrameExpression => _frameExpression;
 
-        public void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
-        public void AddPartitionBy(SqlExpression[] partitions) => _partitionExpression = _sqlExpressionFactory.PartitionBy(partitions);
-
-        public void AddRowOrRange(WindowRowRangeExpression.RowRange rowOrRange, SqlExpression? preceding, SqlExpression? following)
-            => _rowRangeExpression = new WindowRowRangeExpression(rowOrRange, preceding, following);
+        public virtual void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
+        public virtual void AddPartitionBy(SqlExpression[] partitions) => _partitionExpression = _sqlExpressionFactory.PartitionBy(partitions);
+        public virtual void AddFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following) => _frameExpression = _sqlExpressionFactory.WindowFrame(method, preceding, following);
     }
 }

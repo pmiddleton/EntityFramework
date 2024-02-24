@@ -33,7 +33,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <summary>
         /// todo
         /// </summary>
-        public WindowRowRangeExpression? RowRangeExpression { get; init; }
+        public WindowFrameExpression? RowRangeExpression { get; init; }
 
         /// <summary>
         /// todo
@@ -43,7 +43,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <param name="orderingExpressions">todo</param>
         /// <param name="windowRowRangeExpression">todo</param>
         public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
-            IReadOnlyList<OrderingExpression> orderingExpressions, WindowRowRangeExpression? windowRowRangeExpression)
+            IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowRowRangeExpression)
             : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
         {
             PartitionExpression = partitionExpression;
@@ -58,7 +58,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
             var aggregate = (SqlFunctionExpression)visitor.Visit(AggregateExpression);
             var partition = PartitionExpression != null ? visitor.Visit(PartitionExpression) as WindowPartitionExpression : null;
             var orderBys = new List<OrderingExpression>();
-            var rowRange = visitor.Visit(RowRangeExpression) as WindowRowRangeExpression;
+            var rowRange = visitor.Visit(RowRangeExpression) as WindowFrameExpression;
 
             var changed = false;
 
