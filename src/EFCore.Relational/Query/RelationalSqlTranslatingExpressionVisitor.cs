@@ -1003,9 +1003,6 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
                 aggregateParams[i-1] = translatedValue!;
             }
 
-            //var aggFunction = Dependencies.AggregateMethodCallTranslatorProvider.Translate(
-            //  _model, method, aggregateParams, _queryCompilationContext.Logger);
-
             var aggTranslation = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
 
             if (aggTranslation == null)
@@ -1014,18 +1011,6 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
             var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
 
             return _sqlExpressionFactory.Over(aggTranslation, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
-
-            /*var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
-
-            //this is the call chain
-            //todo - won't always be a WindowPartitionExpression??
-            var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
-
-            //temp hack - need to do what the other aggregates do with the factory so method names can change
-            var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
-                Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
-
-            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);*/
         }
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOver)
                     && method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy)
