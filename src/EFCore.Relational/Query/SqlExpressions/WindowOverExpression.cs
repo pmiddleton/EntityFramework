@@ -23,7 +23,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <summary>
         /// todo
         /// </summary>
-        public SqlFunctionExpression AggregateExpression { get; init; }
+        public SqlExpression AggregateExpression { get; init; }
 
         /// <summary>
         /// todo
@@ -42,7 +42,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions
         /// <param name="partitionExpression">todo</param>
         /// <param name="orderingExpressions">todo</param>
         /// <param name="windowRowRangeExpression">todo</param>
-        public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
+        public WindowOverExpression(SqlExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
             IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowRowRangeExpression)
             : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
         {

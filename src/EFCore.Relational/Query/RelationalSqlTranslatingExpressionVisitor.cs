@@ -985,15 +985,37 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
         {
             return Dependencies.WindowBuilderExpressionFactory.CreateWindowBuilder();
         }
-        else if (method.DeclaringType == typeof(WindowFunctionsExtensions)
-                    && arguments.Count > 1
-                    && typeof(WindowFunctionsExtensions.IWindowFinal).IsAssignableFrom(arguments[0].Type))
+        else if (typeof(WindowFunctionsExtensions.IWindowFinal).IsAssignableFrom(arguments[0].Type))
         {
             //create object to deal with all of these else/if cases for windowing functions?
             //this is the aggregate.  Do we need something better than WindowFunctionsExtensions - how will custom providers add specific aggs
             //todo - how many args could there be?  might have to loop this.  hardcode for max for now
+          
+            var aggregateParams = new SqlExpression[arguments.Count - 1];
 
-            var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
+            for (var i = 1; i < arguments.Count; i++)
+            {
+                if (TranslationFailed(arguments[i], Visit(RemoveObjectConvert(arguments[i])), out var translatedValue))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                aggregateParams[i-1] = translatedValue!;
+            }
+
+            //var aggFunction = Dependencies.AggregateMethodCallTranslatorProvider.Translate(
+            //  _model, method, aggregateParams, _queryCompilationContext.Logger);
+
+            var aggTranslation = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
+
+            if (aggTranslation == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
+
+            return _sqlExpressionFactory.Over(aggTranslation, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
+
+            /*var aggColumn = (SqlExpression)Visit(RemoveObjectConvert(arguments[1]));
 
             //this is the call chain
             //todo - won't always be a WindowPartitionExpression??
@@ -1003,7 +1025,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
             var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
                 Dependencies.TypeMappingSource.FindMapping(aggColumn.Type, Dependencies.Model));
 
-            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
+            return _sqlExpressionFactory.Over(aggFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);*/
         }
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOver)
                     && method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy)

@@ -1647,7 +1647,7 @@ public class QuerySqlGenerator : SqlExpressionVisitor
     /// <inheritdoc />
     protected override Expression VisitOver(WindowOverExpression windowOverExpression)
     {
-        VisitSqlFunction(windowOverExpression.AggregateExpression);
+        Visit(windowOverExpression.AggregateExpression);
 
         _relationalCommandBuilder.Append(" OVER (");
 

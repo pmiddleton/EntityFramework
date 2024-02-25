@@ -780,7 +780,7 @@ public class SqlExpressionFactory : ISqlExpressionFactory
     }
 
     /// <inheritdoc />
-    public virtual WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
+    public virtual WindowOverExpression Over(SqlExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
         IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression)
     {
         return new WindowOverExpression(aggregateExpression, partitionExpression, orderingExpressions, rowOrRangeExpression);

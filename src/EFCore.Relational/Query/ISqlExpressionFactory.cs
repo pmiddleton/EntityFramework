@@ -526,7 +526,7 @@ public interface ISqlExpressionFactory
     /// <param name="orderingExpressions">todo</param>
     /// <param name="rowOrRangeExpression">todo</param>
     /// <returns>todo</returns>
-    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression);
+    WindowOverExpression Over(SqlExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression);
 
     /// <summary>
     /// todo

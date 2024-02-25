@@ -67,6 +67,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             { typeof(IRelationalSqlTranslatingExpressionVisitorFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IAggregateMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
+            { typeof(IWindowAggregateMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IMemberTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(ISqlExpressionFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IRelationalQueryStringFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
@@ -178,6 +179,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
         TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, RelationalQueryableMethodTranslatingExpressionVisitorFactory>();
         TryAdd<IMethodCallTranslatorProvider, RelationalMethodCallTranslatorProvider>();
         TryAdd<IAggregateMethodCallTranslatorProvider, RelationalAggregateMethodCallTranslatorProvider>();
+        TryAdd<IWindowAggregateMethodCallTranslatorProvider, RelationalWindowAggregateMethodCallTranslatorProvider>();
         TryAdd<IMemberTranslatorProvider, RelationalMemberTranslatorProvider>();
         TryAdd<IQueryTranslationPostprocessorFactory, RelationalQueryTranslationPostprocessorFactory>();
         TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, RelationalSqlTranslatingExpressionVisitorFactory>();
@@ -211,6 +213,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             .AddDependencyScoped<RelationalCompiledQueryCacheKeyGeneratorDependencies>()
             .AddDependencyScoped<RelationalMethodCallTranslatorProviderDependencies>()
             .AddDependencyScoped<RelationalAggregateMethodCallTranslatorProviderDependencies>()
+            .AddDependencyScoped<RelationalWindowAggregateMethodCallTranslatorProviderDependencies>()
             .AddDependencyScoped<RelationalMemberTranslatorProviderDependencies>()
             .AddDependencyScoped<SqlExpressionFactoryDependencies>()
             .AddDependencyScoped<RelationalSqlTranslatingExpressionVisitorDependencies>()
