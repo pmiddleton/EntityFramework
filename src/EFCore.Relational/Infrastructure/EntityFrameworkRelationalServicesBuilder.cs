@@ -94,7 +94,8 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
                 typeof(IAggregateMethodCallTranslatorPlugin),
                 new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true)
             },
-            { typeof(IMemberTranslatorPlugin), new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true) }
+            { typeof(IMemberTranslatorPlugin), new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true) },
+            { typeof(IWindowBuilderExpressionFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) }
         };
 
     /// <summary>
@@ -185,6 +186,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
         TryAdd<IRelationalParameterBasedSqlProcessorFactory, RelationalParameterBasedSqlProcessorFactory>();
         TryAdd<IRelationalQueryStringFactory, RelationalQueryStringFactory>();
         TryAdd<IQueryCompilationContextFactory, RelationalQueryCompilationContextFactory>();
+        TryAdd<IWindowBuilderExpressionFactory, WindowBuilderExpressionFactory>();
 
         ServiceCollectionMap.GetInfrastructure()
             .AddDependencySingleton<RelationalSqlGenerationHelperDependencies>()
@@ -220,7 +222,8 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             .AddDependencyScoped<RelationalConnectionDependencies>()
             .AddDependencyScoped<RelationalDatabaseDependencies>()
             .AddDependencyScoped<RelationalQueryContextDependencies>()
-            .AddDependencyScoped<RelationalQueryCompilationContextDependencies>();
+            .AddDependencyScoped<RelationalQueryCompilationContextDependencies>()
+            .AddDependencyScoped<WindowBuilderExpressionFactory>();
 
         return base.TryAddCoreServices();
     }

@@ -51,7 +51,8 @@ public sealed record RelationalSqlTranslatingExpressionVisitorDependencies
         IRelationalTypeMappingSource typeMappingSource,
         IMemberTranslatorProvider memberTranslatorProvider,
         IMethodCallTranslatorProvider methodCallTranslatorProvider,
-        IAggregateMethodCallTranslatorProvider aggregateMethodCallTranslatorProvider)
+        IAggregateMethodCallTranslatorProvider aggregateMethodCallTranslatorProvider,
+        IWindowBuilderExpressionFactory windowBuilderExpressionFactory)
     {
         SqlExpressionFactory = sqlExpressionFactory;
         Model = model;
@@ -59,6 +60,7 @@ public sealed record RelationalSqlTranslatingExpressionVisitorDependencies
         MemberTranslatorProvider = memberTranslatorProvider;
         MethodCallTranslatorProvider = methodCallTranslatorProvider;
         AggregateMethodCallTranslatorProvider = aggregateMethodCallTranslatorProvider;
+        WindowBuilderExpressionFactory = windowBuilderExpressionFactory;
     }
 
     /// <summary>
@@ -90,4 +92,9 @@ public sealed record RelationalSqlTranslatingExpressionVisitorDependencies
     ///     The aggregate method-call translation provider.
     /// </summary>
     public IAggregateMethodCallTranslatorProvider AggregateMethodCallTranslatorProvider { get; }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public IWindowBuilderExpressionFactory WindowBuilderExpressionFactory { get; }
 }

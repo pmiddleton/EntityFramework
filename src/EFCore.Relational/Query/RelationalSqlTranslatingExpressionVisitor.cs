@@ -972,7 +972,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
              return wbe;
          }*/
-        else if (method.DeclaringType == typeof(OverExtensions) && method.Name == nameof(OverExtensions.Filter))
+        /*else if (method.DeclaringType == typeof(OverExtensions) && method.Name == nameof(OverExtensions.Filter))
         {
             var ugh = arguments[1].UnwrapLambdaFromQuote();
             
@@ -980,10 +980,10 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             //can I have the results of this and just shove it in a where clause?
             throw new NotFiniteNumberException();
-        }
+        }*/
         else if(method.DeclaringType == typeof(WindowFunctionsExtensions) && method.Name == nameof(WindowFunctionsExtensions.Over))
         {
-            return new WindowBuilderExpression(_sqlExpressionFactory);
+            return Dependencies.WindowBuilderExpressionFactory.CreateWindowBuilder();
         }
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions)
                     && arguments.Count > 1
@@ -997,7 +997,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             //this is the call chain
             //todo - won't always be a WindowPartitionExpression??
-            var wbe = (WindowBuilderExpression)Visit(arguments[0]);
+            var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
 
             //temp hack - need to do what the other aggregates do with the factory so method names can change
             var aggFunction = _sqlExpressionFactory.Function(method.Name, new[] { aggColumn }, true, new[] { false }, aggColumn.Type,
@@ -1009,7 +1009,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
                     && method.Name == nameof(WindowFunctionsExtensions.IOver.PartitionBy)
                     && methodCallExpression.Arguments[0] is NewArrayExpression)
         {
-            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
                 return QueryCompilationContext.NotTranslatedExpression;
 
             var partitions = (NewArrayExpression)arguments[0] ;
@@ -1032,7 +1032,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderRoot)
             || method.DeclaringType == typeof(WindowFunctionsExtensions.IOrderThen))
         {
-            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
                 return QueryCompilationContext.NotTranslatedExpression;
 
             if (TranslationFailed(arguments[0], Visit(RemoveObjectConvert(arguments[0])), out var sqlOject))
@@ -1047,7 +1047,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
         }
         else if (method.DeclaringType == typeof(WindowFunctionsExtensions.IFrame))
         {
-            if (!(Visit(methodCallExpression.Object) is WindowBuilderExpression wbe))
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
                 return QueryCompilationContext.NotTranslatedExpression;
 
             var preceding = Visit(arguments[0]) as SqlConstantExpression;

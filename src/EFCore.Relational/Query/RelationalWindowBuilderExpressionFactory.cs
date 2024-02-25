@@ -11,7 +11,10 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFramewo
 
 namespace Microsoft.EntityFrameworkCore.Query
 {
-    internal class WindowBuilderExpression : Expression
+    /// <summary>
+    /// todo
+    /// </summary>
+    public class RelationalWindowBuilderExpression : Expression
     {
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
 
@@ -19,17 +22,43 @@ namespace Microsoft.EntityFrameworkCore.Query
         private WindowPartitionExpression? _partitionExpression;
         private WindowFrameExpression? _frameExpression;
 
-        public WindowBuilderExpression(ISqlExpressionFactory sqlExpressionFactory)
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="sqlExpressionFactory">todo</param>
+        public RelationalWindowBuilderExpression(ISqlExpressionFactory sqlExpressionFactory)
         {
             _sqlExpressionFactory = sqlExpressionFactory;
         }
 
+        /// <summary>
+        /// todo
+        /// </summary>
         public IReadOnlyList<OrderingExpression> OrderingExpressions => _orderingExpressions;
+
+        /// <summary>
+        /// todo
+        /// </summary>
         public WindowPartitionExpression? PartitionExpression => _partitionExpression;
+
+        /// <summary>
+        /// todo
+        /// </summary>
         public WindowFrameExpression? FrameExpression => _frameExpression;
 
+        /// <summary>
+        /// todo
+        /// </summary>
         public virtual void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
+
+        /// <summary>
+        /// todo
+        /// </summary>
         public virtual void AddPartitionBy(SqlExpression[] partitions) => _partitionExpression = _sqlExpressionFactory.PartitionBy(partitions);
+
+        /// <summary>
+        /// todo
+        /// </summary>
         public virtual void AddFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following) => _frameExpression = _sqlExpressionFactory.WindowFrame(method, preceding, following);
     }
 }
