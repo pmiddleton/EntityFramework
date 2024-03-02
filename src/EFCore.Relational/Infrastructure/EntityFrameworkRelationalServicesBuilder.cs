@@ -68,6 +68,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             { typeof(IRelationalSqlTranslatingExpressionVisitorFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IAggregateMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
+            { typeof(IWindowAggregateMethodCallTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IMemberTranslatorProvider), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(ISqlExpressionFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
             { typeof(IRelationalQueryStringFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) },
@@ -95,7 +96,8 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
                 typeof(IAggregateMethodCallTranslatorPlugin),
                 new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true)
             },
-            { typeof(IMemberTranslatorPlugin), new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true) }
+            { typeof(IMemberTranslatorPlugin), new ServiceCharacteristics(ServiceLifetime.Scoped, multipleRegistrations: true) },
+            { typeof(IWindowBuilderExpressionFactory), new ServiceCharacteristics(ServiceLifetime.Scoped) }
         };
 
     /// <summary>
@@ -179,6 +181,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
         TryAdd<IQueryableMethodTranslatingExpressionVisitorFactory, RelationalQueryableMethodTranslatingExpressionVisitorFactory>();
         TryAdd<IMethodCallTranslatorProvider, RelationalMethodCallTranslatorProvider>();
         TryAdd<IAggregateMethodCallTranslatorProvider, RelationalAggregateMethodCallTranslatorProvider>();
+        TryAdd<IWindowAggregateMethodCallTranslatorProvider, RelationalWindowAggregateMethodCallTranslatorProvider>();
         TryAdd<IMemberTranslatorProvider, RelationalMemberTranslatorProvider>();
         TryAdd<IQueryTranslationPostprocessorFactory, RelationalQueryTranslationPostprocessorFactory>();
         TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, RelationalSqlTranslatingExpressionVisitorFactory>();
@@ -189,6 +192,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
         TryAdd<IQueryCompilationContextFactory, RelationalQueryCompilationContextFactory>();
         TryAdd<IAdHocMapper, RelationalAdHocMapper>();
         TryAdd<ISqlAliasManagerFactory, SqlAliasManagerFactory>();
+        TryAdd<IWindowBuilderExpressionFactory, WindowBuilderExpressionFactory>();
 
         ServiceCollectionMap.GetInfrastructure()
             .AddDependencySingleton<RelationalSqlGenerationHelperDependencies>()
@@ -213,6 +217,7 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             .AddDependencyScoped<RelationalCompiledQueryCacheKeyGeneratorDependencies>()
             .AddDependencyScoped<RelationalMethodCallTranslatorProviderDependencies>()
             .AddDependencyScoped<RelationalAggregateMethodCallTranslatorProviderDependencies>()
+            .AddDependencyScoped<RelationalWindowAggregateMethodCallTranslatorProviderDependencies>()
             .AddDependencyScoped<RelationalMemberTranslatorProviderDependencies>()
             .AddDependencyScoped<SqlExpressionFactoryDependencies>()
             .AddDependencyScoped<RelationalSqlTranslatingExpressionVisitorDependencies>()
@@ -225,7 +230,8 @@ public class EntityFrameworkRelationalServicesBuilder : EntityFrameworkServicesB
             .AddDependencyScoped<RelationalDatabaseDependencies>()
             .AddDependencyScoped<RelationalQueryContextDependencies>()
             .AddDependencyScoped<RelationalQueryCompilationContextDependencies>()
-            .AddDependencyScoped<RelationalAdHocMapperDependencies>();
+            .AddDependencyScoped<RelationalAdHocMapperDependencies>()
+            .AddDependencyScoped<WindowBuilderExpressionFactory>();
 
         return base.TryAddCoreServices();
     }

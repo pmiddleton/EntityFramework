@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -486,4 +487,30 @@ public interface ISqlExpressionFactory
         IReadOnlyList<SqlExpression> expressions,
         Type resultType,
         [NotNullWhen(true)] out SqlExpression? greatestExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="partitions">todo</param>
+    /// <returns>todo</returns>
+    WindowPartitionExpression PartitionBy(IEnumerable<SqlExpression> partitions);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="aggregateExpression">todo</param>
+    /// <param name="partitionExpression">todo</param>
+    /// <param name="orderingExpressions">todo</param>
+    /// <param name="rowOrRangeExpression">todo</param>
+    /// <returns>todo</returns>
+    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="method">todo</param>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    /// <returns>todo</returns>
+    WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following);
 }

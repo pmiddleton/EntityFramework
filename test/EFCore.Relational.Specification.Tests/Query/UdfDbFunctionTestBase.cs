@@ -1113,6 +1113,15 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
                     where c.Id == 1
                     select new { c.LastName, OrderCount = context.CustomerOrderCountInstance(c.Id) }).Single();
 
+
+       /* var cust = (context.Customers.Select(c =>
+                    new
+                    {
+                        c.LastName,
+                        OrderCount = context.CustomerOrderCountInstance(c.Id)
+                    })).Single();*/
+
+
         Assert.Equal("One", cust.LastName);
         Assert.Equal(3, cust.OrderCount);
     }
@@ -1150,12 +1159,15 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
         using var context = CreateContext();
         var customerId = 3;
         var starCount = 3;
+        var starCount2 = 8;
 
         var cust = (from c in context.Customers
                     where c.Id == customerId
                     select new
                     {
-                        c.LastName, OrderCount = context.StarValueInstance(starCount, context.CustomerOrderCountInstance(customerId))
+                        c.LastName,
+                        OrderCount = context.StarValueInstance(starCount, context.CustomerOrderCountInstance(customerId)),
+                        OrderCount2 = context.StarValueInstance(starCount2, context.CustomerOrderCountInstance(customerId))
                     }).Single();
 
         Assert.Equal("Three", cust.LastName);

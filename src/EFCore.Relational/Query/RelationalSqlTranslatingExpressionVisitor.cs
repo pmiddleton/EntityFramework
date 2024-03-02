@@ -3,8 +3,10 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions.Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -947,6 +949,131 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             throw new UnreachableException();
         }
+        /* else if(method.DeclaringType == typeof(FrameExtensions))
+         {
+             if (!(Visit(arguments[0]) is WindowBuilderExpression wbe))
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             var preceding = Visit(arguments[1]) as SqlConstantExpression;
+
+             if (preceding == null)
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             var following = arguments.Count == 3 ? Visit(arguments[2]) as SqlConstantExpression : null;
+
+             if (following == null && arguments.Count == 3)
+                 return QueryCompilationContext.NotTranslatedExpression;
+
+             wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
+                 ? WindowRowRangeExpression.RowRange.Row
+                 : WindowRowRangeExpression.RowRange.Range,
+                 preceding,
+                 following);
+
+             return wbe;
+         }*/
+        /*else if (method.DeclaringType == typeof(OverExtensions) && method.Name == nameof(OverExtensions.Filter))
+        {
+            var ugh = arguments[1].UnwrapLambdaFromQuote();
+            
+            var temp = Visit(ugh.Body);
+
+            //can I have the results of this and just shove it in a where clause?
+            throw new NotFiniteNumberException();
+        }*/
+        else if(method.DeclaringType == typeof(WindowFunctionsExtensions) && method.Name == nameof(WindowFunctionsExtensions.Over))
+        {
+            //SqlExpression constructor requires expression return type and type mapping.  Thus we can't just create an empty over clause here and fill
+            //it in as we pass it back up the call chain
+            return Dependencies.WindowBuilderExpressionFactory.CreateWindowBuilder();
+        }
+        else if (arguments.Count > 0 && typeof(IWindowFinal).IsAssignableFrom(arguments[0].Type))
+        {
+            //create object to deal with all of these else/if cases for windowing functions?
+            //this is the aggregate.  Do we need something better than WindowFunctionsExtensions - how will custom providers add specific aggs
+            //todo - how many args could there be?  might have to loop this.  hardcode for max for now
+          
+            var aggregateParams = new SqlExpression[arguments.Count - 1];
+
+            for (var i = 1; i < arguments.Count; i++)
+            {
+                if (TranslationFailed(arguments[i], Visit(RemoveObjectConvert(arguments[i])), out var translatedValue))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                aggregateParams[i-1] = translatedValue!;
+            }
+
+            var aggTranslation = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
+
+            if (aggTranslation == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
+
+            return _sqlExpressionFactory.Over(aggTranslation, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
+        }
+        else if (method.DeclaringType == typeof(IOver)
+                    && method.Name == nameof(IOver.PartitionBy)
+                    /*&& methodCallExpression.Arguments[0] is NewArrayExpression*/)
+        {
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var partitions = (NewArrayExpression)arguments[0] ;
+            var translatedPartitions = new SqlExpression[partitions.Expressions.Count];
+
+            for (var i = 0; i < partitions.Expressions.Count; i++)
+            {
+                if (TranslationFailed(partitions.Expressions[i], Visit(partitions.Expressions[i]), out var translatedValue))
+                {
+                    return QueryCompilationContext.NotTranslatedExpression;
+                }
+
+                translatedPartitions[i] = translatedValue!;
+            }
+
+            wbe.AddPartitionBy(translatedPartitions);
+
+            return wbe!;
+        }
+        else if (method.DeclaringType == typeof(IOrderRoot)
+                    || method.DeclaringType == typeof(IOrderThen))
+        {
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            if (TranslationFailed(arguments[0], Visit(RemoveObjectConvert(arguments[0])), out var sqlOject))
+            {
+                return QueryCompilationContext.NotTranslatedExpression;
+            }
+
+            wbe.AddOrdering(sqlOject!, method.Name == nameof(IOrderRoot.OrderBy)
+                                        || method.Name == nameof(IOrderThen.ThenBy));
+
+            return wbe!;
+        }
+        else if (method.DeclaringType == typeof(IFrame))
+        {
+            if (!(Visit(methodCallExpression.Object) is RelationalWindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var preceding = Visit(arguments[0]) as SqlConstantExpression;
+
+            if(preceding == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var following = arguments.Count == 2 ? Visit(arguments[1]) as SqlConstantExpression : null;
+
+            if(following == null && arguments.Count == 2)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            //todo - should I key off the the string rows here?  What about when someone has to override to add Groups?
+            wbe.AddFrame(method, preceding, following);
+
+            return wbe;
+        }
         else
         {
             if (method.IsStatic
@@ -993,6 +1120,9 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
                 scalarArguments.Add(sqlArgument!);
             }
         }
+
+        //look for over and convert to overExpression - then call Visit on children manuall?
+        //or create a windowing function visitor and have it process the rest of the tree?  Can you do that?
 
         var translation = enumerableExpression != null
             ? TranslateAggregateMethod(enumerableExpression, method, scalarArguments)
