@@ -1113,15 +1113,6 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
                     where c.Id == 1
                     select new { c.LastName, OrderCount = context.CustomerOrderCountInstance(c.Id) }).Single();
 
-
-       /* var cust = (context.Customers.Select(c =>
-                    new
-                    {
-                        c.LastName,
-                        OrderCount = context.CustomerOrderCountInstance(c.Id)
-                    })).Single();*/
-
-
         Assert.Equal("One", cust.LastName);
         Assert.Equal(3, cust.OrderCount);
     }
@@ -1159,15 +1150,13 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
         using var context = CreateContext();
         var customerId = 3;
         var starCount = 3;
-        var starCount2 = 8;
 
         var cust = (from c in context.Customers
                     where c.Id == customerId
                     select new
                     {
                         c.LastName,
-                        OrderCount = context.StarValueInstance(starCount, context.CustomerOrderCountInstance(customerId)),
-                        OrderCount2 = context.StarValueInstance(starCount2, context.CustomerOrderCountInstance(customerId))
+                        OrderCount = context.StarValueInstance(starCount, context.CustomerOrderCountInstance(customerId))
                     }).Single();
 
         Assert.Equal("Three", cust.LastName);
@@ -1601,7 +1590,8 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
                 () => (from c in context.Customers
                        select new
                        {
-                           c.Id, Prods = context.GetTopTwoSellingProducts().ToList(),
+                           c.Id,
+                           Prods = context.GetTopTwoSellingProducts().ToList(),
                        }).ToList()).Message;
 
             Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);
@@ -1616,7 +1606,8 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
             var query = (from c in context.Customers
                          select new
                          {
-                             c.Id, Prods = context.GetTopTwoSellingProducts().Distinct().ToList(),
+                             c.Id,
+                             Prods = context.GetTopTwoSellingProducts().Distinct().ToList(),
                          }).ToList();
         }
     }
@@ -1743,7 +1734,8 @@ public abstract class UdfDbFunctionTestBase<TFixture> : IClassFixture<TFixture>
                 () => (from c in context.Customers
                        select new
                        {
-                           c.Id, Prods = context.GetTopTwoSellingProducts().Select(p => p.ProductId).ToList(),
+                           c.Id,
+                           Prods = context.GetTopTwoSellingProducts().Select(p => p.ProductId).ToList(),
                        }).ToList()).Message;
 
             Assert.Equal(RelationalStrings.InsufficientInformationToIdentifyElementOfCollectionJoin, message);

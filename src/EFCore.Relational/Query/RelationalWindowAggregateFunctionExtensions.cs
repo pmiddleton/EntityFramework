@@ -18,11 +18,22 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// todo
         /// </summary>
         /// <typeparam name="TSource">todo</typeparam>
-        /// <param name="partition">todo</param>
+        /// <param name="final">todo</param>
         /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
-        public static TSource? Max<TSource>(this IWindowFinal partition, TSource source)
+        public static TSource? Average<TSource>(this IWindowFinal final, TSource source)
+        {
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static int? Count(this IWindowFinal final)
         {
             throw new Exception();
         }
@@ -31,22 +42,94 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// todo
         /// </summary>
         /// <typeparam name="TSource">todo</typeparam>
-        /// <param name="partition">todo</param>
+        /// <param name="final">todo</param>
         /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
-        public static TSource? Min<TSource>(this IWindowFinal partition, TSource source)
+        public static int? Count<TSource>(this IWindowFinal final, TSource source)
         {
+            throw new Exception();
+        }
+
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static long DenseRank(this IOrderThen final)
+        {
+            throw new Exception();
+        }
+
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource FirstValue<TSource>(this IOrderThen final, TSource source)
+        {
+            //todo - how do we force this to include an order by?  
             throw new Exception();
         }
 
         /// <summary>
         /// todo
         /// </summary>
-        /// <param name="partition">todo</param>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
-        public static int? Count(this IWindowFinal partition)
+        public static TSource FirstValue<TSource>(this IFrameResults final, TSource source)
+        {
+            //todo - how do we force this to include an order by?  
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource LastValue<TSource>(this IOrderThen final, TSource source)
+        {
+            //todo - how do we force this to include an order by?  
+            throw new Exception();
+        }
+
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource LastValue<TSource>(this IFrameResults final, TSource source)
+        {
+            //todo - how do we force this to include an order by?  
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource? Max<TSource>(this IWindowFinal final, TSource source)
         {
             throw new Exception();
         }
@@ -55,11 +138,11 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// todo
         /// </summary>
         /// <typeparam name="TSource">todo</typeparam>
-        /// <param name="partition">todo</param>
+        /// <param name="final">todo</param>
         /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
-        public static int? Count<TSource>(this IWindowFinal partition, TSource source)
+        public static TSource? Min<TSource>(this IWindowFinal final, TSource source)
         {
             throw new Exception();
         }
@@ -67,12 +150,33 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <summary>
         /// todo
         /// </summary>
-        /// <typeparam name="TSource">todo</typeparam>
-        /// <param name="partition">todo</param>
-        /// <param name="source">todo</param>
+        /// <param name="final">todo</param>
+        /// <param name="numberOfGroups">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
-        public static TSource? Average<TSource>(this IWindowFinal partition, TSource source)
+        public static long NTile(this IOrderThen final, int numberOfGroups)
+        {
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static long Rank(this IOrderThen final)
+        {
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static long RowNumber(this IOrderThen final)
         {
             throw new Exception();
         }

@@ -985,6 +985,8 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
         {
             //SqlExpression constructor requires expression return type and type mapping.  Thus we can't just create an empty over clause here and fill
             //it in as we pass it back up the call chain
+
+            //todo - could we put in a temp type of object into windowoverexpression and pass that up the chain and have it overridden when we assign the windowing Function?
             return Dependencies.WindowBuilderExpressionFactory.CreateWindowBuilder();
         }
         else if (arguments.Count > 0 && typeof(IWindowFinal).IsAssignableFrom(arguments[0].Type))
@@ -1005,14 +1007,14 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
                 aggregateParams[i-1] = translatedValue!;
             }
 
-            var aggTranslation = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
+            var windowingFunction = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
 
-            if (aggTranslation == null)
+            if (windowingFunction == null)
                 return QueryCompilationContext.NotTranslatedExpression;
 
             var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
 
-            return _sqlExpressionFactory.Over(aggTranslation, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
+            return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
         }
         else if (method.DeclaringType == typeof(IOver)
                     && method.Name == nameof(IOver.PartitionBy)

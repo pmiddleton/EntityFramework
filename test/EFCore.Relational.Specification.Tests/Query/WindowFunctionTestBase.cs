@@ -99,7 +99,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             {
                 EmployeeId = 3,
                 Name = "Emperor Palpatine",
-                Salary = 1000000.0m,
+                Salary = 1000000.53m,
                 WorkExperience = 20,
                 DepartmentName = "Corporate"
             };
@@ -126,7 +126,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             {
                 EmployeeId = 6,
                 Name = "Han Solo",
-                Salary = 350000.0m,
+                Salary = 350000.24m,
                 WorkExperience = 8,
                 DepartmentName = "Sales"
             };
@@ -140,7 +140,16 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
                 DepartmentName = "Sales"
             };
 
-            ctx.Employees.AddRange(emp1, emp2, emp3, emp4, emp5, emp6, emp7);
+            var emp8 = new Employee
+            {
+                EmployeeId = 5,
+                Name = "Commander Cody",
+                Salary = 25000.12m,
+                WorkExperience = 4,
+                DepartmentName = "Security"
+            };
+
+            ctx.Employees.AddRange(emp1, emp2, emp3, emp4, emp5, emp6, emp7, emp8);
 
             var nullEmp1 = new NullTestEmployee
             {
@@ -151,7 +160,16 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
                 DepartmentName = "Security"
             };
 
-            ctx.NullTestEmployees.AddRange(nullEmp1);
+            var nullEmp2 = new NullTestEmployee
+            {
+                EmployeeId = 2,
+                Name = "Super Battle Droid",
+                Salary = null,
+                WorkExperience = 2,
+                DepartmentName = "Security"
+            };
+
+            ctx.NullTestEmployees.AddRange(nullEmp1, nullEmp2);
 
             context.SaveChanges();
         }
@@ -161,7 +179,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     #region Tests
 
-    #region Aggregates
+    #region Window Functions
 
     [ConditionalFact]
     public virtual void Max_Basic()
@@ -175,7 +193,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MaxSalary = EF.Functions.Over().Max(e.Salary)
         }).ToList();
 
-        Assert.Equal(7, results.Count);
+        Assert.Equal(8, results.Count);
         Assert.Equal(1750000.0m, results[0].MaxSalary);
     }
 
@@ -191,7 +209,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MaxSalary = EF.Functions.Over().Max(e.Salary)
         }).ToList();
 
-        Assert.Equal(1, results.Count);
+        Assert.Equal(2, results.Count);
         Assert.Null(results[0].MaxSalary);
     }
 
@@ -207,8 +225,8 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MinSalary = EF.Functions.Over().Min(e.Salary)
         }).ToList();
 
-        Assert.Equal(7, results.Count);
-        Assert.Equal(50000.00m, results[0].MinSalary);
+        Assert.Equal(8, results.Count);
+        Assert.Equal(25000.12m, results[0].MinSalary);
     }
 
     [ConditionalFact]
@@ -223,7 +241,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MinSalary = EF.Functions.Over().Min(e.Salary)
         }).ToList();
 
-        Assert.Equal(1, results.Count);
+        Assert.Equal(2, results.Count);
         Assert.Null(results[0].MinSalary);
     }
 
@@ -239,8 +257,8 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             Count = EF.Functions.Over().Count()
         }).ToList();
 
-        Assert.Equal(7, results.Count);
-        Assert.Equal(7, results[0].Count);
+        Assert.Equal(8, results.Count);
+        Assert.Equal(8, results[0].Count);
     }
 
     [ConditionalFact]
@@ -255,8 +273,289 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             Count = EF.Functions.Over().Count(e.Id)
         }).ToList();
 
-        Assert.Equal(7, results.Count);
-        Assert.Equal(7, results[0].Count);
+        Assert.Equal(8, results.Count);
+        Assert.Equal(8, results[0].Count);
+    }
+
+    [ConditionalFact]
+    public virtual void RowNumber_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            RowNumber = EF.Functions.Over().OrderBy(e.Name).RowNumber()
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        for (int i = 0; i < results.Count; i++)
+        {
+            Assert.Equal(i + 1, results[i].RowNumber);
+        }
+    }
+
+    [ConditionalFact]
+    public virtual void First_Value_OderByEnd_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            FirstValue = EF.Functions.Over().OrderBy(e.Salary).FirstValue(e.Name)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal("Commander Cody", results[0].FirstValue);
+    }
+
+    [ConditionalFact]
+    public virtual void First_Value_FrameEnd_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            FirstValue = EF.Functions.Over().OrderBy(e.Salary).Rows(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).FirstValue(e.Name)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal("Jabba the Hutt", results[0].FirstValue);
+    }
+
+    [ConditionalFact]
+    public virtual void First_Value_Null()
+    {
+        using var context = CreateContext();
+
+        var results = context.NullTestEmployees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            FirstValue = EF.Functions.Over().OrderBy(e.WorkExperience).FirstValue(e.Salary)
+        }).ToList();
+
+        Assert.Equal(2, results.Count);
+        Assert.Null(results[0].FirstValue);
+    }
+
+    [ConditionalFact]
+    public virtual void Last_Value_OderByEnd_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            LastValue = EF.Functions.Over().OrderBy(e.Salary).LastValue(e.Name)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal("Commander Cody", results[0].LastValue);
+    }
+
+    [ConditionalFact]
+    public virtual void Last_Value_FrameEnd_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            LastValue = EF.Functions.Over().OrderBy(e.Salary).Rows(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).LastValue(e.Name)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal("Jabba the Hutt", results[0].LastValue);
+    }
+
+    [ConditionalFact]
+    public virtual void Last_Value_Null()
+    {
+        using var context = CreateContext();
+
+        var results = context.NullTestEmployees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            LastValue = EF.Functions.Over().OrderBy(e.WorkExperience).LastValue(e.Salary)
+        }).ToList();
+
+        Assert.Equal(2, results.Count);
+        Assert.Null(results[0].LastValue);
+    }
+
+    [ConditionalFact]
+    public virtual void Rank_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Rank = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.WorkExperience).Rank()
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Equal(3, results[0].Id);
+        Assert.Equal(1, results[0].Rank);
+
+        Assert.Equal(1, results[1].Id);
+        Assert.Equal(1, results[1].Rank);
+
+        Assert.Equal(4, results[2].Id);
+        Assert.Equal(2, results[2].Rank);
+
+        Assert.Equal(6, results[3].Id);
+        Assert.Equal(1, results[3].Rank);
+
+        Assert.Equal(7, results[4].Id);
+        Assert.Equal(2, results[4].Rank);
+
+        Assert.Equal(8, results[5].Id);
+        Assert.Equal(1, results[5].Rank);
+
+        Assert.Equal(5, results[6].Id);
+        Assert.Equal(1, results[6].Rank);
+
+        Assert.Equal(2, results[7].Id);
+        Assert.Equal(3, results[7].Rank);
+    }
+
+    [ConditionalFact]
+    public virtual void Dense_Rank_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Rank = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.WorkExperience).DenseRank()
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Equal(3, results[0].Id);
+        Assert.Equal(1, results[0].Rank);
+
+        Assert.Equal(1, results[1].Id);
+        Assert.Equal(1, results[1].Rank);
+
+        Assert.Equal(4, results[2].Id);
+        Assert.Equal(2, results[2].Rank);
+
+        Assert.Equal(6, results[3].Id);
+        Assert.Equal(1, results[3].Rank);
+
+        Assert.Equal(7, results[4].Id);
+        Assert.Equal(2, results[4].Rank);
+
+        Assert.Equal(8, results[5].Id);
+        Assert.Equal(1, results[5].Rank);
+
+        Assert.Equal(5, results[6].Id);
+        Assert.Equal(1, results[6].Rank);
+
+        Assert.Equal(2, results[7].Id);
+        Assert.Equal(2, results[7].Rank);
+    }
+
+    [ConditionalFact]
+    public virtual void NTile_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Rank = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.WorkExperience).NTile(3)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Equal(3, results[0].Id);
+        Assert.Equal(1, results[0].Rank);
+
+        Assert.Equal(1, results[1].Id);
+        Assert.Equal(1, results[1].Rank);
+
+        Assert.Equal(4, results[2].Id);
+        Assert.Equal(2, results[2].Rank);
+
+        Assert.Equal(6, results[3].Id);
+        Assert.Equal(1, results[3].Rank);
+
+        Assert.Equal(7, results[4].Id);
+        Assert.Equal(2, results[4].Rank);
+
+        Assert.Equal(8, results[5].Id);
+        Assert.Equal(1, results[5].Rank);
+
+        Assert.Equal(5, results[6].Id);
+        Assert.Equal(2, results[6].Rank);
+
+        Assert.Equal(2, results[7].Id);
+        Assert.Equal(3, results[7].Rank);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageSalary = EF.Functions.Over().Average(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(496875.111250m, results[0].AverageSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Int()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageWork = EF.Functions.Over().Average(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(11, results[0].AverageWork);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Decimal_Int_Cast_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageWork = EF.Functions.Over().Average<decimal>(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(11.375m, results[0].AverageWork);
     }
 
     #endregion
@@ -276,9 +575,9 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MinSalary = EF.Functions.Over().Min(e.Salary)
         }).ToList();
 
-        Assert.Equal(7, results.Count);
+        Assert.Equal(8, results.Count);
         Assert.Equal(1750000.0m, results[0].MaxSalary);
-        Assert.Equal(50000.00m, results[0].MinSalary);
+        Assert.Equal(25000.12m, results[0].MinSalary);
     }
 
     [ConditionalFact]
@@ -294,13 +593,18 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             MaxSalary2 = EF.Functions.Over().Max(e.Salary)
         }).ToList();
 
-        Assert.Equal(7, results.Count);
+        Assert.Equal(8, results.Count);
         Assert.Equal(1750000.0m, results[0].MaxSalary1);
         Assert.Equal(1750000.0m, results[0].MaxSalary2);
     }
 
     #endregion
 
+    #region Rows
+
+    //catch error with Rows(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing) - before db would be nice
+
+    #endregion
 
     #endregion
 }

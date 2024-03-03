@@ -1678,7 +1678,7 @@ public class QuerySqlGenerator : SqlExpressionVisitor
     /// <inheritdoc />
     protected override Expression VisitWindowPartition(WindowPartitionExpression partitionExpression)
     {
-        _relationalCommandBuilder.Append(" PARTITION BY ");
+        _relationalCommandBuilder.Append("PARTITION BY ");
 
         GenerateList(partitionExpression.Partitions, e => Visit(e), sql => sql.Append(", "));
 
@@ -1693,19 +1693,19 @@ public class QuerySqlGenerator : SqlExpressionVisitor
         _relationalCommandBuilder.Append($" {windowsFrameExpression.FrameName} ");
 
         if(windowsFrameExpression.Following != null)
-            _relationalCommandBuilder.Append($" BETWEEN ");
+            _relationalCommandBuilder.Append($"BETWEEN ");
 
         if (windowsFrameExpression.Preceding is SqlConstantExpression preceedingExpression && preceedingExpression.Type == typeof(RowsPreceding))
         {
             _relationalCommandBuilder.Append((RowsPreceding)preceedingExpression.Value! == RowsPreceding.CurrentRow
-                                                ? " CURRENT ROW "
-                                                : " UNBOUND PRECEDING ");
+                                                ? "CURRENT ROW"
+                                                : "UNBOUNDED PRECEDING");
         }
         else
         {
             Visit(windowsFrameExpression.Preceding);
 
-            _relationalCommandBuilder.Append($" PRECEDING ");
+            _relationalCommandBuilder.Append($" PRECEDING");
         }
 
         if(windowsFrameExpression.Following != null)
@@ -1715,14 +1715,14 @@ public class QuerySqlGenerator : SqlExpressionVisitor
             if (windowsFrameExpression.Following is SqlConstantExpression followingExpression && followingExpression.Type == typeof(RowsFollowing))
             {
                 _relationalCommandBuilder.Append((RowsPreceding)followingExpression.Value! == RowsPreceding.CurrentRow
-                                                    ? " CURRENT ROW "
-                                                    : " UNBOUND FOLLOWING ");
+                                                    ? "CURRENT ROW"
+                                                    : "UNBOUNDED FOLLOWING");
             }
             else
             {
                 Visit(windowsFrameExpression.Following);
 
-                _relationalCommandBuilder.Append($" FOLLOWING ");
+                _relationalCommandBuilder.Append($" FOLLOWING");
             }
         }
 

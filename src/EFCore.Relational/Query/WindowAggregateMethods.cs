@@ -15,19 +15,33 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             var aggMethods = typeof(RelationalWindowAggregateFunctionExtensions).GetMethods().Where(mi => typeof(IWindowFinal).IsAssignableFrom(mi.GetParameters().FirstOrDefault()?.ParameterType)).ToList();
 
-            Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max));
-            Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min));
+            Average = aggMethods.Single(m => m.Name == nameof(Average));
             CountAll = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 1);
             CountCol = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 2);
-
-            Average = aggMethods.Single(m => m.Name == nameof(Average));
+            DenseRank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.DenseRank));
+            FirstValueFrameResults = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.FirstValue) && typeof(IFrameResults).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
+            FirstValueOrderThen = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.FirstValue) && typeof(IOrderThen).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
+            LastValueFrameResults = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IFrameResults).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
+            LastValueOrderThen = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IOrderThen).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
+            Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max));
+            Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min));
+            NTile = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.NTile));
+            Rank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Rank));
+            RowNumber = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.RowNumber));
         }
 
-        public static MethodInfo Max { get; }
-        public static MethodInfo Min { get; }
+        public static MethodInfo Average { get; }
         public static MethodInfo CountAll { get; }
         public static MethodInfo CountCol { get; }
-
-        public static MethodInfo Average { get; }
+        public static MethodInfo DenseRank { get; }
+        public static MethodInfo FirstValueFrameResults { get; }
+        public static MethodInfo FirstValueOrderThen { get; }
+        public static MethodInfo LastValueFrameResults { get; }
+        public static MethodInfo LastValueOrderThen { get; }
+        public static MethodInfo Max { get; }
+        public static MethodInfo Min { get; }
+        public static MethodInfo NTile { get; }
+        public static MethodInfo Rank { get; }
+        public static MethodInfo RowNumber { get; }
     }
 }

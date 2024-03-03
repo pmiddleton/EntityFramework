@@ -40,18 +40,14 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
              ? method.GetGenericMethodDefinition()
              : method;
 
-            switch(methodInfo.Name)
+            //todo find better way to make sure we are dealing with the correct method
+            //todo - dictionary instead of switch?
+            switch (methodInfo.Name)
             {
-                //todo find better way to make sure we are dealing with the correct method
-                case nameof(RelationalWindowAggregateFunctionExtensions.Max)
-                    when methodInfo == WindowAggregateMethods.Max:
+                case nameof(RelationalWindowAggregateFunctionExtensions.Average)
+                    when methodInfo == WindowAggregateMethods.Average:
 
-                    return _sqlExpressionFactory.Function("MAX", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
-
-                case nameof(RelationalWindowAggregateFunctionExtensions.Min)
-                    when methodInfo == WindowAggregateMethods.Min:
-
-                    return _sqlExpressionFactory.Function("MIN", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+                    return _sqlExpressionFactory.Function("AVG", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
 
                 case nameof(RelationalWindowAggregateFunctionExtensions.Count)
                     when methodInfo == WindowAggregateMethods.CountAll:
@@ -63,10 +59,52 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     return _sqlExpressionFactory.Function("COUNT", arguments, true, new[] { false }, typeof(int));
 
-                case nameof(RelationalWindowAggregateFunctionExtensions.Average)
-                    when methodInfo == WindowAggregateMethods.Average:
+                case nameof(RelationalWindowAggregateFunctionExtensions.DenseRank)
+                    when methodInfo == WindowAggregateMethods.DenseRank:
 
-                    return _sqlExpressionFactory.Function("AVG", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+                    return _sqlExpressionFactory.Function("DENSE_RANK", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(long));
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.FirstValue)
+                    when methodInfo == WindowAggregateMethods.FirstValueOrderThen:
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.FirstValue)
+                    when methodInfo == WindowAggregateMethods.FirstValueFrameResults:
+
+                    return _sqlExpressionFactory.Function("FIRST_VALUE", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.LastValue)
+                    when methodInfo == WindowAggregateMethods.LastValueOrderThen:
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.LastValue)
+                    when methodInfo == WindowAggregateMethods.LastValueFrameResults:
+
+                    return _sqlExpressionFactory.Function("LAST_VALUE", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.Max)
+                    when methodInfo == WindowAggregateMethods.Max:
+
+                    return _sqlExpressionFactory.Function("MAX", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.Min)
+                    when methodInfo == WindowAggregateMethods.Min:
+
+                    return _sqlExpressionFactory.Function("MIN", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.NTile)
+                    when methodInfo == WindowAggregateMethods.NTile:
+
+                    return _sqlExpressionFactory.Function("NTILE", arguments, false, new[] { false }, typeof(long));
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.Rank)
+                    when methodInfo == WindowAggregateMethods.Rank:
+
+                    return _sqlExpressionFactory.Function("RANK", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(long));
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.RowNumber)
+                    when methodInfo == WindowAggregateMethods.RowNumber:
+
+                    return _sqlExpressionFactory.Function("ROW_NUMBER", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(long));
+
             }
 
             return null;

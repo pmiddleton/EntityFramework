@@ -28,6 +28,8 @@ namespace Microsoft.EntityFrameworkCore.Query
 
         #region Tests
 
+        #region Base Window Functions Tests
+
         public override void Max_Basic()
         {
             base.Max_Basic();
@@ -94,6 +96,149 @@ FROM [Employees] AS [e]
 """);
         }
 
+        public override void RowNumber_Basic()
+        {
+            base.RowNumber_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], ROW_NUMBER() OVER ( ORDER BY [e].[Name]) AS [RowNumber]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void First_Value_OderByEnd_Basic()
+        {
+            base.First_Value_OderByEnd_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], FIRST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary]) AS [FirstValue]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void First_Value_FrameEnd_Basic()
+        {
+            base.First_Value_FrameEnd_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], FIRST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary] ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS [FirstValue]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void First_Value_Null()
+        {
+            base.First_Value_Null();
+
+            AssertSql(
+                """
+SELECT [n].[Id], [n].[Name], FIRST_VALUE([n].[Salary]) OVER ( ORDER BY [n].[WorkExperience]) AS [FirstValue]
+FROM [NullTestEmployees] AS [n]
+""");
+        }
+
+        public override void Last_Value_OderByEnd_Basic()
+        {
+            base.Last_Value_OderByEnd_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], LAST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary]) AS [LastValue]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Last_Value_FrameEnd_Basic()
+        {
+            base.Last_Value_FrameEnd_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], LAST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary] ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS [LastValue]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Last_Value_Null()
+        {
+            base.Last_Value_Null();
+
+            AssertSql(
+                """
+SELECT [n].[Id], [n].[Name], LAST_VALUE([n].[Salary]) OVER ( ORDER BY [n].[WorkExperience]) AS [LastValue]
+FROM [NullTestEmployees] AS [n]
+""");
+        }
+
+        public override void Rank_Basic()
+        {
+            base.Rank_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], RANK() OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Dense_Rank_Basic()
+        {
+            base.Dense_Rank_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], DENSE_RANK() OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void NTile_Basic()
+        {
+            base.NTile_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], NTILE(3) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Avg_Decimal()
+        {
+            base.Avg_Decimal();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], AVG([e].[Salary]) OVER () AS [AverageSalary]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Avg_Int()
+        {
+            base.Avg_Int();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], AVG([e].[WorkExperience]) OVER () AS [AverageWork]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Avg_Decimal_Int_Cast_Decimal()
+        {
+            base.Avg_Decimal_Int_Cast_Decimal();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], AVG(CAST([e].[WorkExperience] AS decimal(18,2))) OVER () AS [AverageWork]
+FROM [Employees] AS [e]
+""");
+        }
+
         #endregion
 
         #region WindowOverExpression Equality tests
@@ -121,6 +266,10 @@ FROM [Employees] AS [e]
         }
 
         #endregion
+
+        #endregion
+
+        
 
 
         public void AssertSql(params string[] expected)
