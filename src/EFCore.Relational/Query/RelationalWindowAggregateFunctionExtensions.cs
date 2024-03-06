@@ -51,6 +51,16 @@ namespace Microsoft.EntityFrameworkCore.Query
             throw new Exception();
         }
 
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static double CumeDist(this IWindowFinal final)
+        {
+            throw new Exception();
+        }
 
         /// <summary>
         /// todo
@@ -62,7 +72,6 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             throw new Exception();
         }
-
 
         /// <summary>
         /// todo
@@ -98,6 +107,22 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <typeparam name="TSource">todo</typeparam>
         /// <param name="final">todo</param>
         /// <param name="source">todo</param>
+        /// <param name="offset">todo</param>
+        /// <param name="defaultValue">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource? Lag<TSource>(this IOrderThen final, TSource source, int offset, TSource defaultValue)
+        {
+            //todo - how do we force this to include an order by?  
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
         public static TSource LastValue<TSource>(this IOrderThen final, TSource source)
@@ -105,7 +130,6 @@ namespace Microsoft.EntityFrameworkCore.Query
             //todo - how do we force this to include an order by?  
             throw new Exception();
         }
-
 
         /// <summary>
         /// todo
@@ -165,6 +189,17 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <param name="final">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
+        public static double PercentRank(this IOrderThen final)
+        {
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <param name="final">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
         public static long Rank(this IOrderThen final)
         {
             throw new Exception();
@@ -180,5 +215,19 @@ namespace Microsoft.EntityFrameworkCore.Query
         {
             throw new Exception();
         }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource? Sum<TSource>(this IWindowFinal final, TSource source)
+        {
+            throw new Exception();
+        }
+
     }
 }

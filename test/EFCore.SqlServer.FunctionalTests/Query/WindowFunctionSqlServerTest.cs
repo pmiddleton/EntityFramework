@@ -239,6 +239,85 @@ FROM [Employees] AS [e]
 """);
         }
 
+        public override void Avg_Null()
+        {
+            base.Avg_Null();
+
+            AssertSql(
+                """
+SELECT [n].[Id], [n].[Name], AVG([n].[Salary]) OVER () AS [AverageSalary]
+FROM [NullTestEmployees] AS [n]
+""");
+        }
+
+        //todo - add more avg tests
+
+        public override void Sum_Decimal()
+        {
+            base.Sum_Decimal();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], SUM([e].[Salary]) OVER () AS [SumSalary]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Sum_Int()
+        {
+            base.Sum_Int();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], SUM([e].[WorkExperience]) OVER () AS [SumWorkExperience]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Percent_Rank_Basic()
+        {
+            base.Percent_Rank_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], PERCENT_RANK() OVER ( ORDER BY [e].[Salary]) AS [PercentRank]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Cume_Dist_Basic()
+        {
+            base.Cume_Dist_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], CUME_DIST() OVER ( ORDER BY [e].[Salary]) AS [CumeDist]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Lag_Decimal_Basic()
+        {
+            base.Lag_Decimal_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], LAG([e].[Salary], 1, 0.0) OVER ( ORDER BY [e].[Salary]) AS [PreviousSalary]
+FROM [Employees] AS [e]
+""");
+        }
+
+        public override void Lag_Int_Basic()
+        {
+            base.Lag_Int_Basic();
+
+            AssertSql(
+                """
+SELECT [e].[Id], [e].[Name], LAG([e].[Id], 1, 0) OVER ( ORDER BY [e].[Id]) AS [PreviousId]
+FROM [Employees] AS [e]
+""");
+        }
+
         #endregion
 
         #region WindowOverExpression Equality tests

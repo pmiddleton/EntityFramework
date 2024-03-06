@@ -558,6 +558,151 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(11.375m, results[0].AverageWork);
     }
 
+
+    [ConditionalFact]
+    public virtual void Avg_Null()
+    {
+        using var context = CreateContext();
+
+        var results = context.NullTestEmployees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageSalary = EF.Functions.Over().Average(e.Salary)
+        }).ToList();
+
+        Assert.Equal(2, results.Count);
+        Assert.Null(results[0].AverageSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Sum_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            SumSalary = EF.Functions.Over().Sum(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(3975000.89m, results[0].SumSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Sum_Int()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            SumWorkExperience = EF.Functions.Over().Sum(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(91, results[0].SumWorkExperience);
+    }
+
+    [ConditionalFact]
+    public virtual void Percent_Rank_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            PercentRank = EF.Functions.Over().OrderBy(e.Salary).PercentRank()
+        }).ToList();
+
+        //todo - this test might need to be altered for sqlite due to precision
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(0, results[0].PercentRank);
+        Assert.Equal(0.1428571, Math.Round(results[1].PercentRank, 7));
+        Assert.Equal(0.2857143, Math.Round(results[2].PercentRank, 7));
+        Assert.Equal(0.4285714, Math.Round(results[3].PercentRank, 7));
+        Assert.Equal(0.5714286, Math.Round(results[4].PercentRank, 7));
+        Assert.Equal(0.7142857, Math.Round(results[5].PercentRank, 7));
+        Assert.Equal(0.8571429, Math.Round(results[6].PercentRank, 7));
+        Assert.Equal(1, results[7].PercentRank);
+    }
+
+
+    [ConditionalFact]
+    public virtual void Cume_Dist_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            CumeDist = EF.Functions.Over().OrderBy(e.Salary).CumeDist()
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(0.125, results[0].CumeDist);
+        Assert.Equal(0.25, results[1].CumeDist);
+        Assert.Equal(0.375, results[2].CumeDist);
+        Assert.Equal(0.5, results[3].CumeDist);
+        Assert.Equal(0.625, results[4].CumeDist);
+        Assert.Equal(0.75, results[5].CumeDist);
+        Assert.Equal(0.875, results[6].CumeDist);
+        Assert.Equal(1, results[7].CumeDist);
+    }
+
+    [ConditionalFact]
+    public virtual void Lag_Decimal_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            PreviousSalary = EF.Functions.Over().OrderBy(e.Salary).Lag(e.Salary, 1, 0.0m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(0, results[0].PreviousSalary);
+        Assert.Equal(25000.12m, results[1].PreviousSalary);
+        Assert.Equal(50000.00m, results[2].PreviousSalary);
+        Assert.Equal(100000.00m, results[3].PreviousSalary);
+        Assert.Equal(200000.00m, results[4].PreviousSalary);
+        Assert.Equal(350000.24m, results[5].PreviousSalary);
+        Assert.Equal(500000.00m, results[6].PreviousSalary);
+        Assert.Equal(1000000.53m, results[7].PreviousSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Lag_Int_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            PreviousId = EF.Functions.Over().OrderBy(e.Id).Lag(e.Id, 1, 0)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(0, results[0].PreviousId);
+        Assert.Equal(1, results[1].PreviousId);
+        Assert.Equal(2, results[2].PreviousId);
+        Assert.Equal(3, results[3].PreviousId);
+        Assert.Equal(4, results[4].PreviousId);
+        Assert.Equal(5, results[5].PreviousId);
+        Assert.Equal(6, results[6].PreviousId);
+        Assert.Equal(7, results[7].PreviousId);
+    }
+    
+
     #endregion
 
     #region WindowOverExpression Equality tests
@@ -583,6 +728,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Multiple_Aggregates_Basic_Dup_Query()
     {
+
         using var context = CreateContext();
 
         var results = context.Employees.Select(e => new

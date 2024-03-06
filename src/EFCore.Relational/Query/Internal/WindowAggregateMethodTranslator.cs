@@ -59,6 +59,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     return _sqlExpressionFactory.Function("COUNT", arguments, true, new[] { false }, typeof(int));
 
+                case nameof(RelationalWindowAggregateFunctionExtensions.CumeDist)
+                    when methodInfo == WindowAggregateMethods.CumeDist:
+
+                    return _sqlExpressionFactory.Function("CUME_DIST", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(double));
+
                 case nameof(RelationalWindowAggregateFunctionExtensions.DenseRank)
                     when methodInfo == WindowAggregateMethods.DenseRank:
 
@@ -71,6 +76,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
                     when methodInfo == WindowAggregateMethods.FirstValueFrameResults:
 
                     return _sqlExpressionFactory.Function("FIRST_VALUE", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
+                case nameof(RelationalWindowAggregateFunctionExtensions.Lag)
+                    when methodInfo == WindowAggregateMethods.Lag:
+
+                    return _sqlExpressionFactory.Function("LAG", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
 
                 case nameof(RelationalWindowAggregateFunctionExtensions.LastValue)
                     when methodInfo == WindowAggregateMethods.LastValueOrderThen:
@@ -95,6 +105,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     return _sqlExpressionFactory.Function("NTILE", arguments, false, new[] { false }, typeof(long));
 
+                case nameof(RelationalWindowAggregateFunctionExtensions.PercentRank)
+                    when methodInfo == WindowAggregateMethods.PercentRank:
+
+                    return _sqlExpressionFactory.Function("PERCENT_RANK", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(double));
+
                 case nameof(RelationalWindowAggregateFunctionExtensions.Rank)
                     when methodInfo == WindowAggregateMethods.Rank:
 
@@ -105,6 +120,10 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     return _sqlExpressionFactory.Function("ROW_NUMBER", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(long));
 
+                case nameof(RelationalWindowAggregateFunctionExtensions.Sum)
+                    when methodInfo == WindowAggregateMethods.Sum:
+
+                    return _sqlExpressionFactory.Function("SUM", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
             }
 
             return null;
