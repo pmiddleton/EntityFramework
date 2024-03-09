@@ -25,6 +25,7 @@ namespace Microsoft.EntityFrameworkCore.Query
             Lag = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Lag));
             LastValueFrameResults = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IFrameResults).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
             LastValueOrderThen = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IOrderThen).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
+            Lead = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Lead));
             Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max));
             Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min));
             NTile = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.NTile));
@@ -42,6 +43,7 @@ namespace Microsoft.EntityFrameworkCore.Query
         public static MethodInfo FirstValueFrameResults { get; }
         public static MethodInfo FirstValueOrderThen { get; }
         public static MethodInfo Lag { get; }
+        public static MethodInfo Lead { get; }
         public static MethodInfo LastValueFrameResults { get; }
         public static MethodInfo LastValueOrderThen { get; }
         public static MethodInfo Max { get; }

@@ -6,24 +6,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Xunit.Sdk;
 
 namespace Microsoft.EntityFrameworkCore.Query
 {
-    public class WindowFunctionSqlServerTest : WindowFunctionTestBase<WindowFunctionSqlServerTest.SqlServer>
+    public class WindowFunctionSqliteTest : WindowFunctionTestBase<WindowFunctionSqliteTest.Sqlite>
     {
-        public WindowFunctionSqlServerTest(SqlServer fixture, ITestOutputHelper testOutputHelper) : base(fixture)
+        public WindowFunctionSqliteTest(Sqlite fixture, ITestOutputHelper testOutputHelper) : base(fixture)
         {
             Fixture.TestSqlLoggerFactory.Clear();
             Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
         }
 
-        public class SqlServer : WindowFunctionFixture
+        public class Sqlite : WindowFunctionFixture
         {
             protected override string StoreName => "WindowFunctionTests";
 
             protected override ITestStoreFactory TestStoreFactory
-                => SqlServerTestStoreFactory.Instance;
+                => SqliteTestStoreFactory.Instance;
         }
 
         #region Tests
@@ -36,8 +35,8 @@ namespace Microsoft.EntityFrameworkCore.Query
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER () AS [MaxSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -47,8 +46,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [n].[Id], [n].[Name], MAX([n].[Salary]) OVER () AS [MaxSalary]
-FROM [NullTestEmployees] AS [n]
+SELECT "n"."Id", "n"."Name", MAX("n"."Salary") OVER () AS "MaxSalary"
+FROM "NullTestEmployees" AS "n"
 """);
         }
 
@@ -58,8 +57,8 @@ FROM [NullTestEmployees] AS [n]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], MIN([e].[Salary]) OVER () AS [MinSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", MIN("e"."Salary") OVER () AS "MinSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -69,8 +68,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [n].[Id], [n].[Name], MIN([n].[Salary]) OVER () AS [MinSalary]
-FROM [NullTestEmployees] AS [n]
+SELECT "n"."Id", "n"."Name", MIN("n"."Salary") OVER () AS "MinSalary"
+FROM "NullTestEmployees" AS "n"
 """);
         }
 
@@ -80,8 +79,8 @@ FROM [NullTestEmployees] AS [n]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], COUNT(*) OVER () AS [Count]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", COUNT(*) OVER () AS "Count"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -91,8 +90,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], COUNT([e].[Id]) OVER () AS [Count]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", COUNT("e"."Id") OVER () AS "Count"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -102,8 +101,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], ROW_NUMBER() OVER ( ORDER BY [e].[Name]) AS [RowNumber]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", ROW_NUMBER() OVER ( ORDER BY "e"."Name") AS "RowNumber"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -113,8 +112,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], FIRST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary]) AS [FirstValue]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", FIRST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary") AS "FirstValue"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -124,8 +123,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], FIRST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary] ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS [FirstValue]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", FIRST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary" ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "FirstValue"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -135,8 +134,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [n].[Id], [n].[Name], FIRST_VALUE([n].[Salary]) OVER ( ORDER BY [n].[WorkExperience]) AS [FirstValue]
-FROM [NullTestEmployees] AS [n]
+SELECT "n"."Id", "n"."Name", FIRST_VALUE("n"."Salary") OVER ( ORDER BY "n"."WorkExperience") AS "FirstValue"
+FROM "NullTestEmployees" AS "n"
 """);
         }
 
@@ -146,8 +145,8 @@ FROM [NullTestEmployees] AS [n]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LAST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary]) AS [LastValue]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LAST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary") AS "LastValue"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -157,8 +156,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LAST_VALUE([e].[Name]) OVER ( ORDER BY [e].[Salary] ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS [LastValue]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LAST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary" ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "LastValue"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -168,8 +167,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [n].[Id], [n].[Name], LAST_VALUE([n].[Salary]) OVER ( ORDER BY [n].[WorkExperience]) AS [LastValue]
-FROM [NullTestEmployees] AS [n]
+SELECT "n"."Id", "n"."Name", LAST_VALUE("n"."Salary") OVER ( ORDER BY "n"."WorkExperience") AS "LastValue"
+FROM "NullTestEmployees" AS "n"
 """);
         }
 
@@ -179,8 +178,8 @@ FROM [NullTestEmployees] AS [n]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], RANK() OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", RANK() OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -190,8 +189,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], DENSE_RANK() OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", DENSE_RANK() OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -201,8 +200,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], NTILE(3) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience]) AS [Rank]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", NTILE(3) OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -212,8 +211,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], AVG([e].[Salary]) OVER () AS [AverageSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", AVG("e"."Salary") OVER () AS "AverageSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -223,8 +222,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], AVG([e].[WorkExperience]) OVER () AS [AverageWork]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", AVG("e"."WorkExperience") OVER () AS "AverageWork"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -234,8 +233,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], AVG(CAST([e].[WorkExperience] AS decimal(18,2))) OVER () AS [AverageWork]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", AVG(CAST("e"."WorkExperience" AS TEXT)) OVER () AS "AverageWork"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -245,8 +244,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [n].[Id], [n].[Name], AVG([n].[Salary]) OVER () AS [AverageSalary]
-FROM [NullTestEmployees] AS [n]
+SELECT "n"."Id", "n"."Name", AVG("n"."Salary") OVER () AS "AverageSalary"
+FROM "NullTestEmployees" AS "n"
 """);
         }
 
@@ -258,8 +257,8 @@ FROM [NullTestEmployees] AS [n]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], SUM([e].[Salary]) OVER () AS [SumSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", SUM("e"."Salary") OVER () AS "SumSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -269,8 +268,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], SUM([e].[WorkExperience]) OVER () AS [SumWorkExperience]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", SUM("e"."WorkExperience") OVER () AS "SumWorkExperience"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -280,8 +279,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], PERCENT_RANK() OVER ( ORDER BY [e].[Salary]) AS [PercentRank]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", PERCENT_RANK() OVER ( ORDER BY "e"."Salary") AS "PercentRank"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -291,8 +290,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], CUME_DIST() OVER ( ORDER BY [e].[Salary]) AS [CumeDist]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", CUME_DIST() OVER ( ORDER BY "e"."Salary") AS "CumeDist"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -302,8 +301,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LAG([e].[Salary], 1, 0.0) OVER ( ORDER BY [e].[Salary]) AS [PreviousSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LAG("e"."Salary", 1, '0.0') OVER ( ORDER BY "e"."Salary") AS "PreviousSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -313,8 +312,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LAG([e].[Id], 1, 0) OVER ( ORDER BY [e].[Id]) AS [PreviousId]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LAG("e"."Id", 1, 0) OVER ( ORDER BY "e"."Id") AS "PreviousId"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -324,8 +323,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LEAD([e].[Salary], 1, 0.0) OVER ( ORDER BY [e].[Salary]) AS [NextSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LEAD("e"."Salary", 1, '0.0') OVER ( ORDER BY "e"."Salary") AS "NextSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -335,8 +334,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], LEAD([e].[Id], 1, 0) OVER ( ORDER BY [e].[Id]) AS [NextId]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", LEAD("e"."Id", 1, 0) OVER ( ORDER BY "e"."Id") AS "NextId"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -350,8 +349,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER () AS [MaxSalary], MIN([e].[Salary]) OVER () AS [MinSalary]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary", MIN("e"."Salary") OVER () AS "MinSalary"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -361,8 +360,8 @@ FROM [Employees] AS [e]
 
             AssertSql(
                 """
-SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER () AS [MaxSalary1]
-FROM [Employees] AS [e]
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary1"
+FROM "Employees" AS "e"
 """);
         }
 
@@ -370,10 +369,7 @@ FROM [Employees] AS [e]
 
         #endregion
 
-        public override void Outer_Order_By_Sql()
-        {
-            base.Outer_Order_By_Sql();
-        }
+
 
 
         public void AssertSql(params string[] expected)

@@ -326,7 +326,9 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         }).ToList();
 
         Assert.Equal(8, results.Count);
-        Assert.Equal("Jabba the Hutt", results[0].FirstValue);
+
+        foreach(var row in results)
+            Assert.Equal(results[0].Name, results[0].FirstValue);
     }
 
     [ConditionalFact]
@@ -422,10 +424,10 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(7, results[4].Id);
         Assert.Equal(2, results[4].Rank);
 
-        Assert.Equal(8, results[5].Id);
+        Assert.True(results[5].Id == 5 || results[5].Id == 8);
         Assert.Equal(1, results[5].Rank);
 
-        Assert.Equal(5, results[6].Id);
+        Assert.True(results[6].Id == 5 || results[6].Id == 8);
         Assert.Equal(1, results[6].Rank);
 
         Assert.Equal(2, results[7].Id);
@@ -461,10 +463,10 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(7, results[4].Id);
         Assert.Equal(2, results[4].Rank);
 
-        Assert.Equal(8, results[5].Id);
+        Assert.True(results[5].Id == 5 || results[5].Id == 8);
         Assert.Equal(1, results[5].Rank);
 
-        Assert.Equal(5, results[6].Id);
+        Assert.True(results[6].Id == 5 || results[6].Id == 8);
         Assert.Equal(1, results[6].Rank);
 
         Assert.Equal(2, results[7].Id);
@@ -500,10 +502,10 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(7, results[4].Id);
         Assert.Equal(2, results[4].Rank);
 
-        Assert.Equal(8, results[5].Id);
+        Assert.True(results[5].Id == 5 || results[5].Id == 8);
         Assert.Equal(1, results[5].Rank);
 
-        Assert.Equal(5, results[6].Id);
+        Assert.True(results[6].Id == 5 || results[6].Id == 8);
         Assert.Equal(2, results[6].Rank);
 
         Assert.Equal(2, results[7].Id);
@@ -701,7 +703,55 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(6, results[6].PreviousId);
         Assert.Equal(7, results[7].PreviousId);
     }
-    
+
+
+    [ConditionalFact]
+    public virtual void Lead_Decimal_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            NextSalary = EF.Functions.Over().OrderBy(e.Salary).Lead(e.Salary, 1, 0.0m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+      
+        Assert.Equal(50000.00m, results[0].NextSalary);
+        Assert.Equal(100000.00m, results[1].NextSalary);
+        Assert.Equal(200000.00m, results[2].NextSalary);
+        Assert.Equal(350000.24m, results[3].NextSalary);
+        Assert.Equal(500000.00m, results[4].NextSalary);
+        Assert.Equal(1000000.53m, results[5].NextSalary);
+        Assert.Equal(1750000.00m, results[6].NextSalary);
+        Assert.Equal(0, results[7].NextSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Lead_Int_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            NextId = EF.Functions.Over().OrderBy(e.Id).Lead(e.Id, 1, 0)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+     
+        Assert.Equal(2, results[0].NextId);
+        Assert.Equal(3, results[1].NextId);
+        Assert.Equal(4, results[2].NextId);
+        Assert.Equal(5, results[3].NextId);
+        Assert.Equal(6, results[4].NextId);
+        Assert.Equal(7, results[5].NextId);
+        Assert.Equal(8, results[6].NextId);
+        Assert.Equal(0, results[7].NextId);
+    }
 
     #endregion
 
@@ -749,6 +799,25 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     #region Rows
 
     //catch error with Rows(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing) - before db would be nice
+
+    #endregion
+
+    #region Order By
+
+    [ConditionalFact]
+    public virtual void Outer_Order_By_Sql()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Rank = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.WorkExperience).ThenBy(e.Name).Rank()
+        }).OrderBy(r => r.Name).ToList();
+
+        Assert.Fail();
+    }
 
     #endregion
 

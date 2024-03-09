@@ -151,6 +151,22 @@ namespace Microsoft.EntityFrameworkCore.Query
         /// <typeparam name="TSource">todo</typeparam>
         /// <param name="final">todo</param>
         /// <param name="source">todo</param>
+        /// <param name="offset">todo</param>
+        /// <param name="defaultValue">todo</param>
+        /// <returns>todo</returns>
+        /// <exception cref="Exception">todo</exception>
+        public static TSource? Lead<TSource>(this IOrderThen final, TSource source, int offset, TSource defaultValue)
+        {
+            //todo - how do we force this to include an order by?  
+            throw new Exception();
+        }
+
+        /// <summary>
+        /// todo
+        /// </summary>
+        /// <typeparam name="TSource">todo</typeparam>
+        /// <param name="final">todo</param>
+        /// <param name="source">todo</param>
         /// <returns>todo</returns>
         /// <exception cref="Exception">todo</exception>
         public static TSource? Max<TSource>(this IWindowFinal final, TSource source)

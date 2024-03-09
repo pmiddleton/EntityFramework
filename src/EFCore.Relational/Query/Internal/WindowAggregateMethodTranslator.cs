@@ -90,6 +90,11 @@ namespace Microsoft.EntityFrameworkCore.Query.Internal
 
                     return _sqlExpressionFactory.Function("LAST_VALUE", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
 
+                case nameof(RelationalWindowAggregateFunctionExtensions.Lead)
+                    when methodInfo == WindowAggregateMethods.Lead:
+
+                    return _sqlExpressionFactory.Function("LEAD", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
                 case nameof(RelationalWindowAggregateFunctionExtensions.Max)
                     when methodInfo == WindowAggregateMethods.Max:
 
