@@ -73,10 +73,10 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
                 return _sqlExpressionFactory.Function("DENSE_RANK", Enumerable.Empty<SqlExpression>(), false, new[] { false }, typeof(long));
 
             case nameof(RelationalWindowAggregateFunctionExtensions.FirstValue)
-                when methodInfo == RelationalWindowAggregateMethods.FirstValueOrderThen:
+                when methodInfo == RelationalWindowAggregateMethods.FirstValueFrameResults:
 
             case nameof(RelationalWindowAggregateFunctionExtensions.FirstValue)
-                when methodInfo == RelationalWindowAggregateMethods.FirstValueFrameResults:
+                when methodInfo == RelationalWindowAggregateMethods.FirstValueOrderThen:
 
                 return _sqlExpressionFactory.Function("FIRST_VALUE", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
 

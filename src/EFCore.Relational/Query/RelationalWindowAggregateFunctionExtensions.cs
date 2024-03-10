@@ -83,7 +83,6 @@ public static class RelationalWindowAggregateFunctionExtensions
     /// <exception cref="Exception">todo</exception>
     public static TSource FirstValue<TSource>(this IOrderThen final, TSource source)
     {
-        //todo - how do we force this to include an order by?  
         throw new Exception();
     }
 

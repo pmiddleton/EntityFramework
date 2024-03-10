@@ -410,6 +410,126 @@ FROM [Employees] AS [e]
 """);
     }
 
+    [ConditionalFact]
+    public void Count_Stdev_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDev = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).Stdev(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].StdDev);
+        Assert.Equal(17677.58468d, Math.Round(results[1].StdDev.Value, 5));
+        Assert.Equal(180854.55298d, Math.Round(results[2].StdDev.Value, 5));
+        Assert.Equal(149129.50692d, Math.Round(results[3].StdDev.Value, 5));
+        Assert.Equal(132759.24601d, Math.Round(results[4].StdDev.Value, 5));
+        Assert.Equal(187361.07404d, Math.Round(results[5].StdDev.Value, 5));
+        Assert.Equal(608789.76503d, Math.Round(results[6].StdDev.Value, 5));
+        Assert.Equal(599171.71693d, Math.Round(results[7].StdDev.Value, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], STDEV([e].[Salary]) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDev]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Count_StdevP_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDevP = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).StdevP(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Equal(0f, Math.Round(results[0].StdDevP, 5));
+        Assert.Equal(12499.94d, Math.Round(results[1].StdDevP, 5));
+        Assert.Equal(147667.12415d, Math.Round(results[2].StdDevP, 5));
+        Assert.Equal(129149.94144d, Math.Round(results[3].StdDevP, 5));
+        Assert.Equal(118743.47948d, Math.Round(results[4].StdDevP, 5));
+        Assert.Equal(171036.47775d, Math.Round(results[5].StdDevP, 5));
+        Assert.Equal(563629.80100d, Math.Round(results[6].StdDevP, 5));
+        Assert.Equal(560473.82015d, Math.Round(results[7].StdDevP, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], STDEVP([e].[Salary]) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDevP]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Count_Var_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Var = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).Var(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].Var);
+        Assert.Equal(312497000.007d, Math.Round(results[1].Var.Value, 3));
+        Assert.Equal(32708369333.348d, Math.Round(results[2].Var.Value, 3));
+        Assert.Equal(22239609833.347d, Math.Round(results[3].Var.Value, 3));
+        Assert.Equal(17625017400.012d, Math.Round(results[4].Var.Value, 3));
+        Assert.Equal(35104172066.677d, Math.Round(results[5].Var.Value, 3));
+        Assert.Equal(370624978000.009d, Math.Round(results[6].Var.Value, 3));
+        Assert.Equal(359006746366.108d, Math.Round(results[7].Var.Value, 3));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], VAR([e].[Salary]) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [Var]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Count_VarP_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            VarP = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).VarP(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Equal(0d, Math.Round(results[0].VarP, 3));
+        Assert.Equal(156248500.004d, Math.Round(results[1].VarP, 3));
+        Assert.Equal(21805579555.565d, Math.Round(results[2].VarP, 3));
+        Assert.Equal(16679707375.01d, Math.Round(results[3].VarP, 3));
+        Assert.Equal(14100013920.009d, Math.Round(results[4].VarP, 3));
+        Assert.Equal(29253476722.231d, Math.Round(results[5].VarP, 3));
+        Assert.Equal(317678552571.436d, Math.Round(results[6].VarP, 3));
+        Assert.Equal(314130903070.344d, Math.Round(results[7].VarP, 3));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], VARP([e].[Salary]) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [VarP]
+FROM [Employees] AS [e]
+""");
+    }
+
     #endregion
 
     #endregion

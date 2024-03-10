@@ -54,6 +54,29 @@ public class SqlServerWindowAggregateMethodTranslator : IWindowAggregateMethodCa
                 when methodInfo == SqlServerWindowAggregateMethods.CountBigCol:
 
                 return _sqlExpressionFactory.Function("COUNT_BIG", arguments, true, new[] { false }, typeof(long));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.Stdev)
+                when methodInfo == SqlServerWindowAggregateMethods.Stdev:
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.Stdev)
+                when methodInfo == SqlServerWindowAggregateMethods.Stdev:
+
+                return _sqlExpressionFactory.Function("STDEV", arguments, true, new[] { false }, typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.StdevP)
+                when methodInfo == SqlServerWindowAggregateMethods.StdevP:
+
+                return _sqlExpressionFactory.Function("STDEVP", arguments, false, new[] { false }, typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.Var)
+                when methodInfo == SqlServerWindowAggregateMethods.Var:
+
+                return _sqlExpressionFactory.Function("VAR", arguments, true, new[] { false }, typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.VarP)
+                when methodInfo == SqlServerWindowAggregateMethods.VarP:
+
+                return _sqlExpressionFactory.Function("VARP", arguments, false, new[] { false }, typeof(double));
         }
 
         return null;
