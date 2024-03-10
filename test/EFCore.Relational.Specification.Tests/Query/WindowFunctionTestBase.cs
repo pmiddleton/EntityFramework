@@ -715,6 +715,28 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(7, results[7].PreviousId);
     }
 
+    [ConditionalFact]
+    public virtual void Lag_String_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            PreviousName = EF.Functions.Over().OrderBy(e.Name).Lag(e.Name, 1, "test")
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal("test", results[0].PreviousName);
+        Assert.Equal(results[0].Name, results[1].PreviousName);
+        Assert.Equal(results[1].Name, results[2].PreviousName);
+        Assert.Equal(results[2].Name, results[3].PreviousName);
+        Assert.Equal(results[3].Name, results[4].PreviousName);
+        Assert.Equal(results[4].Name, results[5].PreviousName);
+        Assert.Equal(results[5].Name, results[6].PreviousName);
+        Assert.Equal(results[6].Name, results[7].PreviousName);
+    }
 
     [ConditionalFact]
     public virtual void Lead_Decimal_Basic()

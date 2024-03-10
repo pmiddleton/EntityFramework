@@ -339,6 +339,17 @@ FROM "Employees" AS "e"
 """);
     }
 
+    public override void Lag_String_Basic()
+    {
+        base.Lag_String_Basic();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", LAG("e"."Name", 1, 'test') OVER ( ORDER BY "e"."Name") AS "PreviousName"
+FROM "Employees" AS "e"
+""");
+    }
+
     #endregion
 
     #region WindowOverExpression Equality tests

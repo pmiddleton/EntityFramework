@@ -318,6 +318,17 @@ FROM [Employees] AS [e]
 """);
     }
 
+    public override void Lag_String_Basic()
+    {
+        base.Lag_String_Basic();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], LAG([e].[Name], 1, N'test') OVER ( ORDER BY [e].[Name]) AS [PreviousName]
+FROM [Employees] AS [e]
+""");
+    }
+
     public override void Lead_Decimal_Basic()
     {
         base.Lead_Decimal_Basic();
