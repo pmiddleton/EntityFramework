@@ -7,372 +7,371 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.EntityFrameworkCore.Query
+namespace Microsoft.EntityFrameworkCore.Query;
+
+public class WindowFunctionSqliteTest : WindowFunctionTestBase<WindowFunctionSqliteTest.Sqlite>
 {
-    public class WindowFunctionSqliteTest : WindowFunctionTestBase<WindowFunctionSqliteTest.Sqlite>
+    public WindowFunctionSqliteTest(Sqlite fixture, ITestOutputHelper testOutputHelper) : base(fixture)
     {
-        public WindowFunctionSqliteTest(Sqlite fixture, ITestOutputHelper testOutputHelper) : base(fixture)
-        {
-            Fixture.TestSqlLoggerFactory.Clear();
-            Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
-        }
+        Fixture.TestSqlLoggerFactory.Clear();
+        Fixture.TestSqlLoggerFactory.SetTestOutputHelper(testOutputHelper);
+    }
 
-        public class Sqlite : WindowFunctionFixture
-        {
-            protected override string StoreName => "WindowFunctionTests";
+    public class Sqlite : WindowFunctionFixture
+    {
+        protected override string StoreName => "WindowFunctionTests";
 
-            protected override ITestStoreFactory TestStoreFactory
-                => SqliteTestStoreFactory.Instance;
-        }
+        protected override ITestStoreFactory TestStoreFactory
+            => SqliteTestStoreFactory.Instance;
+    }
 
-        #region Tests
+    #region Tests
 
-        #region Base Window Functions Tests
+    #region Base Window Functions Tests
 
-        public override void Max_Basic()
-        {
-            base.Max_Basic();
+    public override void Max_Basic()
+    {
+        base.Max_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Max_Null()
-        {
-            base.Max_Null();
+    public override void Max_Null()
+    {
+        base.Max_Null();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "n"."Id", "n"."Name", MAX("n"."Salary") OVER () AS "MaxSalary"
 FROM "NullTestEmployees" AS "n"
 """);
-        }
+    }
 
-        public override void Min_Basic()
-        {
-            base.Min_Basic();
+    public override void Min_Basic()
+    {
+        base.Min_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", MIN("e"."Salary") OVER () AS "MinSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Min_Null()
-        {
-            base.Min_Null();
+    public override void Min_Null()
+    {
+        base.Min_Null();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "n"."Id", "n"."Name", MIN("n"."Salary") OVER () AS "MinSalary"
 FROM "NullTestEmployees" AS "n"
 """);
-        }
+    }
 
-        public override void Count_Star_Basic()
-        {
-            base.Count_Star_Basic();
+    public override void Count_Star_Basic()
+    {
+        base.Count_Star_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", COUNT(*) OVER () AS "Count"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Count_Col_Basic()
-        {
-            base.Count_Col_Basic();
+    public override void Count_Col_Basic()
+    {
+        base.Count_Col_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", COUNT("e"."Id") OVER () AS "Count"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void RowNumber_Basic()
-        {
-            base.RowNumber_Basic();
+    public override void RowNumber_Basic()
+    {
+        base.RowNumber_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", ROW_NUMBER() OVER ( ORDER BY "e"."Name") AS "RowNumber"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void First_Value_OderByEnd_Basic()
-        {
-            base.First_Value_OderByEnd_Basic();
+    public override void First_Value_OderByEnd_Basic()
+    {
+        base.First_Value_OderByEnd_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", FIRST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary") AS "FirstValue"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void First_Value_FrameEnd_Basic()
-        {
-            base.First_Value_FrameEnd_Basic();
+    public override void First_Value_FrameEnd_Basic()
+    {
+        base.First_Value_FrameEnd_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", FIRST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary" ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "FirstValue"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void First_Value_Null()
-        {
-            base.First_Value_Null();
+    public override void First_Value_Null()
+    {
+        base.First_Value_Null();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "n"."Id", "n"."Name", FIRST_VALUE("n"."Salary") OVER ( ORDER BY "n"."WorkExperience") AS "FirstValue"
 FROM "NullTestEmployees" AS "n"
 """);
-        }
+    }
 
-        public override void Last_Value_OderByEnd_Basic()
-        {
-            base.Last_Value_OderByEnd_Basic();
+    public override void Last_Value_OderByEnd_Basic()
+    {
+        base.Last_Value_OderByEnd_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LAST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary") AS "LastValue"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Last_Value_FrameEnd_Basic()
-        {
-            base.Last_Value_FrameEnd_Basic();
+    public override void Last_Value_FrameEnd_Basic()
+    {
+        base.Last_Value_FrameEnd_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LAST_VALUE("e"."Name") OVER ( ORDER BY "e"."Salary" ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "LastValue"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Last_Value_Null()
-        {
-            base.Last_Value_Null();
+    public override void Last_Value_Null()
+    {
+        base.Last_Value_Null();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "n"."Id", "n"."Name", LAST_VALUE("n"."Salary") OVER ( ORDER BY "n"."WorkExperience") AS "LastValue"
 FROM "NullTestEmployees" AS "n"
 """);
-        }
+    }
 
-        public override void Rank_Basic()
-        {
-            base.Rank_Basic();
+    public override void Rank_Basic()
+    {
+        base.Rank_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", RANK() OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Dense_Rank_Basic()
-        {
-            base.Dense_Rank_Basic();
+    public override void Dense_Rank_Basic()
+    {
+        base.Dense_Rank_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", DENSE_RANK() OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void NTile_Basic()
-        {
-            base.NTile_Basic();
+    public override void NTile_Basic()
+    {
+        base.NTile_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", NTILE(3) OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Avg_Decimal()
-        {
-            base.Avg_Decimal();
+    public override void Avg_Decimal()
+    {
+        base.Avg_Decimal();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", AVG("e"."Salary") OVER () AS "AverageSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Avg_Int()
-        {
-            base.Avg_Int();
+    public override void Avg_Int()
+    {
+        base.Avg_Int();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", AVG("e"."WorkExperience") OVER () AS "AverageWork"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Avg_Decimal_Int_Cast_Decimal()
-        {
-            base.Avg_Decimal_Int_Cast_Decimal();
+    public override void Avg_Decimal_Int_Cast_Decimal()
+    {
+        base.Avg_Decimal_Int_Cast_Decimal();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", AVG(CAST("e"."WorkExperience" AS TEXT)) OVER () AS "AverageWork"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Avg_Null()
-        {
-            base.Avg_Null();
+    public override void Avg_Null()
+    {
+        base.Avg_Null();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "n"."Id", "n"."Name", AVG("n"."Salary") OVER () AS "AverageSalary"
 FROM "NullTestEmployees" AS "n"
 """);
-        }
+    }
 
-        //todo - add more avg tests
+    //todo - add more avg tests
 
-        public override void Sum_Decimal()
-        {
-            base.Sum_Decimal();
+    public override void Sum_Decimal()
+    {
+        base.Sum_Decimal();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", SUM("e"."Salary") OVER () AS "SumSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Sum_Int()
-        {
-            base.Sum_Int();
+    public override void Sum_Int()
+    {
+        base.Sum_Int();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", SUM("e"."WorkExperience") OVER () AS "SumWorkExperience"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Percent_Rank_Basic()
-        {
-            base.Percent_Rank_Basic();
+    public override void Percent_Rank_Basic()
+    {
+        base.Percent_Rank_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", PERCENT_RANK() OVER ( ORDER BY "e"."Salary") AS "PercentRank"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Cume_Dist_Basic()
-        {
-            base.Cume_Dist_Basic();
+    public override void Cume_Dist_Basic()
+    {
+        base.Cume_Dist_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", CUME_DIST() OVER ( ORDER BY "e"."Salary") AS "CumeDist"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Lag_Decimal_Basic()
-        {
-            base.Lag_Decimal_Basic();
+    public override void Lag_Decimal_Basic()
+    {
+        base.Lag_Decimal_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LAG("e"."Salary", 1, '0.0') OVER ( ORDER BY "e"."Salary") AS "PreviousSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Lag_Int_Basic()
-        {
-            base.Lag_Int_Basic();
+    public override void Lag_Int_Basic()
+    {
+        base.Lag_Int_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LAG("e"."Id", 1, 0) OVER ( ORDER BY "e"."Id") AS "PreviousId"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Lead_Decimal_Basic()
-        {
-            base.Lead_Decimal_Basic();
+    public override void Lead_Decimal_Basic()
+    {
+        base.Lead_Decimal_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LEAD("e"."Salary", 1, '0.0') OVER ( ORDER BY "e"."Salary") AS "NextSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Lead_Int_Basic()
-        {
-            base.Lead_Int_Basic();
+    public override void Lead_Int_Basic()
+    {
+        base.Lead_Int_Basic();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", LEAD("e"."Id", 1, 0) OVER ( ORDER BY "e"."Id") AS "NextId"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        #endregion
+    #endregion
 
-        #region WindowOverExpression Equality tests
+    #region WindowOverExpression Equality tests
 
-        public override void Multiple_Aggregates_Basic_NoDup_Query()
-        {
-            base.Multiple_Aggregates_Basic_NoDup_Query();
+    public override void Multiple_Aggregates_Basic_NoDup_Query()
+    {
+        base.Multiple_Aggregates_Basic_NoDup_Query();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary", MIN("e"."Salary") OVER () AS "MinSalary"
 FROM "Employees" AS "e"
 """);
-        }
+    }
 
-        public override void Multiple_Aggregates_Basic_Dup_Query()
-        {
-            base.Multiple_Aggregates_Basic_Dup_Query();
+    public override void Multiple_Aggregates_Basic_Dup_Query()
+    {
+        base.Multiple_Aggregates_Basic_Dup_Query();
 
-            AssertSql(
-                """
+        AssertSql(
+            """
 SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary1"
 FROM "Employees" AS "e"
 """);
-        }
-
-        #endregion
-
-        #endregion
-
-
-
-
-        public void AssertSql(params string[] expected)
-            => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }
+
+    #endregion
+
+    #endregion
+
+
+
+
+    public void AssertSql(params string[] expected)
+        => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 }

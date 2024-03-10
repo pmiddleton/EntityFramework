@@ -56,8 +56,19 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Employee>().Property(e => e.Salary).HasColumnType("decimal(10,2)");
-            modelBuilder.Entity<NullTestEmployee>().Property(e => e.Salary).HasColumnType("decimal(10,2)");
+            modelBuilder.Entity<Employee>(e =>
+            {
+                e.Property(e => e.Salary).HasColumnType("decimal(10,2)");
+                e.Property(e => e.Name).HasMaxLength(50);
+                e.Property(e => e.DepartmentName).HasMaxLength(25);
+            });
+
+            modelBuilder.Entity<NullTestEmployee>(e =>
+            {
+                e.Property(e => e.Salary).HasColumnType("decimal(10,2)");
+                e.Property(e => e.Name).HasMaxLength(50);
+                e.Property(e => e.DepartmentName).HasMaxLength(25);
+            });
         }
     }
 

@@ -7,17 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.EntityFrameworkCore.Query
+namespace Microsoft.EntityFrameworkCore.Query;
+
+/// <summary>
+/// todo
+/// </summary>
+public interface IWindowBuilderExpressionFactory
 {
     /// <summary>
     /// todo
     /// </summary>
-    public interface IWindowBuilderExpressionFactory
-    {
-        /// <summary>
-        /// todo
-        /// </summary>
-        /// <returns>todo</returns>
-        RelationalWindowBuilderExpression CreateWindowBuilder();
-    }
+    /// <returns>todo</returns>
+    RelationalWindowBuilderExpression CreateWindowBuilder();
 }

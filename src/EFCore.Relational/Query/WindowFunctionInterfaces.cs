@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
-
 /// <summary>
 /// todo
 /// </summary>

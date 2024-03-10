@@ -7,16 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.EntityFrameworkCore.Query
+namespace Microsoft.EntityFrameworkCore.Query;
+
+/// <summary>
+/// todo
+/// </summary>
+public interface IWindowAggregateMethodCallTranslatorPlugin
 {
     /// <summary>
-    /// todo
+    ///     Gets the method call translators.
     /// </summary>
-    public interface IWindowAggregateMethodCallTranslatorPlugin
-    {
-        /// <summary>
-        ///     Gets the method call translators.
-        /// </summary>
-        IEnumerable<IWindowAggregateMethodCallTranslator> Translators { get; }
-    }
+    IEnumerable<IWindowAggregateMethodCallTranslator> Translators { get; }
 }

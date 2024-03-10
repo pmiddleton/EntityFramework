@@ -8,25 +8,24 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace Microsoft.EntityFrameworkCore.Query
+namespace Microsoft.EntityFrameworkCore.Query;
+
+/// <summary>
+/// todo
+/// </summary>
+public interface IWindowAggregateMethodCallTranslatorProvider
 {
     /// <summary>
     /// todo
     /// </summary>
-    public interface IWindowAggregateMethodCallTranslatorProvider
-    {
-        /// <summary>
-        /// todo
-        /// </summary>
-        /// <param name="model">todo</param>
-        /// <param name="method">todo</param>
-        /// <param name="arguments">todo</param>
-        /// <param name="logger">todo</param>
-        /// <returns>todo</returns>
-        SqlFunctionExpression? Translate(
-           IModel model,
-           MethodInfo method,
-           IReadOnlyList<SqlExpression> arguments,
-           IDiagnosticsLogger<DbLoggerCategory.Query> logger);
-    }
+    /// <param name="model">todo</param>
+    /// <param name="method">todo</param>
+    /// <param name="arguments">todo</param>
+    /// <param name="logger">todo</param>
+    /// <returns>todo</returns>
+    SqlFunctionExpression? Translate(
+       IModel model,
+       MethodInfo method,
+       IReadOnlyList<SqlExpression> arguments,
+       IDiagnosticsLogger<DbLoggerCategory.Query> logger);
 }
