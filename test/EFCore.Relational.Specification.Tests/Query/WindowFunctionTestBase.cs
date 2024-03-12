@@ -192,6 +192,8 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     #region Window Functions
 
+    #region Max Tests
+
     [ConditionalFact]
     public virtual void Max_Basic()
     {
@@ -206,6 +208,23 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         Assert.Equal(8, results.Count);
         Assert.Equal(1750000.0m, results[0].MaxSalary);
+    }
+
+
+    [ConditionalFact]
+    public virtual void Max_Parition_Order_Rows()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, 5).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
@@ -223,6 +242,8 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(2, results.Count);
         Assert.Null(results[0].MaxSalary);
     }
+
+    #endregion
 
     [ConditionalFact]
     public virtual void Min_Basic()
@@ -829,9 +850,153 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     #endregion
 
-    #region Rows
+    #region Rows / Range Tests
 
-    //catch error with Rows(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing) - before db would be nice
+    #region Rows(int preceding)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, 5).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_UnboundedPreceding()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Rows(int preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_X_Following_X()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_CurrentRow_Following_X()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_UnboundedPreceding_Following_X()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Rows(int preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_X_Following_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_X_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_CurrentRow_Following_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_CurrentRow_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_UnboundedPreceding_Following_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Rows_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion Range(RowsPreceding preceding)
+
+    [ConditionalFact]
+    public virtual void Range_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Range_UnboundedPreceding()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Range(RowsPreceding preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_CurrentRow_Following_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_CurrentRow_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_UnboundedPreceding_Following_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
 
     #endregion
 

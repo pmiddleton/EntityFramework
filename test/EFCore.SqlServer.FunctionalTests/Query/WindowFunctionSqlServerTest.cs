@@ -28,7 +28,9 @@ public class WindowFunctionSqlServerTest : WindowFunctionTestBase<WindowFunction
 
     #region Tests
 
-    #region Base Window Functions Tests
+    #region Window Functions Tests
+
+    #region Max Tests
 
     public override void Max_Basic()
     {
@@ -40,6 +42,19 @@ SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER () AS [MaxSalary]
 FROM [Employees] AS [e]
 """);
     }
+
+    public override void Max_Parition_Order_Rows()
+    {
+        base.Max_Parition_Order_Rows();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN CURRENT ROW AND 5 FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
 
     public override void Max_Null()
     {
