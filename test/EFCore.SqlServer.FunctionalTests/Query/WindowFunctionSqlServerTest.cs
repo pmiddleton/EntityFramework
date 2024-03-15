@@ -560,6 +560,189 @@ FROM [Employees] AS [e]
 
     #endregion
 
+    #region Rows / Range Tests
+
+    #region Rows(int preceding)
+
+    public override void Rows_Preceding_X()
+    {
+        base.Rows_Preceding_X();
+
+        AssertSql(
+         """
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS 2 PRECEDING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding)
+
+    [ConditionalFact]
+    public override void Rows_Preceding_CurrentRow()
+    {
+        base.Rows_Preceding_CurrentRow();
+
+        AssertSql(
+ """
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS CURRENT ROW) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_UnboundedPreceding()
+    {
+        base.Rows_Preceding_UnboundedPreceding();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS UNBOUNDED PRECEDING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Rows(int preceding, int following)
+
+    [ConditionalFact]
+    public override void Rows_Preceding_X_Following_X()
+    {
+        base.Rows_Preceding_X_Following_X();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN 1 PRECEDING AND 2 FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding, int following)
+
+    [ConditionalFact]
+    public override void Rows_Preceding_CurrentRow_Following_X()
+    {
+        base.Rows_Preceding_CurrentRow_Following_X();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_UnboundedPreceding_Following_X()
+    {
+        base.Rows_Preceding_UnboundedPreceding_Following_X();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN UNBOUNDED PRECEDING AND 2 FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Rows(int preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public override void Rows_Preceding_X_Following_CurrentRow()
+    {
+        base.Rows_Preceding_X_Following_CurrentRow();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_X_Following_UnboundedFollowing()
+    {
+        base.Rows_Preceding_X_Following_UnboundedFollowing();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN 2 PRECEDING AND UNBOUNDED FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Rows(RowsPreceding preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public override void Rows_Preceding_CurrentRow_Following_CurrentRow()
+    {
+        base.Rows_Preceding_CurrentRow_Following_CurrentRow();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN CURRENT ROW AND CURRENT ROW) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_CurrentRow_Following_UnboundedFollowing()
+    {
+        base.Rows_Preceding_CurrentRow_Following_UnboundedFollowing();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_UnboundedPreceding_Following_CurrentRow()
+    {
+        base.Rows_Preceding_UnboundedPreceding_Following_CurrentRow();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public override void Rows_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
+    {
+        base.Rows_Preceding_UnboundedPreceding_Following_UnboundedFollowing();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name] ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion Range(RowsPreceding preceding)
+
+    [ConditionalFact]
+    public override void Range_CurrentRow()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public override void Range_UnboundedPreceding()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
     public override void Outer_Order_By_Sql()
     {
         base.Outer_Order_By_Sql();

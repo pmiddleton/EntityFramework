@@ -863,7 +863,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         {
             e.Id,
             e.Name,
-            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, 5).Max(e.Salary)
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2).Max(e.Salary)
         }).ToList();
 
         Assert.Equal(8, results.Count);
@@ -877,13 +877,33 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Rows_Preceding_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_UnboundedPreceding()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.UnboundedPreceding).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
@@ -893,7 +913,17 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Rows_Preceding_X_Following_X()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(1, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
@@ -903,13 +933,33 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Rows_Preceding_CurrentRow_Following_X()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_UnboundedPreceding_Following_X()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.UnboundedPreceding, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
@@ -919,13 +969,33 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Rows_Preceding_X_Following_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_X_Following_UnboundedFollowing()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
@@ -935,28 +1005,70 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Rows_Preceding_CurrentRow_Following_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_CurrentRow_Following_UnboundedFollowing()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_UnboundedPreceding_Following_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.UnboundedPreceding, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Rows_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
-    #endregion Range(RowsPreceding preceding)
+    #endregion
+
+    #region Range(RowsPreceding preceding)
 
     [ConditionalFact]
     public virtual void Range_CurrentRow()
@@ -994,6 +1106,24 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     [ConditionalFact]
     public virtual void Range_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #endregion
+
+    #region Misc
+
+    [ConditionalFact]
+    public virtual void Rows_No_Parition()
+    {
+        throw new NotImplementedException();
+    }
+
+    [ConditionalFact]
+    public virtual void OrderBy_No_Parition()
     {
         throw new NotImplementedException();
     }
