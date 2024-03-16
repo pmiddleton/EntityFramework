@@ -1073,13 +1073,33 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Range_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Range_UnboundedPreceding()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.UnboundedPreceding).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
@@ -1089,45 +1109,152 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     [ConditionalFact]
     public virtual void Range_Preceding_CurrentRow_Following_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.CurrentRow, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Range_Preceding_CurrentRow_Following_UnboundedFollowing()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Range_Preceding_UnboundedPreceding_Following_CurrentRow()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.UnboundedPreceding, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void Range_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
     }
 
     #endregion
 
     #endregion
 
-    #region Misc
+    #region Partition / Order By
 
     [ConditionalFact]
     public virtual void Rows_No_Parition()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().OrderBy(e.Name).Rows(1, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(500000.00m, results[0].MaxSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Range_No_Parition()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().OrderBy(e.Name).Range(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).OrderBy(r => r.Name).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1750000.00m, results[0].MaxSalary);
     }
 
     [ConditionalFact]
     public virtual void OrderBy_No_Parition()
     {
-        throw new NotImplementedException();
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().OrderBy(e.Name).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(50000.00m, results[0].MaxSalary);
     }
 
+    [ConditionalFact]
+    public virtual void OrderBy_Desc_No_Parition()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().OrderByDescending(e.Name).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(100000.00m, results[0].MaxSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void OrderBy_Desc_Rows()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().OrderByDescending(e.Name).Rows(1).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(100000.00m, results[0].MaxSalary);
+    }
     #endregion
 
     #region Order By
