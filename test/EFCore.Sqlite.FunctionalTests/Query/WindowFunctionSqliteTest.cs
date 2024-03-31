@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Sqlite.Query;
 
 namespace Microsoft.EntityFrameworkCore.Query;
 
@@ -39,6 +40,18 @@ SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER () AS "MaxSalary"
 FROM "Employees" AS "e"
 """);
     }
+
+    public override void Max_Parition_Order_Rows()
+    {
+        base.Max_Parition_Order_Rows();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS BETWEEN CURRENT ROW AND 5 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
 
     public override void Max_Null()
     {
@@ -577,8 +590,6 @@ FROM "Employees" AS "e"
 
     #region Range(RowsPreceding preceding, RowsFollowing following)
 
-    #endregion
-
     [ConditionalFact]
     public override void Range_Preceding_CurrentRow_Following_CurrentRow()
     {
@@ -625,6 +636,9 @@ FROM "Employees" AS "e"
 SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS "MaxSalary"
 FROM "Employees" AS "e"
 """);
+
+    #endregion
+
     }
 
     #endregion
@@ -688,13 +702,429 @@ FROM "Employees" AS "e"
     }
 
 
-
-    #endregion
     #endregion
 
+    #region SQLLite Specific
+
+    #region Range(int preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_X_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(1, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+           """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN 1 PRECEDING AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Range(RowsPreceding preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_CurrentRow_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.CurrentRow, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+           """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN CURRENT ROW AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_UnboundedPreceding_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(RowsPreceding.UnboundedPreceding, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+   """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN UNBOUNDED PRECEDING AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Range(int preceding, RowsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_X_Following_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(2, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN 2 PRECEDING AND CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Range_Preceding_X_Following_UnboundedFollowing()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Range(2, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" RANGE BETWEEN 2 PRECEDING AND UNBOUNDED FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups
+
+    #region Groups(int preceding)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+         """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS 2 PRECEDING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups(GroupsPreceding preceding)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+ """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_UnboundedPreceding()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.UnboundedPreceding).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS UNBOUNDED PRECEDING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups(int preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_X_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(1, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN 1 PRECEDING AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups(GroupsPreceding preceding, int following)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_CurrentRow_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.CurrentRow, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN CURRENT ROW AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_UnboundedPreceding_Following_X()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.UnboundedPreceding, 2).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN UNBOUNDED PRECEDING AND 2 FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups(int preceding, GroupsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_X_Following_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_X_Following_UnboundedFollowing()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(2, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN 2 PRECEDING AND UNBOUNDED FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Groups(GroupsPreceding preceding, GroupsFollowing following)
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_CurrentRow_Following_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.CurrentRow, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN CURRENT ROW AND CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_CurrentRow_Following_UnboundedFollowing()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.CurrentRow, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_UnboundedPreceding_Following_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.UnboundedPreceding, RowsFollowing.CurrentRow).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Groups_Preceding_UnboundedPreceding_Following_UnboundedFollowing()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Groups(RowsPreceding.UnboundedPreceding, RowsFollowing.UnboundedFollowing).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" GROUPS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #endregion
+
+    #endregion
+
+    #endregion
 
 
-
-    public void AssertSql(params string[] expected)
+        public void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 }

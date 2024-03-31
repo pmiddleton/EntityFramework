@@ -115,3 +115,23 @@ public class WindowFrameRangeExpression : WindowFrameExpression
     {
     }
 }
+
+
+/// <summary>
+/// todo
+/// </summary>
+public class WindowFrameGroupsExpression : WindowFrameExpression
+{
+    /// <inheritdoc />
+    public override string FrameName => "GROUPS";
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    public WindowFrameGroupsExpression(SqlExpression? preceding, SqlExpression? following)
+        : base(preceding, following)
+    {
+    }
+}

@@ -754,6 +754,8 @@ public class SqlExpressionFactory : ISqlExpressionFactory
             return new WindowFrameRowExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
         else if (string.Compare(method.Name, "range", StringComparison.OrdinalIgnoreCase) == 0)
             return new WindowFrameRangeExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+        else if (string.Compare(method.Name, "groups", StringComparison.OrdinalIgnoreCase) == 0)
+            return new WindowFrameGroupsExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
         else
             throw new Exception("unsupported frame method");
     }

@@ -28,6 +28,9 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
     private static readonly MethodInfo EscapeLikePatternParameterMethod =
         typeof(SqliteSqlTranslatingExpressionVisitor).GetTypeInfo().GetDeclaredMethod(nameof(ConstructLikePatternParameter))!;
 
+    private static readonly string RangeExtension = nameof(SqliteWindowFunctionExtensions.Range);
+    private static readonly string GroupsExtension = nameof(SqliteWindowFunctionExtensions.Groups);
+
     private const char LikeEscapeChar = '\\';
     private const string LikeEscapeString = "\\";
 
@@ -262,6 +265,27 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 methodCallExpression.Object!, methodCallExpression.Arguments[0], startsWith: false, out var translation2))
         {
             return translation2;
+        }
+
+        if((string.Compare(method.Name, RangeExtension, StringComparison.OrdinalIgnoreCase) == 0 && typeof(IWindowFinal).IsAssignableFrom(methodCallExpression.Arguments[0].Type))
+            || string.Compare(method.Name, GroupsExtension, StringComparison.OrdinalIgnoreCase) == 0)
+        {
+            if (!(Visit(methodCallExpression.Arguments[0]) is RelationalWindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var preceding = Visit(methodCallExpression.Arguments[1]) as SqlConstantExpression;
+
+            if (preceding == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var following = methodCallExpression.Arguments.Count == 3 ? Visit(methodCallExpression.Arguments[2]) as SqlConstantExpression : null;
+
+            if (following == null && methodCallExpression.Arguments.Count == 3)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            wbe.AddFrame(method, preceding, following);
+
+            return wbe;
         }
 
         return base.VisitMethodCall(methodCallExpression);
