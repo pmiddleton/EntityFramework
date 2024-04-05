@@ -748,16 +748,16 @@ public class SqlExpressionFactory : ISqlExpressionFactory
     }
 
     /// <inheritdoc />
-    public virtual WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following)
+    public virtual WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude)
     {
         if (string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0)
-            return new WindowFrameRowExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+            return new WindowFrameRowExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following), ApplyDefaultTypeMapping(exclude));
         else if (string.Compare(method.Name, "range", StringComparison.OrdinalIgnoreCase) == 0)
-            return new WindowFrameRangeExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+            return new WindowFrameRangeExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following), ApplyDefaultTypeMapping(exclude));
         else if (string.Compare(method.Name, "groups", StringComparison.OrdinalIgnoreCase) == 0)
-            return new WindowFrameGroupsExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following));
+            return new WindowFrameGroupsExpression(ApplyDefaultTypeMapping(preceding), ApplyDefaultTypeMapping(following), ApplyDefaultTypeMapping(exclude));
         else
-            throw new Exception("unsupported frame method");
+            throw new Exception($"Unsupported Frame Method {method.Name}");
     }
 
     /// <inheritdoc />

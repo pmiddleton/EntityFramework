@@ -44,6 +44,32 @@ public enum RowsFollowing
 /// <summary>
 /// todo
 /// </summary>
+public enum FrameExclude
+{
+    /// <summary>
+    /// todo
+    /// </summary>
+    NoOthers,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    CurrentRow,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    Group,
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    Ties
+}
+
+/// <summary>
+/// todo
+/// </summary>
 public interface IOver : IOrderRoot, IWindowFinal
 {
     /// <summary>

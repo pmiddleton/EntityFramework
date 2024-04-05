@@ -30,6 +30,7 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
 
     private static readonly string RangeExtension = nameof(SqliteWindowFunctionExtensions.Range);
     private static readonly string GroupsExtension = nameof(SqliteWindowFunctionExtensions.Groups);
+    private static readonly string ExcludeExtension = nameof(SqliteWindowFunctionExtensions.Exclude);
 
     private const char LikeEscapeChar = '\\';
     private const string LikeEscapeString = "\\";
@@ -259,15 +260,13 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         {
             return translation1;
         }
-
-        if (method == StringEndsWithMethodInfo
+        else if (method == StringEndsWithMethodInfo
             && TryTranslateStartsEndsWith(
                 methodCallExpression.Object!, methodCallExpression.Arguments[0], startsWith: false, out var translation2))
         {
             return translation2;
         }
-
-        if((string.Compare(method.Name, RangeExtension, StringComparison.OrdinalIgnoreCase) == 0 && typeof(IWindowFinal).IsAssignableFrom(methodCallExpression.Arguments[0].Type))
+        else if((string.Compare(method.Name, RangeExtension, StringComparison.OrdinalIgnoreCase) == 0 && typeof(IWindowFinal).IsAssignableFrom(methodCallExpression.Arguments[0].Type))
             || string.Compare(method.Name, GroupsExtension, StringComparison.OrdinalIgnoreCase) == 0)
         {
             if (!(Visit(methodCallExpression.Arguments[0]) is RelationalWindowBuilderExpression wbe))
@@ -284,6 +283,20 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 return QueryCompilationContext.NotTranslatedExpression;
 
             wbe.AddFrame(method, preceding, following);
+
+            return wbe;
+        }
+        else if(string.Compare(method.Name, ExcludeExtension, StringComparison.OrdinalIgnoreCase) == 0)
+        {
+            if (!(Visit(methodCallExpression.Arguments[0]) is RelationalWindowBuilderExpression wbe))
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            var exclude = Visit(methodCallExpression.Arguments[1]) as SqlConstantExpression;
+
+            if (exclude == null)
+                return QueryCompilationContext.NotTranslatedExpression;
+
+            wbe.AddExclude(exclude);
 
             return wbe;
         }

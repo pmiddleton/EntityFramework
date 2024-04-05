@@ -510,6 +510,7 @@ public interface ISqlExpressionFactory
     /// <param name="method">todo</param>
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
+    /// <param name="exclude">todo</param>
     /// <returns>todo</returns>
-    WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following);
+    WindowFrameExpression WindowFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude);
 }

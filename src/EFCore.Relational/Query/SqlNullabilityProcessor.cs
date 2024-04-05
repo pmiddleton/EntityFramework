@@ -1495,9 +1495,12 @@ public class SqlNullabilityProcessor
        bool allowOptimizedExpansion,
        out bool nullable)
     {
-        //I have to research what this is supposed to do.  For now just say yes!
-        nullable = true;
+        //todo - figure this out
 
+       var aggregate = Visit(windowOverExpression.Aggregate, out var aggregateNullable);
+        //var partition = Visit(windowOverExpression.Partition, out var partitionNullable);
+
+        nullable = false;
         return windowOverExpression;
     }
 

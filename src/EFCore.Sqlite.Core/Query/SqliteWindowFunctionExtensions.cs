@@ -21,7 +21,7 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Range(this IFrame frame, int preceding, int following)
+    public static IFrameResults Range(this IFrame frame, int preceding, int following)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -31,7 +31,7 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Range(this IFrame frame, RowsPreceding preceding, int following)
+    public static IFrameResults Range(this IFrame frame, RowsPreceding preceding, int following)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -41,7 +41,7 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Range(this IFrame frame, int preceding, RowsFollowing following)
+    public static IFrameResults Range(this IFrame frame, int preceding, RowsFollowing following)
         => throw new NotImplementedException();
 
 
@@ -52,7 +52,7 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="frame">todo</param>
     /// <param name="preceding">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, int preceding)
+    public static IFrameResults Groups(this IFrame frame, int preceding)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -61,28 +61,7 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="frame">todo</param>
     /// <param name="preceding">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, RowsPreceding preceding)
-        => throw new NotImplementedException();
-
-    /// <summary>
-    /// todo
-    /// </summary>
-    /// <param name="frame">todo</param>
-    /// <param name="preceding">todo</param>
-    /// <param name="following">todo</param>
-    /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, int preceding, int following)
-        => throw new NotImplementedException();
-
-
-    /// <summary>
-    /// todo
-    /// </summary>
-    /// <param name="frame">todo</param>
-    /// <param name="preceding">todo</param>
-    /// <param name="following">todo</param>
-    /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, RowsPreceding preceding, int following)
+    public static IFrameResults Groups(this IFrame frame, RowsPreceding preceding)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -92,7 +71,18 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, int preceding, RowsFollowing following)
+    public static IFrameResults Groups(this IFrame frame, int preceding, int following)
+        => throw new NotImplementedException();
+
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    /// <returns>todo</returns>
+    public static IFrameResults Groups(this IFrame frame, RowsPreceding preceding, int following)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -102,7 +92,27 @@ public static class SqliteWindowFunctionExtensions
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
     /// <returns>todo</returns>
-    public static IWindowFinal Groups(this IFrame frame, RowsPreceding preceding, RowsFollowing following)
+    public static IFrameResults Groups(this IFrame frame, int preceding, RowsFollowing following)
+        => throw new NotImplementedException();
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    /// <returns>todo</returns>
+    public static IFrameResults Groups(this IFrame frame, RowsPreceding preceding, RowsFollowing following)
+        => throw new NotImplementedException();
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="frame">todo</param>
+    /// <param name="frameExclude">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="NotImplementedException">todo</exception>
+    public static IWindowFinal Exclude(this IFrameResults frame, FrameExclude frameExclude)
         => throw new NotImplementedException();
 
     /*  /// <summary>
@@ -121,20 +131,5 @@ public static class SqliteWindowFunctionExtensions
               => throw new NotImplementedException();
       }
 
-      /// <summary>
-      /// todo
-      /// </summary>
-      public static class ExcludeableExtensions
-      {
-          /// <summary>
-          /// todo
-          /// </summary>
-          /// <param name="frame">todo</param>
-          /// <param name="exclude">todo</param>
-          /// <returns>todo</returns>
-          /// <exception cref="NotImplementedException">todo</exception>
-          public static IWindowFinal Exclude(this IFrameResults frame, Exclude exclude)
-              => throw new NotImplementedException();
-      }
       */
 }

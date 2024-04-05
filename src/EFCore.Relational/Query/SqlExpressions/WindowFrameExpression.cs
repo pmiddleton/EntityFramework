@@ -32,12 +32,21 @@ public abstract class WindowFrameExpression : Expression, IPrintableExpression
     /// <summary>
     /// todo
     /// </summary>
-    public WindowFrameExpression(SqlExpression? preceding, SqlExpression? following)
+    public SqlExpression? Exclude { get; set; }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="preceding">todo</param>
+    /// <param name="following">todo</param>
+    /// <param name="exclude">todo</param>
+    public WindowFrameExpression(SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude)
     {
-        //todo - exception if both null?
+        //todo - exception if both preceding and follow are null?
 
         Preceding = preceding;
         Following = following;
+        Exclude = exclude;
     }
 
     /// <inheritdoc />
@@ -63,7 +72,9 @@ public abstract class WindowFrameExpression : Expression, IPrintableExpression
             && ((Preceding == null && windowFrameExpression.Preceding == null)
                 || (Preceding != null && Preceding.Equals(windowFrameExpression.Preceding)))
             && ((Following == null && windowFrameExpression.Following == null)
-                || (Following != null && Following.Equals(windowFrameExpression.Following)));
+                || (Following != null && Following.Equals(windowFrameExpression.Following)))
+            && ((Exclude == null && windowFrameExpression.Exclude == null)
+                || (Exclude != null && Exclude.Equals(windowFrameExpression.Exclude)));
 
     /// <inheritdoc />
     public override int GetHashCode()
@@ -73,6 +84,7 @@ public abstract class WindowFrameExpression : Expression, IPrintableExpression
         hash.Add(FrameName);
         hash.Add(Preceding);
         hash.Add(Following);
+        hash.Add(Exclude);
 
         return hash.ToHashCode();
     }
@@ -91,8 +103,9 @@ public class WindowFrameRowExpression : WindowFrameExpression
     /// </summary>
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
-    public WindowFrameRowExpression(SqlExpression? preceding, SqlExpression? following)
-        : base(preceding, following)
+    /// <param name="exclude">todo</param>
+    public WindowFrameRowExpression(SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude)
+        : base(preceding, following, exclude)
     {
     }
 }
@@ -110,12 +123,12 @@ public class WindowFrameRangeExpression : WindowFrameExpression
     /// </summary>
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
-    public WindowFrameRangeExpression(SqlExpression? preceding, SqlExpression? following)
-        : base(preceding, following)
+    /// <param name="exclude">todo</param>
+    public WindowFrameRangeExpression(SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude)
+        : base(preceding, following, exclude)
     {
     }
 }
-
 
 /// <summary>
 /// todo
@@ -130,8 +143,9 @@ public class WindowFrameGroupsExpression : WindowFrameExpression
     /// </summary>
     /// <param name="preceding">todo</param>
     /// <param name="following">todo</param>
-    public WindowFrameGroupsExpression(SqlExpression? preceding, SqlExpression? following)
-        : base(preceding, following)
+    /// <param name="exclude">todo</param>
+    public WindowFrameGroupsExpression(SqlExpression? preceding, SqlExpression? following, SqlExpression? exclude)
+        : base(preceding, following, exclude)
     {
     }
 }

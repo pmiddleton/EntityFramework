@@ -20,6 +20,7 @@ public class RelationalWindowBuilderExpression : Expression
     private readonly List<OrderingExpression> _orderingExpressions = new List<OrderingExpression>();
     private WindowPartitionExpression? _partitionExpression;
     private WindowFrameExpression? _frameExpression;
+    private SqlConstantExpression? _excludeExpression;
 
     /// <summary>
     /// todo
@@ -48,6 +49,11 @@ public class RelationalWindowBuilderExpression : Expression
     /// <summary>
     /// todo
     /// </summary>
+    public SqlConstantExpression? ExcludeExpression => _excludeExpression;
+
+    /// <summary>
+    /// todo
+    /// </summary>
     public virtual void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
 
     /// <summary>
@@ -58,5 +64,18 @@ public class RelationalWindowBuilderExpression : Expression
     /// <summary>
     /// todo
     /// </summary>
-    public virtual void AddFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following) => _frameExpression = _sqlExpressionFactory.WindowFrame(method, preceding, following);
+    public virtual void AddFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following) => _frameExpression = _sqlExpressionFactory.WindowFrame(method, preceding, following, _excludeExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public virtual void AddExclude(SqlConstantExpression expression)
+    {
+        _excludeExpression = expression;
+
+        if(_frameExpression != null)
+        {
+            _frameExpression.Exclude = _excludeExpression;
+        }
+    }
 }

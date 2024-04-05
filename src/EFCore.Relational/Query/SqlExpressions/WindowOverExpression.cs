@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -19,22 +20,22 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <summary>
     /// todo
     /// </summary>
-    public WindowPartitionExpression? PartitionExpression { get; init; }
+    public WindowPartitionExpression? Partition { get; init; }
 
     /// <summary>
     /// todo
     /// </summary>
-    public SqlFunctionExpression AggregateExpression { get; init; }
+    public SqlFunctionExpression Aggregate { get; set; }
 
     /// <summary>
     /// todo
     /// </summary>
-    public IReadOnlyList<OrderingExpression> OrderingExpressions { get; init; }
+    public IReadOnlyList<OrderingExpression> Ordering { get; init; }
 
     /// <summary>
     /// todo
     /// </summary>
-    public WindowFrameExpression? WindowFrameExpression { get; init; }
+    public WindowFrameExpression? WindowFrame { get; init; }
 
     /// <summary>
     /// todo
@@ -47,10 +48,10 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
         IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression)
         : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
     {
-        PartitionExpression = partitionExpression;
-        AggregateExpression = aggregateExpression;
-        OrderingExpressions = orderingExpressions;
-        WindowFrameExpression = windowframeExpression;
+        Partition = partitionExpression;
+        Aggregate = aggregateExpression;
+        Ordering = orderingExpressions;
+        WindowFrame = windowframeExpression;
     }
 
     /// <summary>
@@ -67,33 +68,47 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
         Type type, RelationalTypeMapping? relationalTypeMapping)
         : base(type, relationalTypeMapping)
     {
-        PartitionExpression = partitionExpression;
-        AggregateExpression = aggregateExpression;
-        OrderingExpressions = orderingExpressions;
-        WindowFrameExpression = windowframeExpression;
+        Partition = partitionExpression;
+        Aggregate = aggregateExpression;
+        Ordering = orderingExpressions;
+        WindowFrame = windowframeExpression;
     }
 
     /// <inheritdoc />
     protected override Expression VisitChildren(ExpressionVisitor visitor)
     {
-        var aggregate = (SqlFunctionExpression)visitor.Visit(AggregateExpression);
-        var partition = PartitionExpression != null ? visitor.Visit(PartitionExpression) as WindowPartitionExpression : null;
+        var aggregate = (SqlFunctionExpression)visitor.Visit(Aggregate);
+        var partition = Partition != null ? visitor.Visit(Partition) as WindowPartitionExpression : null;
         var orderBys = new List<OrderingExpression>();
-        var rowRange = visitor.Visit(WindowFrameExpression) as WindowFrameExpression;
+        var frame = visitor.Visit(WindowFrame) as WindowFrameExpression;
 
-        var changed = false;
+        //var changed = false;
 
-        foreach (var orderingExpression in OrderingExpressions)
+        foreach (var orderingExpression in Ordering)
         {
             var newOrder = (OrderingExpression)visitor.Visit(orderingExpression);
             orderBys.Add(newOrder);
-            changed |= newOrder != orderingExpression;
         }
 
-        return partition != PartitionExpression || aggregate != AggregateExpression || rowRange != WindowFrameExpression || changed
-            ? new WindowOverExpression(aggregate, partition, orderBys, rowRange)
-            : this;
+        return Update(partition, aggregate, orderBys, frame);
     }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="partition">todo</param>
+    /// <param name="aggregate">todo</param>
+    /// <param name="ordering">todo</param>
+    /// <param name="frame">todo</param>
+    /// <returns>todo</returns>
+    public virtual WindowOverExpression Update(
+        WindowPartitionExpression? partition,
+        SqlFunctionExpression aggregate,
+        IReadOnlyList<OrderingExpression> ordering,
+        WindowFrameExpression? frame)
+        => partition != Partition || aggregate != Aggregate || frame != WindowFrame || !Enumerable.SequenceEqual(ordering, Ordering)
+            ? new WindowOverExpression(aggregate, partition, ordering, frame)
+            : this;
 
 
     /// <summary>
@@ -103,10 +118,10 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <returns>A new expression which has supplied type mapping.</returns>
     public virtual WindowOverExpression ApplyTypeMapping(RelationalTypeMapping? typeMapping)
         => new(
-            AggregateExpression.ApplyTypeMapping(typeMapping),
-            PartitionExpression,
-            OrderingExpressions,
-            WindowFrameExpression,
+            Aggregate.ApplyTypeMapping(typeMapping),
+            Partition,
+            Ordering,
+            WindowFrame,
             Type,
             typeMapping ?? TypeMapping);
 
@@ -128,29 +143,29 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
 
     private bool Equals(WindowOverExpression windowOverExpression)
         => base.Equals(windowOverExpression)
-            && AggregateExpression.Equals(windowOverExpression.AggregateExpression)
-            && ((PartitionExpression == null && windowOverExpression.PartitionExpression == null)
-                || (PartitionExpression != null && PartitionExpression.Equals(windowOverExpression.PartitionExpression)))
-            && ((WindowFrameExpression == null && windowOverExpression.WindowFrameExpression == null)
-                || (WindowFrameExpression != null && WindowFrameExpression.Equals(windowOverExpression.WindowFrameExpression)))
-            && ((OrderingExpressions == null && windowOverExpression.OrderingExpressions == null)
-                || (OrderingExpressions != null && windowOverExpression.OrderingExpressions != null
-                        && OrderingExpressions.SequenceEqual(windowOverExpression.OrderingExpressions)));
+            && Aggregate.Equals(windowOverExpression.Aggregate)
+            && ((Partition == null && windowOverExpression.Partition == null)
+                || (Partition != null && Partition.Equals(windowOverExpression.Partition)))
+            && ((WindowFrame == null && windowOverExpression.WindowFrame == null)
+                || (WindowFrame != null && WindowFrame.Equals(windowOverExpression.WindowFrame)))
+            && ((Ordering == null && windowOverExpression.Ordering == null)
+                || (Ordering != null && windowOverExpression.Ordering != null
+                        && Ordering.SequenceEqual(windowOverExpression.Ordering)));
 
     /// <inheritdoc />
     public override int GetHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());
-        hash.Add(AggregateExpression);
-        hash.Add(WindowFrameExpression);
-        hash.Add(WindowFrameExpression);
+        hash.Add(Aggregate);
+        hash.Add(WindowFrame);
+        hash.Add(WindowFrame);
 
-        if (OrderingExpressions != null)
+        if (Ordering != null)
         {
-            for (var i = 0; i < OrderingExpressions.Count; i++)
+            for (var i = 0; i < Ordering.Count; i++)
             {
-                hash.Add(OrderingExpressions[i]);
+                hash.Add(Ordering[i]);
             }
         }
 

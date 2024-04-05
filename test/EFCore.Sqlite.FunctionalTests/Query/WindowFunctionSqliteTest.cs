@@ -1120,11 +1120,103 @@ FROM "Employees" AS "e"
 
     #endregion
 
+    #region Exclude
+
+    [ConditionalFact]
+    public virtual void Exclude_NoOthers()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2).Exclude(FrameExclude.NoOthers).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+         """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS 2 PRECEDING EXCLUDE NO OTHERS) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Exclude_CurrentRow()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2).Exclude(FrameExclude.CurrentRow).Max<decimal?>(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].MaxSalary);
+
+        AssertSql(
+         """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS 2 PRECEDING EXCLUDE CURRENT ROW) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Exclude_Group()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2).Exclude(FrameExclude.Group).Max<decimal?>(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].MaxSalary);
+
+        AssertSql(
+         """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS 2 PRECEDING EXCLUDE GROUP) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    [ConditionalFact]
+    public virtual void Exclude_Ties()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Rows(2).Exclude(FrameExclude.Ties).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+
+        AssertSql(
+         """
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name" ROWS 2 PRECEDING EXCLUDE TIES) AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
     #endregion
 
     #endregion
 
 
-        public void AssertSql(params string[] expected)
+    public void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 }
