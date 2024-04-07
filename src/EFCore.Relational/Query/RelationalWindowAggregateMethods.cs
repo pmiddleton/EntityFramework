@@ -26,7 +26,8 @@ internal static class RelationalWindowAggregateMethods
         LastValueFrameResults = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IFrameResults).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
         LastValueOrderThen = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.LastValue) && typeof(IOrderThen).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
         Lead = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Lead));
-        Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max));
+        Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max) && m.GetParameters().Length == 2);
+        MaxFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max) && m.GetParameters().Length == 3);
         Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min));
         NTile = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.NTile));
         PercentRank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.PercentRank));
@@ -47,6 +48,7 @@ internal static class RelationalWindowAggregateMethods
     public static MethodInfo LastValueFrameResults { get; }
     public static MethodInfo LastValueOrderThen { get; }
     public static MethodInfo Max { get; }
+    public static MethodInfo MaxFilter { get; }
     public static MethodInfo Min { get; }
     public static MethodInfo NTile { get; }
     public static MethodInfo PercentRank { get; }

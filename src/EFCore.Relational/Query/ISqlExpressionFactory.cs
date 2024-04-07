@@ -494,15 +494,18 @@ public interface ISqlExpressionFactory
     /// <returns>todo</returns>
     WindowPartitionExpression PartitionBy(IEnumerable<SqlExpression> partitions);
 
+
     /// <summary>
     /// todo
     /// </summary>
-    /// <param name="aggregateExpression">todo</param>
-    /// <param name="partitionExpression">todo</param>
-    /// <param name="orderingExpressions">todo</param>
-    /// <param name="rowOrRangeExpression">todo</param>
+    /// <param name="aggregate">todo</param>
+    /// <param name="partition">todo</param>
+    /// <param name="orderings">todo</param>
+    /// <param name="frame">todo</param>
+    /// <param name="filter">todo</param>
     /// <returns>todo</returns>
-    WindowOverExpression Over(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression, IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? rowOrRangeExpression);
+    WindowOverExpression Over(SqlFunctionExpression aggregate, WindowPartitionExpression? partition, IReadOnlyList<OrderingExpression> orderings,
+        WindowFrameExpression? frame, SqlExpression? filter);
 
     /// <summary>
     /// todo

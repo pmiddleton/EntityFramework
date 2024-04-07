@@ -114,22 +114,4 @@ public static class SqliteWindowFunctionExtensions
     /// <exception cref="NotImplementedException">todo</exception>
     public static IWindowFinal Exclude(this IFrameResults frame, FrameExclude frameExclude)
         => throw new NotImplementedException();
-
-    /*  /// <summary>
-      /// todo
-      /// </summary>
-      public static class OverExtensions
-      {
-          /// <summary>
-          /// todo
-          /// </summary>
-          /// <param name="frame">todo</param>
-          /// <param name="filter">todo</param>
-          /// <returns>todo</returns>
-          /// <exception cref="NotImplementedException">todo</exception>
-          public static IOver Filter(this IOver frame, Func<bool> filter)
-              => throw new NotImplementedException();
-      }
-
-      */
 }

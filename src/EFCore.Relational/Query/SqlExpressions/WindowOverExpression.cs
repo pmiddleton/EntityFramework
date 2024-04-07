@@ -40,18 +40,26 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <summary>
     /// todo
     /// </summary>
+    public SqlExpression? Filter { get; init; }
+
+
+    /// <summary>
+    /// todo
+    /// </summary>
     /// <param name="aggregateExpression">todo</param>
     /// <param name="partitionExpression">todo</param>
     /// <param name="orderingExpressions">todo</param>
     /// <param name="windowframeExpression">todo</param>
+    /// <param name="filterExpression">todo</param>
     public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
-        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression)
+        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression, SqlExpression? filterExpression)
         : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
     {
         Partition = partitionExpression;
         Aggregate = aggregateExpression;
         Ordering = orderingExpressions;
         WindowFrame = windowframeExpression;
+        Filter = filterExpression;
     }
 
     /// <summary>
@@ -61,10 +69,11 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <param name="partitionExpression">todo</param>
     /// <param name="orderingExpressions">todo</param>
     /// <param name="windowframeExpression">todo</param>
+    /// <param name="filterExpression">todo</param>
     /// <param name="type">todo</param>
     /// <param name="relationalTypeMapping">todo</param>
     public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
-        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression,
+        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression, SqlExpression? filterExpression,
         Type type, RelationalTypeMapping? relationalTypeMapping)
         : base(type, relationalTypeMapping)
     {
@@ -72,6 +81,7 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
         Aggregate = aggregateExpression;
         Ordering = orderingExpressions;
         WindowFrame = windowframeExpression;
+        Filter = filterExpression;
     }
 
     /// <inheritdoc />
@@ -81,6 +91,7 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
         var partition = Partition != null ? visitor.Visit(Partition) as WindowPartitionExpression : null;
         var orderBys = new List<OrderingExpression>();
         var frame = visitor.Visit(WindowFrame) as WindowFrameExpression;
+        var filter = visitor.Visit(Filter) as SqlExpression;
 
         //var changed = false;
 
@@ -90,7 +101,7 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
             orderBys.Add(newOrder);
         }
 
-        return Update(partition, aggregate, orderBys, frame);
+        return Update(partition, aggregate, orderBys, frame, filter);
     }
 
     /// <summary>
@@ -100,14 +111,16 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <param name="aggregate">todo</param>
     /// <param name="ordering">todo</param>
     /// <param name="frame">todo</param>
+    /// <param name="filter">todo</param>
     /// <returns>todo</returns>
     public virtual WindowOverExpression Update(
         WindowPartitionExpression? partition,
         SqlFunctionExpression aggregate,
         IReadOnlyList<OrderingExpression> ordering,
-        WindowFrameExpression? frame)
-        => partition != Partition || aggregate != Aggregate || frame != WindowFrame || !Enumerable.SequenceEqual(ordering, Ordering)
-            ? new WindowOverExpression(aggregate, partition, ordering, frame)
+        WindowFrameExpression? frame,
+        SqlExpression? filter)
+        => partition != Partition || aggregate != Aggregate || frame != WindowFrame || !Enumerable.SequenceEqual(ordering, Ordering) || filter != Filter
+            ? new WindowOverExpression(aggregate, partition, ordering, frame, filter)
             : this;
 
 
@@ -122,6 +135,7 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
             Partition,
             Ordering,
             WindowFrame,
+            Filter,
             Type,
             typeMapping ?? TypeMapping);
 
@@ -148,6 +162,8 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
                 || (Partition != null && Partition.Equals(windowOverExpression.Partition)))
             && ((WindowFrame == null && windowOverExpression.WindowFrame == null)
                 || (WindowFrame != null && WindowFrame.Equals(windowOverExpression.WindowFrame)))
+            & ((Filter == null && windowOverExpression.Filter == null)
+                || (Filter != null && Filter.Equals(windowOverExpression.Filter)))
             && ((Ordering == null && windowOverExpression.Ordering == null)
                 || (Ordering != null && windowOverExpression.Ordering != null
                         && Ordering.SequenceEqual(windowOverExpression.Ordering)));

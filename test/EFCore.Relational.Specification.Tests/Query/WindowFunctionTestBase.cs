@@ -188,6 +188,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     #endregion
 
+    //todo - do tests need order by in the main query for comparing results?  Is the order right now dependent on what the db gives us?
     #region Tests
 
     #region Window Functions
@@ -1255,10 +1256,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(8, results.Count);
         Assert.Equal(100000.00m, results[0].MaxSalary);
     }
-    #endregion
-
-    #region Order By
-
+   
     [ConditionalFact]
     public virtual void Outer_Order_By_Sql()
     {
@@ -1274,7 +1272,53 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Fail();
     }
 
+    [ConditionalFact]
+    public virtual void Partition_No_OrderBy_No_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+    }
+
     #endregion
+
+    #region Filter
+
+    [ConditionalFact]
+    public virtual void Filter_Basic()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            //MaxSalary = EF.Functions.Over(() => e.Salary > 100000).OrderBy(e.Name).Rows(1, 2).Max(e.Salary)
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Max<decimal?>(e.Salary, () => e.Salary > 100000)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+        Assert.Equal(200000.00m, results[1].MaxSalary);
+        Assert.Equal(200000.00m, results[2].MaxSalary);
+        Assert.Equal(350000.24m, results[3].MaxSalary);
+        Assert.Equal(1750000.00m, results[4].MaxSalary);
+        Assert.Null(results[5].MaxSalary);
+        Assert.Null(results[6].MaxSalary);
+        Assert.Equal(500000.00m, results[7].MaxSalary);
+    }
+
+    #endregion
+
+    //todo - have the results of one window function be used by a second.
 
     #endregion
 }

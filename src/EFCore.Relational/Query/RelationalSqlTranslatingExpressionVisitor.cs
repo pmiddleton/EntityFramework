@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Net;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
@@ -736,7 +737,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
     /// <inheritdoc />
     protected override Expression VisitLambda<T>(Expression<T> lambdaExpression)
         => throw new InvalidOperationException(CoreStrings.TranslationFailed(lambdaExpression.Print()));
-
+ 
     /// <inheritdoc />
     protected override Expression VisitListInit(ListInitExpression listInitExpression)
         => QueryCompilationContext.NotTranslatedExpression;
@@ -948,44 +949,12 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             throw new UnreachableException();
         }
-        /* else if(method.DeclaringType == typeof(FrameExtensions))
-         {
-             if (!(Visit(arguments[0]) is WindowBuilderExpression wbe))
-                 return QueryCompilationContext.NotTranslatedExpression;
-
-             var preceding = Visit(arguments[1]) as SqlConstantExpression;
-
-             if (preceding == null)
-                 return QueryCompilationContext.NotTranslatedExpression;
-
-             var following = arguments.Count == 3 ? Visit(arguments[2]) as SqlConstantExpression : null;
-
-             if (following == null && arguments.Count == 3)
-                 return QueryCompilationContext.NotTranslatedExpression;
-
-             wbe.AddRowOrRange(string.Compare(method.Name, "rows", StringComparison.OrdinalIgnoreCase) == 0
-                 ? WindowRowRangeExpression.RowRange.Row
-                 : WindowRowRangeExpression.RowRange.Range,
-                 preceding,
-                 following);
-
-             return wbe;
-         }*/
-        /*else if (method.DeclaringType == typeof(OverExtensions) && method.Name == nameof(OverExtensions.Filter))
-        {
-            var ugh = arguments[1].UnwrapLambdaFromQuote();
-            
-            var temp = Visit(ugh.Body);
-
-            //can I have the results of this and just shove it in a where clause?
-            throw new NotFiniteNumberException();
-        }*/
         else if(method.DeclaringType == typeof(WindowFunctionsExtensions) && method.Name == nameof(WindowFunctionsExtensions.Over))
         {
             //SqlExpression constructor requires expression return type and type mapping.  Thus we can't just create an empty over clause here and fill
             //it in as we pass it back up the call chain
 
-            //todo - could we put in a temp type of object into windowoverexpression and pass that up the chain and have it overridden when we assign the windowing Function?
+            //todo - could we put in a temp type set to typeof(object) into windowoverexpression and pass that up the chain and have it overridden when we assign the windowing Function?
             return Dependencies.WindowBuilderExpressionFactory.CreateWindowBuilder();
         }
         else if (arguments.Count > 0 && typeof(IWindowFinal).IsAssignableFrom(arguments[0].Type))
@@ -998,7 +967,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             for (var i = 1; i < arguments.Count; i++)
             {
-                if (TranslationFailed(arguments[i], Visit(RemoveObjectConvert(arguments[i])), out var translatedValue))
+                if (TranslationFailed(arguments[i], Visit(RemoveObjectConvert(arguments[i] is LambdaExpression lambda ? lambda.Body : arguments[i])), out var translatedValue))
                 {
                     return QueryCompilationContext.NotTranslatedExpression;
                 }
@@ -1013,7 +982,13 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
 
-            return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
+            //should this go here?
+            if(wbe.FilterExpression != null)
+            {
+
+            }
+
+            return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression, wbe.FilterExpression);
         }
         else if (method.DeclaringType == typeof(IOver)
                     && method.Name == nameof(IOver.PartitionBy)

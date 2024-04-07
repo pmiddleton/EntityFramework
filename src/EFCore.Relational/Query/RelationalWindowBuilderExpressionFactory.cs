@@ -21,6 +21,7 @@ public class RelationalWindowBuilderExpression : Expression
     private WindowPartitionExpression? _partitionExpression;
     private WindowFrameExpression? _frameExpression;
     private SqlConstantExpression? _excludeExpression;
+    private SqlExpression? _filterExpression;
 
     /// <summary>
     /// todo
@@ -54,6 +55,11 @@ public class RelationalWindowBuilderExpression : Expression
     /// <summary>
     /// todo
     /// </summary>
+    public SqlExpression? FilterExpression => _filterExpression;
+
+    /// <summary>
+    /// todo
+    /// </summary>
     public virtual void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
 
     /// <summary>
@@ -65,6 +71,11 @@ public class RelationalWindowBuilderExpression : Expression
     /// todo
     /// </summary>
     public virtual void AddFrame(MethodInfo method, SqlExpression? preceding, SqlExpression? following) => _frameExpression = _sqlExpressionFactory.WindowFrame(method, preceding, following, _excludeExpression);
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    public virtual void AddFilter(SqlExpression filter) => _filterExpression = filter;
 
     /// <summary>
     /// todo

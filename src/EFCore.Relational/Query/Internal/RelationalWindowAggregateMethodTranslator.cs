@@ -103,6 +103,13 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
 
                 return _sqlExpressionFactory.Function("MAX", arguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
 
+            case nameof(RelationalWindowAggregateFunctionExtensions.Max)
+                when methodInfo == RelationalWindowAggregateMethods.MaxFilter:
+
+                var newArguments = new[] { _sqlExpressionFactory.Case([new CaseWhenClause(arguments[1], arguments[0])], _sqlExpressionFactory.Constant(null)) };
+
+                return _sqlExpressionFactory.Function("MAX", newArguments, true, new[] { false }, arguments[0].Type, arguments[0].TypeMapping);
+
             case nameof(RelationalWindowAggregateFunctionExtensions.Min)
                 when methodInfo == RelationalWindowAggregateMethods.Min:
 

@@ -701,6 +701,16 @@ FROM "Employees" AS "e"
 """);
     }
 
+    public override void Partition_No_OrderBy_No_Filter()
+    {
+        base.Partition_No_OrderBy_No_Filter();
+
+        AssertSql(
+"""
+SELECT "e"."Id", "e"."Name", MAX("e"."Salary") OVER (PARTITION BY "e"."DepartmentName") AS "MaxSalary"
+FROM "Employees" AS "e"
+""");
+    }
 
     #endregion
 
