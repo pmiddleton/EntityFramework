@@ -30,6 +30,20 @@ public static class RelationalWindowAggregateFunctionExtensions
     /// <summary>
     /// todo
     /// </summary>
+    /// <typeparam name="TSource">todo</typeparam>
+    /// <param name="final">todo</param>
+    /// <param name="source">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="Exception">todo</exception>
+    public static TSource? Average<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    {
+        throw new Exception();
+    }
+
+    /// <summary>
+    /// todo
+    /// </summary>
     /// <param name="final">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
@@ -37,6 +51,20 @@ public static class RelationalWindowAggregateFunctionExtensions
     {
         throw new Exception();
     }
+
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <param name="final">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="Exception">todo</exception>
+    public static int? Count(this IWindowFinal final, Func<bool> filter)
+    {
+        throw new Exception();
+    }
+
 
     /// <summary>
     /// todo
@@ -50,6 +78,21 @@ public static class RelationalWindowAggregateFunctionExtensions
     {
         throw new Exception();
     }
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <typeparam name="TSource">todo</typeparam>
+    /// <param name="final">todo</param>
+    /// <param name="source">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="Exception">todo</exception>
+    public static int? Count<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    {
+        throw new Exception();
+    }
+
 
     /// <summary>
     /// todo
@@ -200,6 +243,21 @@ public static class RelationalWindowAggregateFunctionExtensions
         throw new Exception();
     }
 
+
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <typeparam name="TSource">todo</typeparam>
+    /// <param name="final">todo</param>
+    /// <param name="source">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="Exception">todo</exception>
+    public static TSource? Min<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    {
+        throw new Exception();
+    }
+
     /// <summary>
     /// todo
     /// </summary>
@@ -258,4 +316,17 @@ public static class RelationalWindowAggregateFunctionExtensions
         throw new Exception();
     }
 
+    /// <summary>
+    /// todo
+    /// </summary>
+    /// <typeparam name="TSource">todo</typeparam>
+    /// <param name="final">todo</param>
+    /// <param name="source">todo</param>
+    /// <param name="filter">todo</param>
+    /// <returns>todo</returns>
+    /// <exception cref="Exception">todo</exception>
+    public static TSource? Sum<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    {
+        throw new Exception();
+    }
 }

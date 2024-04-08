@@ -15,9 +15,12 @@ internal static class RelationalWindowAggregateMethods
     {
         var aggMethods = typeof(RelationalWindowAggregateFunctionExtensions).GetMethods().Where(mi => typeof(IWindowFinal).IsAssignableFrom(mi.GetParameters().FirstOrDefault()?.ParameterType)).ToList();
 
-        Average = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Average));
+        Average = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Average) && m.GetParameters().Length == 2);
+        AverageFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Average) && m.GetParameters().Length == 3);
         CountAll = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 1);
-        CountCol = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 2);
+        CountAllFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 2 && typeof(Func<bool>).IsAssignableFrom(m.GetParameters()[1].ParameterType));
+        CountCol = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 2 && !typeof(Func<bool>).IsAssignableFrom(m.GetParameters()[1].ParameterType));
+        CountColFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Count) && m.GetParameters().Length == 3);
         CumeDist = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.CumeDist));
         DenseRank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.DenseRank));
         FirstValueFrameResults = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.FirstValue) && typeof(IFrameResults).IsAssignableFrom(m.GetParameters().FirstOrDefault()?.ParameterType));
@@ -28,17 +31,22 @@ internal static class RelationalWindowAggregateMethods
         Lead = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Lead));
         Max = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max) && m.GetParameters().Length == 2);
         MaxFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Max) && m.GetParameters().Length == 3);
-        Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min));
+        Min = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min) && m.GetParameters().Length == 2);
+        MinFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Min) && m.GetParameters().Length == 3);
         NTile = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.NTile));
         PercentRank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.PercentRank));
         Rank = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Rank));
         RowNumber = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.RowNumber));
-        Sum = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Sum));
+        Sum = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Sum) && m.GetParameters().Length == 2);
+        SumFilter = aggMethods.Single(m => m.Name == nameof(RelationalWindowAggregateFunctionExtensions.Sum) && m.GetParameters().Length == 3);
     }
 
     public static MethodInfo Average { get; }
+    public static MethodInfo AverageFilter { get; }
     public static MethodInfo CountAll { get; }
+    public static MethodInfo CountAllFilter { get; }
     public static MethodInfo CountCol { get; }
+    public static MethodInfo CountColFilter { get; }
     public static MethodInfo CumeDist { get; }
     public static MethodInfo DenseRank { get; }
     public static MethodInfo FirstValueFrameResults { get; }
@@ -50,9 +58,11 @@ internal static class RelationalWindowAggregateMethods
     public static MethodInfo Max { get; }
     public static MethodInfo MaxFilter { get; }
     public static MethodInfo Min { get; }
+    public static MethodInfo MinFilter { get; }
     public static MethodInfo NTile { get; }
     public static MethodInfo PercentRank { get; }
     public static MethodInfo Rank { get; }
     public static MethodInfo RowNumber { get; }
     public static MethodInfo Sum { get; }
+    public static MethodInfo SumFilter { get; }
 }

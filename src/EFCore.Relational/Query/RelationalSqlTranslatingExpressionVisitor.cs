@@ -978,15 +978,11 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
             var windowingFunction = Dependencies.WindowAggregateMethodCallTranslatorProvider.Translate(_model, method, aggregateParams, _queryCompilationContext.Logger);
 
             if (windowingFunction == null)
+            {
                 return QueryCompilationContext.NotTranslatedExpression;
+            }
 
             var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
-
-            //should this go here?
-            if(wbe.FilterExpression != null)
-            {
-
-            }
 
             return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression, wbe.FilterExpression);
         }
