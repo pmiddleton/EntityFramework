@@ -54,8 +54,6 @@ FROM [Employees] AS [e]
 """);
     }
 
-    #endregion
-
     public override void Max_Null()
     {
         base.Max_Null();
@@ -66,6 +64,24 @@ SELECT [n].[Id], [n].[Name], MAX([n].[Salary]) OVER () AS [MaxSalary]
 FROM [NullTestEmployees] AS [n]
 """);
     }
+
+    public override void Max_Filter()
+    {
+        base.Max_Filter();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], MAX(CASE
+    WHEN [e].[Salary] > 100000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name]) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Min Tests
 
     public override void Min_Basic()
     {
@@ -89,6 +105,24 @@ FROM [NullTestEmployees] AS [n]
 """);
     }
 
+    public override void Min_Filter()
+    {
+        base.Min_Filter();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], MIN(CASE
+    WHEN [e].[Salary] = 200000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name]) AS [MinSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
+    #region Count Tests
+
     public override void Count_Star_Basic()
     {
         base.Count_Star_Basic();
@@ -110,6 +144,36 @@ SELECT [e].[Id], [e].[Name], COUNT([e].[Id]) OVER () AS [Count]
 FROM [Employees] AS [e]
 """);
     }
+
+    public override void Count_Star_Filter()
+    {
+        base.Count_Star_Filter();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], COUNT(CASE
+    WHEN [e].[Salary] <= 1200000.0 THEN N'1'
+    ELSE NULL
+END) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name]) AS [Count]
+FROM [Employees] AS [e]
+""");
+    }
+
+    public override void Count_Col_Filter()
+    {
+        base.Count_Col_Filter();
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], COUNT(CASE
+    WHEN [e].[Salary] <> 500000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name]) AS [Count]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
 
     public override void RowNumber_Basic()
     {
@@ -856,9 +920,9 @@ FROM [Employees] AS [e]
 """);
     }
 
-    public override void Partition_No_OrderBy_No_Filter()
+    public override void Partition_No_OrderBy_No_Frame()
     {
-        base.Partition_No_OrderBy_No_Filter();
+        base.Partition_No_OrderBy_No_Frame();
 
         AssertSql(
 """

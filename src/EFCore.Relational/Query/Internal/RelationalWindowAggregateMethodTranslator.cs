@@ -167,7 +167,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
         return null;
 
         CaseExpression[] BuildCaseExpression(SqlExpression? result = null)
-            => [_sqlExpressionFactory.Case([new CaseWhenClause(arguments[1], result ?? arguments[0])], _sqlExpressionFactory.Constant(null))];
+            => [_sqlExpressionFactory.Case([new CaseWhenClause(arguments[result == null ? 1 : 0], result ?? arguments[0])], _sqlExpressionFactory.Constant(null))];
 
     }
 }

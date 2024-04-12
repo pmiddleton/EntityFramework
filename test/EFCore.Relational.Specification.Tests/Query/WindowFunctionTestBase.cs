@@ -211,7 +211,6 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(1750000.0m, results[0].MaxSalary);
     }
 
-
     [ConditionalFact]
     public virtual void Max_Parition_Order_Rows()
     {
@@ -244,7 +243,32 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Null(results[0].MaxSalary);
     }
 
+    [ConditionalFact]
+    public virtual void Max_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Max<decimal?>(e.Salary, () => e.Salary > 100000)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+        Assert.Equal(200000.00m, results[1].MaxSalary);
+        Assert.Equal(200000.00m, results[2].MaxSalary);
+        Assert.Equal(350000.24m, results[3].MaxSalary);
+        Assert.Equal(1750000.00m, results[4].MaxSalary);
+        Assert.Null(results[5].MaxSalary);
+        Assert.Null(results[6].MaxSalary);
+        Assert.Equal(500000.00m, results[7].MaxSalary);
+    }
+
     #endregion
+
+    #region Min Tests
 
     [ConditionalFact]
     public virtual void Min_Basic()
@@ -279,6 +303,33 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     }
 
     [ConditionalFact]
+    public virtual void Min_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MinSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Min<decimal?>(e.Salary, () => e.Salary == 200000.00m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].MinSalary);
+        Assert.Equal(200000.00m, results[1].MinSalary);
+        Assert.Equal(200000.00m, results[2].MinSalary);
+        Assert.Null(results[3].MinSalary);
+        Assert.Null(results[4].MinSalary);
+        Assert.Null(results[5].MinSalary);
+        Assert.Null(results[6].MinSalary);
+        Assert.Null(results[7].MinSalary);
+    }
+
+    #endregion
+
+    #region Conut Tests
+
+    [ConditionalFact]
     public virtual void Count_Star_Basic()
     {
         using var context = CreateContext();
@@ -309,6 +360,40 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         Assert.Equal(8, results.Count);
         Assert.Equal(8, results[0].Count);
     }
+
+    [ConditionalFact]
+    public virtual void Count_Star_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Count = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Count(() => e.Salary <= 1200000.00m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1, results[0].Count);
+    }
+
+    [ConditionalFact]
+    public virtual void Count_Col_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Count = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Count(e.Salary, () => e.Salary != 500000.00m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1, results[0].Count);
+    }
+
+    #endregion
 
     [ConditionalFact]
     public virtual void RowNumber_Basic()
@@ -1273,7 +1358,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
     }
 
     [ConditionalFact]
-    public virtual void Partition_No_OrderBy_No_Filter()
+    public virtual void Partition_No_OrderBy_No_Frame()
     {
         using var context = CreateContext();
 
@@ -1286,34 +1371,6 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         Assert.Equal(8, results.Count);
         Assert.Equal(1000000.53m, results[0].MaxSalary);
-    }
-
-    #endregion
-
-    #region Filter
-
-    [ConditionalFact]
-    public virtual void Filter_Basic()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            //MaxSalary = EF.Functions.Over(() => e.Salary > 100000).OrderBy(e.Name).Rows(1, 2).Max(e.Salary)
-            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Max<decimal?>(e.Salary, () => e.Salary > 100000)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(1000000.53m, results[0].MaxSalary);
-        Assert.Equal(200000.00m, results[1].MaxSalary);
-        Assert.Equal(200000.00m, results[2].MaxSalary);
-        Assert.Equal(350000.24m, results[3].MaxSalary);
-        Assert.Equal(1750000.00m, results[4].MaxSalary);
-        Assert.Null(results[5].MaxSalary);
-        Assert.Null(results[6].MaxSalary);
-        Assert.Equal(500000.00m, results[7].MaxSalary);
     }
 
     #endregion
