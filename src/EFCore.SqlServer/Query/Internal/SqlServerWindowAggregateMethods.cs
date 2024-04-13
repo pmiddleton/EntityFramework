@@ -16,7 +16,10 @@ internal class SqlServerWindowAggregateMethods
         var aggMethods = typeof(SqlServerWindowAggregateFunctionExtensions).GetMethods().Where(mi => typeof(IWindowFinal).IsAssignableFrom(mi.GetParameters().FirstOrDefault()?.ParameterType)).ToList();
 
         CountBigAll = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 1);
-        CountBigCol = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 2);
+        CountBigAllFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 2 && typeof(Func<bool>).IsAssignableFrom(m.GetParameters()[1].ParameterType));
+
+        CountBigCol = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 2 && !typeof(Func<bool>).IsAssignableFrom(m.GetParameters()[1].ParameterType));
+        CountBigColFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 3);
 
         Stdev = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Stdev));
         StdevP = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.StdevP));
@@ -26,7 +29,10 @@ internal class SqlServerWindowAggregateMethods
     }
 
     public static MethodInfo CountBigAll { get; }
+    public static MethodInfo CountBigAllFilter { get; }
+
     public static MethodInfo CountBigCol { get; }
+    public static MethodInfo CountBigColFilter { get; }
 
     public static MethodInfo Stdev { get; }
     public static MethodInfo StdevP { get; }

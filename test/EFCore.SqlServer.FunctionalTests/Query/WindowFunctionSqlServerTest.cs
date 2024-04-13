@@ -511,6 +511,10 @@ FROM [Employees] AS [e]
 """);
     }
 
+    #endregion
+
+    #region SQL Server Specific
+
     [ConditionalFact]
     public void Count_Big_Star_Basic()
     {
@@ -551,6 +555,56 @@ FROM [Employees] AS [e]
         AssertSql(
             """
 SELECT [e].[Id], [e].[Name], COUNT_BIG([e].[Id]) OVER () AS [Count]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Count_Big_Star_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Count = EF.Functions.Over().CountBig(() => e.Salary > 10m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(8, results[0].Count);
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], COUNT_BIG(CASE
+    WHEN [e].[Salary] > 10.0 THEN N'1'
+    ELSE NULL
+END) OVER () AS [Count]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Count_Big_Col_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Count = EF.Functions.Over().CountBig(e.Id, () => e.Salary > 10m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(8, results[0].Count);
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], COUNT_BIG(CASE
+    WHEN [e].[Salary] > 10.0 THEN [e].[Id]
+    ELSE NULL
+END) OVER () AS [Count]
 FROM [Employees] AS [e]
 """);
     }
