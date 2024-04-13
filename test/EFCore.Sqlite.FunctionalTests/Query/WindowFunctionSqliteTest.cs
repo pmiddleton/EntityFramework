@@ -175,6 +175,129 @@ FROM "Employees" AS "e"
 
     #endregion
 
+    #region Average Tests
+
+    public override void Avg_Decimal()
+    {
+        base.Avg_Decimal();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", AVG("e"."Salary") OVER () AS "AverageSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    public override void Avg_Int()
+    {
+        base.Avg_Int();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", AVG("e"."WorkExperience") OVER () AS "AverageWork"
+FROM "Employees" AS "e"
+""");
+    }
+
+    public override void Avg_Decimal_Int_Cast_Decimal()
+    {
+        base.Avg_Decimal_Int_Cast_Decimal();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", AVG(CAST("e"."WorkExperience" AS TEXT)) OVER () AS "AverageWork"
+FROM "Employees" AS "e"
+""");
+    }
+
+    public override void Avg_Null()
+    {
+        base.Avg_Null();
+
+        AssertSql(
+            """
+SELECT "n"."Id", "n"."Name", AVG("n"."Salary") OVER () AS "AverageSalary"
+FROM "NullTestEmployees" AS "n"
+""");
+    }
+
+    public override void Avg_Filter()
+    {
+        base.Avg_Filter();
+
+        AssertSql(
+            """
+@__ids_1='[1,2,3]' (Size = 7)
+
+SELECT "e"."Id", "e"."Name", AVG(CASE
+    WHEN "e"."EmployeeId" IN (
+        SELECT "i"."value"
+        FROM json_each(@__ids_1) AS "i"
+    ) THEN "e"."Salary"
+    ELSE NULL
+END) OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."Name") AS "Avg"
+FROM "Employees" AS "e"
+""");
+    }
+
+    #endregion
+
+    #region Sum Tests
+
+    public override void Sum_Decimal()
+    {
+        base.Sum_Decimal();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", SUM("e"."Salary") OVER () AS "SumSalary"
+FROM "Employees" AS "e"
+""");
+    }
+
+    public override void Sum_Int()
+    {
+        base.Sum_Int();
+
+        AssertSql(
+            """
+SELECT "e"."Id", "e"."Name", SUM("e"."WorkExperience") OVER () AS "SumWorkExperience"
+FROM "Employees" AS "e"
+""");
+    }
+
+    public override void Sum_Null()
+    {
+        base.Sum_Null();
+
+        AssertSql(
+            """
+SELECT "n"."Id", "n"."Name", SUM("n"."Salary") OVER () AS "Sum"
+FROM "NullTestEmployees" AS "n"
+""");
+    }
+
+    public override void Sum_Filter()
+    {
+        base.Sum_Filter();
+
+        AssertSql(
+            """
+@__ids_1='[1,2,3]' (Size = 4000)
+
+SELECT [e].[Id], [e].[Name], SUM(CASE
+    WHEN [e].[EmployeeId] NOT IN (
+        SELECT [i].[value]
+        FROM OPENJSON(@__ids_1) WITH ([value] int '$') AS [i]
+    ) THEN [e].[Salary]
+    ELSE NULL
+END) OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[Name]) AS [Sum]
+FROM [Employees] AS [e]
+""");
+    }
+
+    #endregion
+
     public override void RowNumber_Basic()
     {
         base.RowNumber_Basic();
@@ -281,74 +404,6 @@ FROM "Employees" AS "e"
         AssertSql(
             """
 SELECT "e"."Id", "e"."Name", NTILE(3) OVER (PARTITION BY "e"."DepartmentName" ORDER BY "e"."WorkExperience") AS "Rank"
-FROM "Employees" AS "e"
-""");
-    }
-
-    public override void Avg_Decimal()
-    {
-        base.Avg_Decimal();
-
-        AssertSql(
-            """
-SELECT "e"."Id", "e"."Name", AVG("e"."Salary") OVER () AS "AverageSalary"
-FROM "Employees" AS "e"
-""");
-    }
-
-    public override void Avg_Int()
-    {
-        base.Avg_Int();
-
-        AssertSql(
-            """
-SELECT "e"."Id", "e"."Name", AVG("e"."WorkExperience") OVER () AS "AverageWork"
-FROM "Employees" AS "e"
-""");
-    }
-
-    public override void Avg_Decimal_Int_Cast_Decimal()
-    {
-        base.Avg_Decimal_Int_Cast_Decimal();
-
-        AssertSql(
-            """
-SELECT "e"."Id", "e"."Name", AVG(CAST("e"."WorkExperience" AS TEXT)) OVER () AS "AverageWork"
-FROM "Employees" AS "e"
-""");
-    }
-
-    public override void Avg_Null()
-    {
-        base.Avg_Null();
-
-        AssertSql(
-            """
-SELECT "n"."Id", "n"."Name", AVG("n"."Salary") OVER () AS "AverageSalary"
-FROM "NullTestEmployees" AS "n"
-""");
-    }
-
-    //todo - add more avg tests
-
-    public override void Sum_Decimal()
-    {
-        base.Sum_Decimal();
-
-        AssertSql(
-            """
-SELECT "e"."Id", "e"."Name", SUM("e"."Salary") OVER () AS "SumSalary"
-FROM "Employees" AS "e"
-""");
-    }
-
-    public override void Sum_Int()
-    {
-        base.Sum_Int();
-
-        AssertSql(
-            """
-SELECT "e"."Id", "e"."Name", SUM("e"."WorkExperience") OVER () AS "SumWorkExperience"
 FROM "Employees" AS "e"
 """);
     }

@@ -327,7 +327,7 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
     #endregion
 
-    #region Conut Tests
+    #region Count Tests
 
     [ConditionalFact]
     public virtual void Count_Star_Basic()
@@ -391,6 +391,164 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         Assert.Equal(8, results.Count);
         Assert.Equal(1, results[0].Count);
+    }
+
+    #endregion
+
+    #region Average Tests
+
+    [ConditionalFact]
+    public virtual void Avg_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageSalary = EF.Functions.Over().Average(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(496875.111250m, results[0].AverageSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Int()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageWork = EF.Functions.Over().Average(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(11, results[0].AverageWork);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Decimal_Int_Cast_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageWork = EF.Functions.Over().Average<decimal>(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(11.375m, results[0].AverageWork);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Null()
+    {
+        using var context = CreateContext();
+
+        var results = context.NullTestEmployees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            AverageSalary = EF.Functions.Over().Average(e.Salary)
+        }).ToList();
+
+        Assert.Equal(2, results.Count);
+        Assert.Null(results[0].AverageSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Avg_Filter()
+    {
+        using var context = CreateContext();
+
+        var ids = new int[] { 1, 2, 3 };
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Avg = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Average<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId))
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].Avg);
+    }
+
+    #endregion
+
+    #region Sum Tests
+
+    [ConditionalFact]
+    public virtual void Sum_Decimal()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            SumSalary = EF.Functions.Over().Sum(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(3975000.89m, results[0].SumSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Sum_Int()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            SumWorkExperience = EF.Functions.Over().Sum(e.WorkExperience)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(91, results[0].SumWorkExperience);
+    }
+
+    [ConditionalFact]
+    public virtual void Sum_Null()
+    {
+        using var context = CreateContext();
+
+        var results = context.NullTestEmployees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Sum = EF.Functions.Over().Sum(e.Salary)
+        }).ToList();
+
+        Assert.Equal(2, results.Count);
+        Assert.Null(results[0].Sum);
+    }
+
+    [ConditionalFact]
+    public virtual void Sum_Filter()
+    {
+        using var context = CreateContext();
+
+        var ids = new int[] { 1, 2, 3 };
+
+        var ugh = context.Employees.Where(e => ids.Contains(e.EmployeeId) == false).ToList();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == false)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].Sum);
     }
 
     #endregion
@@ -628,103 +786,6 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         Assert.Equal(2, results[7].Id);
         Assert.Equal(3, results[7].Rank);
-    }
-
-    [ConditionalFact]
-    public virtual void Avg_Decimal()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            AverageSalary = EF.Functions.Over().Average(e.Salary)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(496875.111250m, results[0].AverageSalary);
-    }
-
-    [ConditionalFact]
-    public virtual void Avg_Int()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            AverageWork = EF.Functions.Over().Average(e.WorkExperience)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(11, results[0].AverageWork);
-    }
-
-    [ConditionalFact]
-    public virtual void Avg_Decimal_Int_Cast_Decimal()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            AverageWork = EF.Functions.Over().Average<decimal>(e.WorkExperience)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(11.375m, results[0].AverageWork);
-    }
-
-
-    [ConditionalFact]
-    public virtual void Avg_Null()
-    {
-        using var context = CreateContext();
-
-        var results = context.NullTestEmployees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            AverageSalary = EF.Functions.Over().Average(e.Salary)
-        }).ToList();
-
-        Assert.Equal(2, results.Count);
-        Assert.Null(results[0].AverageSalary);
-    }
-
-    [ConditionalFact]
-    public virtual void Sum_Decimal()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            SumSalary = EF.Functions.Over().Sum(e.Salary)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(3975000.89m, results[0].SumSalary);
-    }
-
-    [ConditionalFact]
-    public virtual void Sum_Int()
-    {
-        using var context = CreateContext();
-
-        var results = context.Employees.Select(e => new
-        {
-            e.Id,
-            e.Name,
-            SumWorkExperience = EF.Functions.Over().Sum(e.WorkExperience)
-        }).ToList();
-
-        Assert.Equal(8, results.Count);
-        Assert.Equal(91, results[0].SumWorkExperience);
     }
 
     [ConditionalFact]
