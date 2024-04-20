@@ -48,7 +48,7 @@ public class SqlServerWindowAggregateMethodTranslator : IWindowAggregateMethodCa
             case nameof(SqlServerWindowAggregateFunctionExtensions.CountBig)
                 when methodInfo == SqlServerWindowAggregateMethods.CountBigAll:
 
-                return _sqlExpressionFactory.Function("COUNT_BIG", new[] { _sqlExpressionFactory.Fragment("*") }, true, [false], typeof(long));
+                return _sqlExpressionFactory.Function("COUNT_BIG", new[] { _sqlExpressionFactory.Fragment("*") }, false, [false], typeof(long));
 
             case nameof(SqlServerWindowAggregateFunctionExtensions.CountBig)
                 when methodInfo == SqlServerWindowAggregateMethods.CountBigAllFilter:
@@ -58,7 +58,7 @@ public class SqlServerWindowAggregateMethodTranslator : IWindowAggregateMethodCa
             case nameof(SqlServerWindowAggregateFunctionExtensions.CountBig)
                 when methodInfo == SqlServerWindowAggregateMethods.CountBigCol:
 
-                return _sqlExpressionFactory.Function("COUNT_BIG", arguments, true, [false], typeof(long));
+                return _sqlExpressionFactory.Function("COUNT_BIG", arguments, false, [false], typeof(long));
 
             case nameof(SqlServerWindowAggregateFunctionExtensions.CountBig)
                 when methodInfo == SqlServerWindowAggregateMethods.CountBigColFilter:
@@ -68,25 +68,42 @@ public class SqlServerWindowAggregateMethodTranslator : IWindowAggregateMethodCa
             case nameof(SqlServerWindowAggregateFunctionExtensions.Stdev)
                 when methodInfo == SqlServerWindowAggregateMethods.Stdev:
 
-            case nameof(SqlServerWindowAggregateFunctionExtensions.Stdev)
-                when methodInfo == SqlServerWindowAggregateMethods.Stdev:
-
                 return _sqlExpressionFactory.Function("STDEV", arguments, true, [false], typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.Stdev)
+                when methodInfo == SqlServerWindowAggregateMethods.StdevFilter:
+
+                return _sqlExpressionFactory.Function("STDEV", BuildCaseExpression(), true, [false], typeof(double));
 
             case nameof(SqlServerWindowAggregateFunctionExtensions.StdevP)
                 when methodInfo == SqlServerWindowAggregateMethods.StdevP:
 
-                return _sqlExpressionFactory.Function("STDEVP", arguments, false, [false], typeof(double));
+                return _sqlExpressionFactory.Function("STDEVP", arguments, true, [false], typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.StdevP)
+                when methodInfo == SqlServerWindowAggregateMethods.StdevPFilter:
+
+                return _sqlExpressionFactory.Function("STDEVP", BuildCaseExpression(), true, [false], typeof(double));
 
             case nameof(SqlServerWindowAggregateFunctionExtensions.Var)
                 when methodInfo == SqlServerWindowAggregateMethods.Var:
 
                 return _sqlExpressionFactory.Function("VAR", arguments, true, [false], typeof(double));
 
+            case nameof(SqlServerWindowAggregateFunctionExtensions.Var)
+                when methodInfo == SqlServerWindowAggregateMethods.VarFilter:
+
+                return _sqlExpressionFactory.Function("VAR", BuildCaseExpression(), true, [false], typeof(double));
+
             case nameof(SqlServerWindowAggregateFunctionExtensions.VarP)
                 when methodInfo == SqlServerWindowAggregateMethods.VarP:
 
-                return _sqlExpressionFactory.Function("VARP", arguments, false, [false], typeof(double));
+                return _sqlExpressionFactory.Function("VARP", arguments, true, [false], typeof(double));
+
+            case nameof(SqlServerWindowAggregateFunctionExtensions.VarP)
+                when methodInfo == SqlServerWindowAggregateMethods.VarPFilter:
+
+                return _sqlExpressionFactory.Function("VARP", BuildCaseExpression(), true, [false], typeof(double));
         }
 
         return null;

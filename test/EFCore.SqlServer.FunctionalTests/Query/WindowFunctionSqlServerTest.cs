@@ -610,7 +610,7 @@ FROM [Employees] AS [e]
     }
 
     [ConditionalFact]
-    public void Count_Stdev_Basic()
+    public void Stdev_Basic()
     {
         using var context = CreateContext();
 
@@ -640,7 +640,40 @@ FROM [Employees] AS [e]
     }
 
     [ConditionalFact]
-    public void Count_StdevP_Basic()
+    public void Stdev_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDev = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).Stdev(e.Salary, () => e.Salary > 100000m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].StdDev);
+        Assert.Null(results[1].StdDev);
+        Assert.Null(results[2].StdDev);
+        Assert.Null(results[3].StdDev);
+        Assert.Equal(106066.18688d, Math.Round(results[4].StdDev.Value, 5));
+        Assert.Equal(150000.00000d, Math.Round(results[5].StdDev.Value, 5));
+        Assert.Equal(710633.48078d, Math.Round(results[6].StdDev.Value, 5));
+        Assert.Equal(629880.95256d, Math.Round(results[7].StdDev.Value, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], STDEV(CASE
+    WHEN [e].[Salary] > 100000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDev]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void StdevP_Basic()
     {
         using var context = CreateContext();
 
@@ -653,14 +686,14 @@ FROM [Employees] AS [e]
 
         Assert.Equal(8, results.Count);
 
-        Assert.Equal(0f, Math.Round(results[0].StdDevP, 5));
-        Assert.Equal(12499.94d, Math.Round(results[1].StdDevP, 5));
-        Assert.Equal(147667.12415d, Math.Round(results[2].StdDevP, 5));
-        Assert.Equal(129149.94144d, Math.Round(results[3].StdDevP, 5));
-        Assert.Equal(118743.47948d, Math.Round(results[4].StdDevP, 5));
-        Assert.Equal(171036.47775d, Math.Round(results[5].StdDevP, 5));
-        Assert.Equal(563629.80100d, Math.Round(results[6].StdDevP, 5));
-        Assert.Equal(560473.82015d, Math.Round(results[7].StdDevP, 5));
+        Assert.Equal(0f, Math.Round(results[0].StdDevP ?? 0, 5));
+        Assert.Equal(12499.94d, Math.Round(results[1].StdDevP ?? 0, 5));
+        Assert.Equal(147667.12415d, Math.Round(results[2].StdDevP ?? 0, 5));
+        Assert.Equal(129149.94144d, Math.Round(results[3].StdDevP ?? 0, 5));
+        Assert.Equal(118743.47948d, Math.Round(results[4].StdDevP ?? 0, 5));
+        Assert.Equal(171036.47775d, Math.Round(results[5].StdDevP ?? 0, 5));
+        Assert.Equal(563629.80100d, Math.Round(results[6].StdDevP ?? 0, 5));
+        Assert.Equal(560473.82015d, Math.Round(results[7].StdDevP ?? 0, 5));
 
         AssertSql(
             """
@@ -669,8 +702,42 @@ FROM [Employees] AS [e]
 """);
     }
 
+
     [ConditionalFact]
-    public void Count_Var_Basic()
+    public void StdevP_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDev = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).StdevP(e.Salary, () => e.Salary > 100000m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].StdDev);
+        Assert.Null(results[1].StdDev);
+        Assert.Equal(0, results[2].StdDev);
+        Assert.Equal(0, results[3].StdDev);
+        Assert.Equal(75000.12d, Math.Round(results[4].StdDev.Value, 5));
+        Assert.Equal(122474.48714d, Math.Round(results[5].StdDev.Value, 5));
+        Assert.Equal(615426.64713d, Math.Round(results[6].StdDev.Value, 5));
+        Assert.Equal(563382.65106d, Math.Round(results[7].StdDev.Value, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], STDEVP(CASE
+    WHEN [e].[Salary] > 100000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDev]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void Var_Basic()
     {
         using var context = CreateContext();
 
@@ -700,7 +767,40 @@ FROM [Employees] AS [e]
     }
 
     [ConditionalFact]
-    public void Count_VarP_Basic()
+    public void Var_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDev = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).Var(e.Salary, () => e.Salary > 100000m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].StdDev);
+        Assert.Null(results[1].StdDev);
+        Assert.Null(results[2].StdDev);
+        Assert.Null(results[3].StdDev);
+        Assert.Equal(11250036000.02878d, Math.Round(results[4].StdDev.Value, 5));
+        Assert.Equal(22500000000.0192d, Math.Round(results[5].StdDev.Value, 5));
+        Assert.Equal(504999944000.01434d, Math.Round(results[6].StdDev.Value, 5));
+        Assert.Equal(396750014400.05493d, Math.Round(results[7].StdDev.Value, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], VAR(CASE
+    WHEN [e].[Salary] > 100000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDev]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void VarP_Basic()
     {
         using var context = CreateContext();
 
@@ -713,18 +813,51 @@ FROM [Employees] AS [e]
 
         Assert.Equal(8, results.Count);
 
-        Assert.Equal(0d, Math.Round(results[0].VarP, 3));
-        Assert.Equal(156248500.004d, Math.Round(results[1].VarP, 3));
-        Assert.Equal(21805579555.565d, Math.Round(results[2].VarP, 3));
-        Assert.Equal(16679707375.01d, Math.Round(results[3].VarP, 3));
-        Assert.Equal(14100013920.009d, Math.Round(results[4].VarP, 3));
-        Assert.Equal(29253476722.231d, Math.Round(results[5].VarP, 3));
-        Assert.Equal(317678552571.436d, Math.Round(results[6].VarP, 3));
-        Assert.Equal(314130903070.344d, Math.Round(results[7].VarP, 3));
+        Assert.Equal(0d, Math.Round(results[0].VarP ?? 0, 3));
+        Assert.Equal(156248500.004d, Math.Round(results[1].VarP ?? 0, 3));
+        Assert.Equal(21805579555.565d, Math.Round(results[2].VarP ?? 0, 3));
+        Assert.Equal(16679707375.01d, Math.Round(results[3].VarP ?? 0, 3));
+        Assert.Equal(14100013920.009d, Math.Round(results[4].VarP ?? 0, 3));
+        Assert.Equal(29253476722.231d, Math.Round(results[5].VarP ?? 0, 3));
+        Assert.Equal(317678552571.436d, Math.Round(results[6].VarP ?? 0, 3));
+        Assert.Equal(314130903070.344d, Math.Round(results[7].VarP ?? 0, 3));
 
         AssertSql(
             """
 SELECT [e].[Id], [e].[Name], VARP([e].[Salary]) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [VarP]
+FROM [Employees] AS [e]
+""");
+    }
+
+    [ConditionalFact]
+    public void VarP_Filter()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            StdDev = EF.Functions.Over().OrderBy(e.WorkExperience).ThenBy(e.Name).VarP(e.Salary, () => e.Salary > 100000m)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+
+        Assert.Null(results[0].StdDev);
+        Assert.Null(results[1].StdDev);
+        Assert.Equal(0, results[2].StdDev);
+        Assert.Equal(0, results[3].StdDev);
+        Assert.Equal(5625018000.01439d, Math.Round(results[4].StdDev.Value, 5));
+        Assert.Equal(15000000000.0128d, Math.Round(results[5].StdDev.Value, 5));
+        Assert.Equal(378749958000.01074d, Math.Round(results[6].StdDev.Value, 5));
+        Assert.Equal(317400011520.04395d, Math.Round(results[7].StdDev.Value, 5));
+
+        AssertSql(
+            """
+SELECT [e].[Id], [e].[Name], VARP(CASE
+    WHEN [e].[Salary] > 100000.0 THEN [e].[Salary]
+    ELSE NULL
+END) OVER ( ORDER BY [e].[WorkExperience], [e].[Name]) AS [StdDev]
 FROM [Employees] AS [e]
 """);
     }

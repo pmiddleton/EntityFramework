@@ -21,11 +21,17 @@ internal class SqlServerWindowAggregateMethods
         CountBigCol = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 2 && !typeof(Func<bool>).IsAssignableFrom(m.GetParameters()[1].ParameterType));
         CountBigColFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.CountBig) && m.GetParameters().Length == 3);
 
-        Stdev = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Stdev));
-        StdevP = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.StdevP));
+        Stdev = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Stdev) && m.GetParameters().Length == 2);
+        StdevFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Stdev) && m.GetParameters().Length == 3);
 
-        Var = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Var));
-        VarP = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.VarP));
+        StdevP = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.StdevP) && m.GetParameters().Length == 2);
+        StdevPFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.StdevP) && m.GetParameters().Length == 3);
+
+        Var = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Var) && m.GetParameters().Length == 2);
+        VarFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.Var) && m.GetParameters().Length == 3);
+
+        VarP = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.VarP) && m.GetParameters().Length == 2);
+        VarPFilter = aggMethods.Single(m => m.Name == nameof(SqlServerWindowAggregateFunctionExtensions.VarP) && m.GetParameters().Length == 3);
     }
 
     public static MethodInfo CountBigAll { get; }
@@ -35,8 +41,14 @@ internal class SqlServerWindowAggregateMethods
     public static MethodInfo CountBigColFilter { get; }
 
     public static MethodInfo Stdev { get; }
+    public static MethodInfo StdevFilter { get; }
+
     public static MethodInfo StdevP { get; }
+    public static MethodInfo StdevPFilter { get; }
 
     public static MethodInfo Var { get; }
+    public static MethodInfo VarFilter { get; }
+
     public static MethodInfo VarP { get; }
+    public static MethodInfo VarPFilter { get; }
 }

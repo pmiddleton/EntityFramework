@@ -22,7 +22,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="final">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static long? CountBig(this IWindowFinal final)
+    public static long CountBig(this IWindowFinal final)
     {
         throw new Exception();
     }
@@ -47,7 +47,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="source">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static long? CountBig<TSource>(this IWindowFinal final, TSource source)
+    public static long CountBig<TSource>(this IWindowFinal final, TSource source)
     {
         throw new Exception();
     }
@@ -101,7 +101,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="source">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static double StdevP<TSource>(this IWindowFinal final, TSource source)
+    public static double? StdevP<TSource>(this IWindowFinal final, TSource source)
     {
         throw new Exception();
     }
@@ -115,7 +115,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="filter">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static double StdevP<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    public static double? StdevP<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
     {
         throw new Exception();
     }
@@ -155,7 +155,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="source">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static double VarP<TSource>(this IWindowFinal final, TSource source)
+    public static double? VarP<TSource>(this IWindowFinal final, TSource source)
     {
         throw new Exception();
     }
@@ -169,7 +169,7 @@ public static class SqlServerWindowAggregateFunctionExtensions
     /// <param name="filter">todo</param>
     /// <returns>todo</returns>
     /// <exception cref="Exception">todo</exception>
-    public static double VarP<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
+    public static double? VarP<TSource>(this IWindowFinal final, TSource source, Func<bool> filter)
     {
         throw new Exception();
     }

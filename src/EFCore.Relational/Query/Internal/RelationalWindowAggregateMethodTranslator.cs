@@ -50,7 +50,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Average)
                 when methodInfo == RelationalWindowAggregateMethods.Average:
 
-                return _sqlExpressionFactory.Function("AVG", arguments, true, [false], arguments[0].Type, arguments[0].TypeMapping);
+                return _sqlExpressionFactory.Function("AVG", arguments, false, [false], arguments[0].Type, arguments[0].TypeMapping);
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Average)
                 when methodInfo == RelationalWindowAggregateMethods.AverageFilter:
@@ -60,7 +60,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Count)
                 when methodInfo == RelationalWindowAggregateMethods.CountAll:
 
-                return _sqlExpressionFactory.Function("COUNT", [_sqlExpressionFactory.Fragment("*")], true, [false], typeof(int));
+                return _sqlExpressionFactory.Function("COUNT", [_sqlExpressionFactory.Fragment("*")], false, [false], typeof(int));
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Count)
                 when methodInfo == RelationalWindowAggregateMethods.CountAllFilter:
@@ -70,7 +70,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Count)
                 when methodInfo == RelationalWindowAggregateMethods.CountCol:
 
-                return _sqlExpressionFactory.Function("COUNT", arguments, true, [false], typeof(int));
+                return _sqlExpressionFactory.Function("COUNT", arguments, false, [false], typeof(int));
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Count)
                 when methodInfo == RelationalWindowAggregateMethods.CountColFilter:
@@ -116,7 +116,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Max)
                 when methodInfo == RelationalWindowAggregateMethods.Max:
 
-                return _sqlExpressionFactory.Function("MAX", arguments, true, [false], arguments[0].Type, arguments[0].TypeMapping);
+                return _sqlExpressionFactory.Function("MAX", arguments, false, [false], arguments[0].Type, arguments[0].TypeMapping);
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Max)
                 when methodInfo == RelationalWindowAggregateMethods.MaxFilter:
@@ -126,7 +126,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Min)
                 when methodInfo == RelationalWindowAggregateMethods.Min:
 
-                return _sqlExpressionFactory.Function("MIN", arguments, true, [false], arguments[0].Type, arguments[0].TypeMapping);
+                return _sqlExpressionFactory.Function("MIN", arguments, false, [false], arguments[0].Type, arguments[0].TypeMapping);
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Min)
                 when methodInfo == RelationalWindowAggregateMethods.MinFilter:
@@ -156,7 +156,7 @@ public class RelationalWindowAggregateMethodTranslator : IWindowAggregateMethodC
             case nameof(RelationalWindowAggregateFunctionExtensions.Sum)
                 when methodInfo == RelationalWindowAggregateMethods.Sum:
 
-                return _sqlExpressionFactory.Function("SUM", arguments, true, [false], arguments[0].Type, arguments[0].TypeMapping);
+                return _sqlExpressionFactory.Function("SUM", arguments, false, [false], arguments[0].Type, arguments[0].TypeMapping);
 
             case nameof(RelationalWindowAggregateFunctionExtensions.Sum)
                 when methodInfo == RelationalWindowAggregateMethods.SumFilter:
