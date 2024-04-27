@@ -762,9 +762,9 @@ public class SqlExpressionFactory : ISqlExpressionFactory
 
     /// <inheritdoc />
     public virtual WindowOverExpression Over(SqlFunctionExpression aggregate, WindowPartitionExpression? partition, IReadOnlyList<OrderingExpression> orderings,
-        WindowFrameExpression? frame, SqlExpression? filter)
+        WindowFrameExpression? frame)
     {
-        return new WindowOverExpression(aggregate, partition, orderings, frame, filter);
+        return new WindowOverExpression(aggregate, partition, orderings, frame);
     }
 
     private IReadOnlyList<SqlExpression> FlattenLeastGreatest(string functionName, IReadOnlyList<SqlExpression> expressions)

@@ -286,7 +286,7 @@ FROM [NullTestEmployees] AS [n]
 @__ids_1='[1,2,3]' (Size = 4000)
 
 SELECT [e].[Id], [e].[Name], SUM(CASE
-    WHEN [e].[EmployeeId] NOT IN (
+    WHEN [e].[EmployeeId] IN (
         SELECT [i].[value]
         FROM OPENJSON(@__ids_1) WITH ([value] int '$') AS [i]
     ) THEN [e].[Salary]
@@ -1169,6 +1169,28 @@ FROM [Employees] AS [e]
         AssertSql(
 """
 SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName]) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    public override void Partition_MultipleColumns()
+    {
+        base.Partition_MultipleColumns();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[DepartmentName], [e].[WorkExperience]) AS [MaxSalary]
+FROM [Employees] AS [e]
+""");
+    }
+
+    public override void Partition_ColumnModified()
+    {
+        base.Partition_ColumnModified();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], MAX([e].[Salary]) OVER (PARTITION BY [e].[WorkExperience] / 10) AS [MaxSalary]
 FROM [Employees] AS [e]
 """);
     }

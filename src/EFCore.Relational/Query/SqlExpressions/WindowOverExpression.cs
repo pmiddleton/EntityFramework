@@ -50,16 +50,14 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <param name="partitionExpression">todo</param>
     /// <param name="orderingExpressions">todo</param>
     /// <param name="windowframeExpression">todo</param>
-    /// <param name="filterExpression">todo</param>
     public WindowOverExpression(SqlFunctionExpression aggregateExpression, WindowPartitionExpression? partitionExpression,
-        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression, SqlExpression? filterExpression)
+        IReadOnlyList<OrderingExpression> orderingExpressions, WindowFrameExpression? windowframeExpression)
         : base(aggregateExpression.Type, aggregateExpression.TypeMapping)
     {
         Partition = partitionExpression;
         Aggregate = aggregateExpression;
         Ordering = orderingExpressions;
         WindowFrame = windowframeExpression;
-        Filter = filterExpression;
     }
 
     /// <summary>
@@ -91,9 +89,6 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
         var partition = Partition != null ? visitor.Visit(Partition) as WindowPartitionExpression : null;
         var orderBys = new List<OrderingExpression>();
         var frame = visitor.Visit(WindowFrame) as WindowFrameExpression;
-        var filter = visitor.Visit(Filter) as SqlExpression;
-
-        //var changed = false;
 
         foreach (var orderingExpression in Ordering)
         {
@@ -101,7 +96,7 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
             orderBys.Add(newOrder);
         }
 
-        return Update(partition, aggregate, orderBys, frame, filter);
+        return Update(partition, aggregate, orderBys, frame);
     }
 
     /// <summary>
@@ -111,16 +106,14 @@ public class WindowOverExpression : SqlExpression, IPrintableExpression
     /// <param name="aggregate">todo</param>
     /// <param name="ordering">todo</param>
     /// <param name="frame">todo</param>
-    /// <param name="filter">todo</param>
     /// <returns>todo</returns>
     public virtual WindowOverExpression Update(
         WindowPartitionExpression? partition,
         SqlFunctionExpression aggregate,
         IReadOnlyList<OrderingExpression> ordering,
-        WindowFrameExpression? frame,
-        SqlExpression? filter)
-        => partition != Partition || aggregate != Aggregate || frame != WindowFrame || !Enumerable.SequenceEqual(ordering, Ordering) || filter != Filter
-            ? new WindowOverExpression(aggregate, partition, ordering, frame, filter)
+        WindowFrameExpression? frame)
+        => partition != Partition || aggregate != Aggregate || frame != WindowFrame || !Enumerable.SequenceEqual(ordering, Ordering)
+            ? new WindowOverExpression(aggregate, partition, ordering, frame)
             : this;
 
 

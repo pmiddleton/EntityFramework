@@ -55,11 +55,6 @@ public class RelationalWindowBuilderExpression : Expression
     /// <summary>
     /// todo
     /// </summary>
-    public SqlExpression? FilterExpression => _filterExpression;
-
-    /// <summary>
-    /// todo
-    /// </summary>
     public virtual void AddOrdering(SqlExpression expression, bool ascending) => _orderingExpressions.Add(new OrderingExpression(expression, ascending));
 
     /// <summary>

@@ -538,17 +538,15 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         var ids = new int[] { 1, 2, 3 };
 
-        var ugh = context.Employees.Where(e => ids.Contains(e.EmployeeId) == false).ToList();
-
         var results = context.Employees.Select(e => new
         {
             e.Id,
             e.Name,
-            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == false)
+            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId))
         }).ToList();
 
         Assert.Equal(8, results.Count);
-        Assert.Null(results[0].Sum);
+        Assert.Equal(1000000.53m, results[0].Sum);
     }
 
     #endregion
@@ -1432,6 +1430,82 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         Assert.Equal(8, results.Count);
         Assert.Equal(1000000.53m, results[0].MaxSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Partition_MultipleColumns()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.DepartmentName, e.WorkExperience).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(1000000.53m, results[0].MaxSalary);
+    }
+
+    [ConditionalFact]
+    public virtual void Partition_ColumnModified()
+    {
+        using var context = CreateContext();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            MaxSalary = EF.Functions.Over().PartitionBy(e.WorkExperience / 10).Max(e.Salary)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Equal(350000.24m, results[0].MaxSalary);
+    }
+
+    #endregion
+
+    #region Nullability
+
+    [ConditionalFact]
+    public virtual void NullTestBang()
+    {
+        using var context = CreateContext();
+
+        var ids = new int[] { 1, 2, 3 };
+
+        var ugh = context.Employees.Where(e => ids.Contains(e.EmployeeId) == false).ToList();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => !ids.Contains(e.EmployeeId))
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].Sum);
+    }
+
+    [ConditionalFact]
+    public virtual void NullTestEquals()
+    {
+        using var context = CreateContext();
+
+        var ids = new int[] { 1, 2, 3 };
+
+        var ugh = context.Employees.Where(e => ids.Contains(e.EmployeeId) == false).ToList();
+
+        var results = context.Employees.Select(e => new
+        {
+            e.Id,
+            e.Name,
+            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == false)
+        }).ToList();
+
+        Assert.Equal(8, results.Count);
+        Assert.Null(results[0].Sum);
     }
 
     #endregion

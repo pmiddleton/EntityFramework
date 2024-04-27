@@ -1497,11 +1497,14 @@ public class SqlNullabilityProcessor
     {
         //todo - figure this out
 
-       var aggregate = Visit(windowOverExpression.Aggregate, out var aggregateNullable);
-        //var partition = Visit(windowOverExpression.Partition, out var partitionNullable);
+      //  var aggregate = Visit(windowOverExpression.Aggregate, out var aggregateNullable) as SqlFunctionExpression;
+        //var partition = windowOverExpression.Partition != null ? Visit(windowOverExpression.Partition, out var paritionNulalble) : null;
+        //var ordering = Visit(windowOverExpression.Ordering, out var orderingNullable);
+        //var frame = Visit(windowOverExpression.WindowFrame, out var windowFrameNullable);
 
-        nullable = false;
-        return windowOverExpression;
+        nullable = windowOverExpression.Aggregate.IsNullable;
+
+        return windowOverExpression.Update(windowOverExpression.Partition, windowOverExpression.Aggregate, windowOverExpression.Ordering, windowOverExpression.WindowFrame);
     }
 
     /// <summary>

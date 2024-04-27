@@ -984,7 +984,7 @@ public class RelationalSqlTranslatingExpressionVisitor : ExpressionVisitor
 
             var wbe = (RelationalWindowBuilderExpression)Visit(arguments[0]);
 
-            return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression, wbe.FilterExpression);
+            return _sqlExpressionFactory.Over(windowingFunction, wbe.PartitionExpression, wbe.OrderingExpressions, wbe.FrameExpression);
         }
         else if (method.DeclaringType == typeof(IOver)
                     && method.Name == nameof(IOver.PartitionBy)
