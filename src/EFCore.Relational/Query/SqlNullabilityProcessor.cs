@@ -1495,16 +1495,9 @@ public class SqlNullabilityProcessor
        bool allowOptimizedExpansion,
        out bool nullable)
     {
-        //todo - figure this out
-
-      //  var aggregate = Visit(windowOverExpression.Aggregate, out var aggregateNullable) as SqlFunctionExpression;
-        //var partition = windowOverExpression.Partition != null ? Visit(windowOverExpression.Partition, out var paritionNulalble) : null;
-        //var ordering = Visit(windowOverExpression.Ordering, out var orderingNullable);
-        //var frame = Visit(windowOverExpression.WindowFrame, out var windowFrameNullable);
-
         nullable = windowOverExpression.Aggregate.IsNullable;
 
-        return windowOverExpression.Update(windowOverExpression.Partition, windowOverExpression.Aggregate, windowOverExpression.Ordering, windowOverExpression.WindowFrame);
+        return windowOverExpression;
     }
 
     /// <summary>

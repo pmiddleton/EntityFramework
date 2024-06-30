@@ -1413,7 +1413,8 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
             Rank = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.WorkExperience).ThenBy(e.Name).Rank()
         }).OrderBy(r => r.Name).ToList();
 
-        Assert.Fail();
+        Assert.Equal(8, results.Count);
+        Assert.Equal(5, results[0].Id);
     }
 
     [ConditionalFact]
@@ -1481,11 +1482,13 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
         {
             e.Id,
             e.Name,
-            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => !ids.Contains(e.EmployeeId))
+            SumIn = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId)),
+            SumNotIn = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => !ids.Contains(e.EmployeeId))
         }).ToList();
 
         Assert.Equal(8, results.Count);
-        Assert.Null(results[0].Sum);
+        Assert.Null(results[0].SumNotIn);
+        Assert.Equal(1000000.53m, results[0].SumIn);
     }
 
     [ConditionalFact]
@@ -1495,17 +1498,17 @@ public abstract class WindowFunctionTestBase<TFixture> : IClassFixture<TFixture>
 
         var ids = new int[] { 1, 2, 3 };
 
-        var ugh = context.Employees.Where(e => ids.Contains(e.EmployeeId) == false).ToList();
-
         var results = context.Employees.Select(e => new
         {
             e.Id,
             e.Name,
-            Sum = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == false)
+            SumIn = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == true),
+            SumNotIn = EF.Functions.Over().PartitionBy(e.DepartmentName).OrderBy(e.Name).Sum<decimal?>(e.Salary, () => ids.Contains(e.EmployeeId) == false)
         }).ToList();
 
         Assert.Equal(8, results.Count);
-        Assert.Null(results[0].Sum);
+        Assert.Null(results[0].SumNotIn);
+        Assert.Equal(1000000.53m, results[0].SumIn);
     }
 
     #endregion

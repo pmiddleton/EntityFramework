@@ -1206,16 +1206,22 @@ FROM [Employees] AS [e]
 """);
     }
 
-    
-
-    #endregion
-
-    #endregion
-
     public override void Outer_Order_By_Sql()
     {
         base.Outer_Order_By_Sql();
+
+        AssertSql(
+"""
+SELECT [e].[Id], [e].[Name], RANK() OVER (PARTITION BY [e].[DepartmentName] ORDER BY [e].[WorkExperience], [e].[Name]) AS [Rank]
+FROM [Employees] AS [e]
+ORDER BY [e].[Name]
+""");
     }
+
+    #endregion
+
+    #endregion
+
 
     public void AssertSql(params string[] expected)
         => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
